@@ -1,0 +1,227 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# iOS Deployment Guide
+
+## iOS Platform Configuration
+This Tauri app is primarily designed for iOS deployment with specific configurations and considerations.
+
+## iOS Build Configuration
+
+### Tauri Configuration
+```json
+{
+  "bundle": {
+    "active": true,
+    "targets": ["aarch64-apple-ios"],
+    "identifier": "com.irisboo.mmm-memos"
+  }
+}
+```
+
+### iOS-Specific Settings
+- **Bundle Identifier**: `com.irisboo.mmm-memos`
+- **Minimum iOS Version**: iOS 13.0+
+- **Device Support**: iPhone and iPad
+- **Orientation**: Portrait and Landscape
+
+## iOS Assets
+
+### App Icons
+Location: `src-tauri/gen/apple/assets/Assets.xcassets/AppIcon.appiconset/`
+- Multiple sizes required: 20x20, 29x29, 40x40, 60x60, 76x76, 83.5x83.5, 512x512
+- Both 1x and 2x/3x variants for retina displays
+- PNG format with transparency support
+
+### Launch Screen
+- File: `src-tauri/gen/apple/LaunchScreen.storyboard`
+- Simple, fast-loading design
+- Match app's color scheme and branding
+
+## iOS Capabilities
+
+### Required Capabilities
+```json
+{
+  "capabilities": {
+    "ios": {
+      "entitlements": {
+        "com.apple.security.files.user-selected.read-write": true,
+        "com.apple.security.network.client": true
+      }
+    }
+  }
+}
+```
+
+### Optional Capabilities
+- **File Access**: For importing/exporting memos
+- **Network Access**: For syncing with memos server
+- **Background Processing**: For auto-save functionality
+
+## iOS-Specific Development
+
+### Touch Interactions
+```vue
+<template>
+  <!-- iOS-friendly touch targets -->
+  <button class="min-h-[44px] min-w-[44px] touch-manipulation">
+    Save Memo
+  </button>
+</template>
+```
+
+### Gesture Support
+```vue
+<script setup lang="ts">
+import { useSwipe } from '@vueuse/core'
+
+const { isSwiping, direction } = useSwipe(target)
+</script>
+```
+
+### Safe Area Handling
+```vue
+<template>
+  <div class="safe-area-inset-top safe-area-inset-bottom">
+    <!-- Content that respects iOS safe areas -->
+  </div>
+</template>
+```
+
+## iOS Performance Considerations
+
+### Memory Management
+- Keep memory usage under 100MB for optimal performance
+- Implement proper cleanup in Vue components
+- Use virtual scrolling for large memo lists
+
+### Battery Optimization
+- Minimize background processing
+- Use efficient animations (60fps)
+- Optimize network requests
+
+### Storage
+- Use iOS Documents directory for user data
+- Implement proper file size limits
+- Handle storage warnings gracefully
+
+## iOS UI/UX Guidelines
+
+### Design Principles
+1. **Native Feel**: Follow iOS Human Interface Guidelines
+2. **Touch-Friendly**: 44px minimum touch targets
+3. **Accessibility**: Support VoiceOver and other accessibility features
+4. **Responsive**: Adapt to different iPhone/iPad screen sizes
+
+### Navigation
+```vue
+<template>
+  <!-- iOS-style navigation -->
+  <nav class="ios-nav">
+    <button class="back-button" @click="goBack">
+      <ChevronLeftIcon class="w-6 h-6" />
+    </button>
+    <h1 class="nav-title">{{ title }}</h1>
+  </nav>
+</template>
+```
+
+### Keyboard Handling
+```vue
+<script setup lang="ts">
+import { onMounted, onUnmounted } from 'vue'
+
+const handleKeyboardShow = () => {
+  // Adjust layout when virtual keyboard appears
+}
+
+const handleKeyboardHide = () => {
+  // Restore layout when keyboard disappears
+}
+
+onMounted(() => {
+  window.addEventListener('keyboardDidShow', handleKeyboardShow)
+  window.addEventListener('keyboardDidHide', handleKeyboardHide)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keyboardDidShow', handleKeyboardShow)
+  window.removeEventListener('keyboardDidHide', handleKeyboardHide)
+})
+</script>
+```
+
+## iOS Testing
+
+### Device Testing
+- Test on physical iOS devices (not just simulator)
+- Test on different iPhone/iPad models
+- Test with different iOS versions
+
+### Performance Testing
+- Monitor memory usage with Instruments
+- Test app launch time
+- Verify smooth scrolling performance
+
+### Accessibility Testing
+- Test with VoiceOver enabled
+- Verify proper focus management
+- Test with different accessibility settings
+
+## iOS App Store Preparation
+
+### Metadata
+- App name: "MMM Memos"
+- Description: Clear, compelling app description
+- Keywords: Relevant search terms
+- Screenshots: High-quality screenshots for different devices
+
+### App Store Connect
+- Set up app in App Store Connect
+- Configure pricing and availability
+- Prepare for App Review process
+
+### Privacy
+- Privacy Policy required
+- Data usage transparency
+- App Tracking Transparency (ATT) if applicable
+
+## Build Commands
+
+### Development
+```bash
+# Build for iOS simulator
+pnpm tauri build --target x86_64-apple-ios
+
+# Build for iOS device
+pnpm tauri build --target aarch64-apple-ios
+```
+
+### Production
+```bash
+# Build release version
+pnpm tauri build --target aarch64-apple-ios --release
+
+# Archive for App Store
+# Use Xcode to create archive from built project
+```
+
+## Troubleshooting
+
+### Common iOS Issues
+1. **Code Signing**: Ensure proper certificates and provisioning profiles
+2. **Bundle ID**: Verify bundle identifier matches App Store Connect
+3. **Capabilities**: Check required capabilities are properly configured
+4. **Assets**: Ensure all required app icons are present
+
+### Debug Commands
+```bash
+# Check iOS build configuration
+pnpm tauri info
+
+# Validate Tauri configuration
+pnpm tauri build --target aarch64-apple-ios --debug
+```

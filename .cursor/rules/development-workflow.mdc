@@ -1,0 +1,292 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Development Workflow & Best Practices
+
+## Development Environment Setup
+
+### Prerequisites
+- **Node.js**: v18+ with pnpm
+- **Rust**: Latest stable version
+- **Xcode**: For iOS development (macOS only)
+- **Tauri CLI**: `pnpm add -g @tauri-apps/cli`
+
+### Initial Setup
+```bash
+# Install dependencies
+pnpm install
+
+# Install Tauri CLI
+pnpm add -D @tauri-apps/cli
+
+# Verify setup
+pnpm tauri info
+```
+
+## Development Commands
+
+### Frontend Development
+```bash
+# Start Vite dev server
+pnpm dev
+
+# Build frontend
+pnpm build
+
+# Type checking
+pnpm vue-tsc --noEmit
+```
+
+### Tauri Development
+```bash
+# Start Tauri dev mode
+pnpm tauri dev
+
+# Build for specific platform
+pnpm tauri build --target aarch64-apple-ios
+pnpm tauri build --target x86_64-apple-darwin
+
+# Clean build artifacts
+pnpm tauri clean
+```
+
+## Code Organization
+
+### Frontend Structure
+```
+src/
+├── components/
+│   ├── ui/              # shadcn-vue components
+│   ├── layout/          # Layout components
+│   └── features/        # Feature-specific components
+├── composables/         # Vue composables
+├── stores/             # State management
+├── types/              # TypeScript type definitions
+├── utils/              # Utility functions
+└── assets/             # Static assets
+```
+
+### Backend Structure
+```
+src-tauri/
+├── src/
+│   ├── main.rs         # App entry point
+│   ├── lib.rs          # Tauri commands
+│   ├── database/       # Database operations
+│   ├── memo/           # Memo business logic
+│   └── utils/          # Utility functions
+├── Cargo.toml          # Dependencies
+└── tauri.conf.json     # Tauri config
+```
+
+## Git Workflow
+
+### Branch Strategy
+- `main`: Production-ready code
+- `develop`: Integration branch
+- `feature/*`: New features
+- `fix/*`: Bug fixes
+- `release/*`: Release preparation
+
+### Commit Convention
+```
+feat: add memo search functionality
+fix: resolve iOS keyboard overlap issue
+docs: update README with setup instructions
+refactor: improve database query performance
+test: add unit tests for memo operations
+```
+
+## Code Quality
+
+### TypeScript Configuration
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "exactOptionalPropertyTypes": true
+  }
+}
+```
+
+### ESLint Rules
+```javascript
+module.exports = {
+  extends: [
+    '@vue/typescript/recommended',
+    '@vue/prettier',
+    '@vue/prettier/@typescript-eslint'
+  ],
+  rules: {
+    'vue/component-name-in-template-casing': ['error', 'PascalCase'],
+    'vue/require-default-prop': 'error',
+    'vue/require-prop-types': 'error'
+  }
+}
+```
+
+### Rust Code Quality
+```toml
+# Cargo.toml
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+
+[profile.dev]
+opt-level = 0
+debug = true
+```
+
+## Testing Strategy
+
+### Frontend Testing
+```bash
+# Unit tests
+pnpm test:unit
+
+# Component tests
+pnpm test:components
+
+# E2E tests
+pnpm test:e2e
+```
+
+### Backend Testing
+```bash
+# Rust unit tests
+cargo test
+
+# Integration tests
+cargo test --test integration_tests
+```
+
+### Test Structure
+```
+tests/
+├── unit/              # Unit tests
+├── integration/       # Integration tests
+├── e2e/              # End-to-end tests
+└── fixtures/         # Test data
+```
+
+## Performance Monitoring
+
+### Frontend Performance
+- Use Vue DevTools for component profiling
+- Monitor bundle size with `pnpm build --analyze`
+- Check Core Web Vitals in development
+
+### Backend Performance
+- Profile Rust code with `cargo bench`
+- Monitor memory usage in iOS Simulator
+- Use Instruments for iOS performance analysis
+
+## Debugging
+
+### Frontend Debugging
+```javascript
+// Vue DevTools
+// Enable in development mode
+
+// Console debugging
+console.log('Debug info:', data)
+
+// Error boundaries
+<ErrorBoundary>
+  <Component />
+</ErrorBoundary>
+```
+
+### Backend Debugging
+```rust
+// Rust debugging
+println!("Debug: {:?}", data);
+
+// Tauri logging
+tauri::log::info!("Info message");
+tauri::log::error!("Error message");
+```
+
+### iOS Debugging
+- Use Xcode for iOS debugging
+- Monitor console logs in Xcode
+- Use Instruments for performance profiling
+
+## Deployment Pipeline
+
+### Development
+1. Feature development on feature branches
+2. Code review and testing
+3. Merge to develop branch
+4. Integration testing
+
+### Staging
+1. Build from develop branch
+2. Test on iOS simulator and device
+3. Performance and accessibility testing
+4. User acceptance testing
+
+### Production
+1. Create release branch from main
+2. Update version numbers
+3. Build production artifacts
+4. Submit to App Store
+
+## Documentation
+
+### Code Documentation
+- JSDoc for TypeScript functions
+- Rust doc comments for public APIs
+- README files for complex components
+
+### API Documentation
+- Document Tauri commands
+- Include request/response examples
+- Error handling documentation
+
+### User Documentation
+- Setup instructions
+- Feature guides
+- Troubleshooting guide
+
+## Security Best Practices
+
+### Frontend Security
+- Validate all user inputs
+- Sanitize data before rendering
+- Use HTTPS for network requests
+- Implement proper CORS policies
+
+### Backend Security
+- Validate all Tauri command inputs
+- Use prepared statements for database queries
+- Implement proper error handling
+- Secure file system access
+
+### iOS Security
+- Follow iOS security guidelines
+- Implement proper app sandboxing
+- Secure data storage with Keychain
+- Handle sensitive data appropriately
+
+## Monitoring and Analytics
+
+### Error Tracking
+- Implement error reporting
+- Monitor crash reports
+- Track user feedback
+
+### Performance Monitoring
+- Monitor app launch time
+- Track memory usage
+- Monitor network performance
+
+### User Analytics
+- Track feature usage
+- Monitor user engagement
+- Analyze user behavior patterns

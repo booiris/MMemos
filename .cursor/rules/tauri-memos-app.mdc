@@ -1,0 +1,90 @@
+---
+description: Tauri Memos Client App Rules
+globs: 
+alwaysApply: false
+---
+# Tauri Memos Client App Rules
+
+## Project Overview
+This is a Tauri 2.0-based desktop/mobile application for building a memos client, with iOS deployment as the primary target. The app uses Vue 3 with TypeScript for the frontend, and Rust for the backend.
+
+## Tech Stack
+- **Backend**: Tauri 2.0 (Rust)
+- **Frontend**: Vue 3 + TypeScript + Vite
+- **Styling**: Tailwind CSS + shadcn-vue components
+- **Target Platform**: iOS (primary), with desktop support
+- **Package Manager**: pnpm
+
+## Project Structure
+
+### Frontend (Vue 3)
+- **Entry Point**: [src/main.ts](mdc:src/main.ts) - Vue app initialization
+- **Main Component**: [src/App.vue](mdc:src/App.vue) - Root Vue component
+- **Configuration**: [vite.config.ts](mdc:vite.config.ts) - Vite build configuration
+- **TypeScript Config**: [tsconfig.json](mdc:tsconfig.json) - TypeScript settings
+
+### Backend (Tauri/Rust)
+- **Tauri Config**: [src-tauri/tauri.conf.json](mdc:src-tauri/tauri.conf.json) - App configuration
+- **Cargo Config**: [src-tauri/Cargo.toml](mdc:src-tauri/Cargo.toml) - Rust dependencies
+- **Main Rust**: [src-tauri/src/main.rs](mdc:src-tauri/src/main.rs) - Rust entry point
+- **Library**: [src-tauri/src/lib.rs](mdc:src-tauri/src/lib.rs) - Rust library code
+
+### iOS Specific
+- **iOS Assets**: [src-tauri/gen/apple/assets/](mdc:src-tauri/gen/apple/assets/) - iOS app icons and assets
+- **iOS Project**: [src-tauri/gen/apple/mmm-memos.xcodeproj/](mdc:src-tauri/gen/apple/mmm-memos.xcodeproj/) - Xcode project files
+
+## Development Guidelines
+
+### Frontend Development
+1. **Vue 3 Composition API**: Use `<script setup>` syntax for components
+2. **TypeScript**: All components should be typed with TypeScript
+3. **Tauri Integration**: Use `@tauri-apps/api` for Rust communication
+4. **Styling**: Use Tailwind CSS classes and shadcn-vue components
+5. **State Management**: Use Vue's reactive system with `ref()` and `reactive()`
+
+### Backend Development
+1. **Rust Commands**: Define Tauri commands in [src-tauri/src/lib.rs](mdc:src-tauri/src/lib.rs)
+2. **Serialization**: Use serde for JSON serialization between frontend and backend
+3. **Error Handling**: Implement proper error handling in Rust commands
+4. **iOS Compatibility**: Ensure all Rust code is compatible with iOS targets
+
+### iOS Deployment
+1. **App Icons**: Place iOS app icons in [src-tauri/gen/apple/assets/Assets.xcassets/](mdc:src-tauri/gen/apple/assets/Assets.xcassets/)
+2. **Bundle ID**: Use `com.irisboo.mmm-memos` as the app identifier
+3. **Capabilities**: Configure iOS capabilities in [src-tauri/capabilities/default.json](mdc:src-tauri/capabilities/default.json)
+
+## Key Commands
+- `pnpm dev` - Start development server
+- `pnpm build` - Build frontend for production
+- `pnpm tauri dev` - Run Tauri development mode
+- `pnpm tauri build` - Build for all platforms
+- `pnpm tauri build --target aarch64-apple-ios` - Build specifically for iOS
+
+## File Naming Conventions
+- Vue components: PascalCase (e.g., `MemoEditor.vue`)
+- Rust files: snake_case (e.g., `memo_operations.rs`)
+- TypeScript files: camelCase (e.g., `memoTypes.ts`)
+- CSS/Tailwind: Use utility classes in components
+
+## Dependencies to Add
+- `tailwindcss` - CSS framework
+- `@tailwindcss/typography` - Typography plugin
+- `shadcn-vue` - UI component library
+- `@vueuse/core` - Vue composition utilities
+- `pinia` - State management (if needed)
+
+## Memos App Specific Features
+- Note creation and editing
+- Markdown support
+- Local storage for memos
+- Search functionality
+- Tags and categories
+- Export/import capabilities
+- Sync with memos server (if applicable)
+
+## Best Practices
+1. **Responsive Design**: Ensure UI works on both desktop and mobile
+2. **Performance**: Optimize for iOS performance constraints
+3. **Accessibility**: Follow iOS accessibility guidelines
+4. **Security**: Validate all user inputs in Rust backend
+5. **Testing**: Write tests for both frontend and backend components

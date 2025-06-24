@@ -1,0 +1,107 @@
+---
+description: Vue 3 + Tailwind CSS + shadcn-vue Styling Guide
+globs: 
+alwaysApply: false
+---
+# Vue 3 + Tailwind CSS + shadcn-vue Styling Guide
+
+## Frontend Architecture
+This project uses Vue 3 with Tailwind CSS and shadcn-vue for a modern, responsive UI design system.
+
+## Component Structure
+
+### Vue 3 Composition API
+```vue
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+
+// Component logic here
+</script>
+
+<template>
+  <!-- Template with Tailwind classes -->
+</template>
+```
+
+### Tailwind CSS Guidelines
+1. **Utility-First**: Use Tailwind utility classes directly in templates
+2. **Responsive Design**: Use responsive prefixes (`sm:`, `md:`, `lg:`, `xl:`)
+3. **Dark Mode**: Use `dark:` prefix for dark mode variants
+4. **Custom Classes**: Create custom classes in `@/styles/` when needed
+
+### shadcn-vue Components
+- **Installation**: Use `npx shadcn-vue@latest add [component-name]`
+- **Location**: Components are in `@/components/ui/`
+- **Customization**: Modify component styles in `@/components/ui/[component]/[component].vue`
+
+## Common UI Patterns
+
+### Layout Components
+- **Container**: Use `max-w-7xl mx-auto px-4 sm:px-6 lg:px-8`
+- **Grid**: Use `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6`
+- **Flexbox**: Use `flex flex-col sm:flex-row items-center justify-between`
+
+### Typography
+- **Headings**: `text-2xl font-bold text-gray-900 dark:text-gray-100`
+- **Body Text**: `text-base text-gray-700 dark:text-gray-300`
+- **Small Text**: `text-sm text-gray-500 dark:text-gray-400`
+
+### Spacing
+- **Consistent**: Use Tailwind's spacing scale (4, 8, 12, 16, 20, 24, 32, 40, 48, 56, 64)
+- **Responsive**: Adjust spacing for different screen sizes
+- **Component Gaps**: Use `gap-4`, `gap-6`, `gap-8` for consistent spacing
+
+### Colors
+- **Primary**: Use brand colors defined in Tailwind config
+- **Semantic**: Use semantic color names (success, warning, error, info)
+- **Dark Mode**: Always provide dark mode alternatives
+
+## Memos App Specific Styling
+
+### Note Editor
+- **Full Height**: `min-h-screen bg-gray-50 dark:bg-gray-900`
+- **Editor Area**: `flex-1 p-6 focus:outline-none`
+- **Toolbar**: `border-b border-gray-200 dark:border-gray-700 p-4`
+
+### Note List
+- **Card Layout**: Use shadcn-vue Card components
+- **Hover Effects**: `hover:shadow-lg transition-shadow duration-200`
+- **Active States**: `ring-2 ring-blue-500 ring-offset-2`
+
+### Search Interface
+- **Search Bar**: `w-full max-w-md rounded-lg border-gray-300`
+- **Results**: `mt-4 space-y-2`
+- **Highlighting**: Use `bg-yellow-200 dark:bg-yellow-800` for search matches
+
+## Mobile-First Design
+1. **Touch Targets**: Minimum 44px for interactive elements
+2. **Gestures**: Support iOS gestures (swipe, pinch, etc.)
+3. **Safe Areas**: Use `safe-area-inset-*` utilities for iOS
+4. **Keyboard**: Handle virtual keyboard properly
+
+## Performance Considerations
+1. **Purge CSS**: Ensure unused Tailwind classes are purged
+2. **Component Lazy Loading**: Use dynamic imports for large components
+3. **Image Optimization**: Use responsive images with `srcset`
+4. **Font Loading**: Optimize font loading with `font-display: swap`
+
+## Accessibility
+1. **Semantic HTML**: Use proper HTML elements and ARIA labels
+2. **Color Contrast**: Ensure sufficient contrast ratios
+3. **Focus Management**: Visible focus indicators
+4. **Screen Readers**: Test with screen reader software
+
+## File Organization
+```
+src/
+├── components/
+│   ├── ui/           # shadcn-vue components
+│   ├── layout/       # Layout components
+│   └── features/     # Feature-specific components
+├── styles/
+│   ├── globals.css   # Global styles
+│   └── components.css # Component-specific styles
+└── composables/      # Reusable Vue composables
+```
