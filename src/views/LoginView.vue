@@ -1,12 +1,19 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import LoginForm from '@/components/LoginForm.vue'
 import type { LoginData } from '@/types/auth'
 import { useAuthStore } from '@/stores/auth'
+import { Card, CardHeader, CardTitle, CardDescription, CardFooter, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { useDarkMode } from '@/composables/useDarkMode'
+import { useLocale } from '@/composables/useLocale'
+import { Moon, Sun, Languages } from 'lucide-vue-next'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const { toggleDarkMode, isDark } = useDarkMode()
+const { currentLocale, locales, setLocale } = useLocale()
 
 const handleLogin = async (data: LoginData) => {
     try {
@@ -32,7 +39,6 @@ const handleLogin = async (data: LoginData) => {
 }
 
 onMounted(() => {
-    // 如果已经登录，直接跳转到仪表板
     if (authStore.isAuthenticated) {
         router.push({ name: 'Dashboard' })
     }
@@ -40,26 +46,40 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4">
-        <div class="max-w-md w-full space-y-8">
-            <div class="text-center">
-                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-                    Memos 客户端
-                </h1>
-                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                    请输入您的服务器信息进行登录
-                </p>
-            </div>
+    <div class="relative min-h-screen flex items-center justify-center bg-background">
+        <Card class="w-full max-w-md">
+            <CardHeader>
+                <CardTitle>{{ $t('login.title') }}</CardTitle>
+                <CardDescription>{{ $t('login.description') }}</CardDescription>
+            </CardHeader>
+            <CardContent>
+            </CardContent>
+            <CardFooter>
+                <Button class="w-full" @click="handleLogin">
+                    {{ $t('login.loginButton') }}
+                </Button>
+            </CardFooter>
+        </Card>
 
-            <!-- 登录表单 -->
-            <LoginForm :loading="authStore.isLoading" @login="handleLogin" />
+        <div class="fixed bottom-6 right-6 flex flex-col gap-3">
+            <Button variant="outline" size="icon" @click="toggleDarkMode" class="shadow-lg">
+                <Sun v-if="isDark" class="h-4 w-4" />
+                <Moon v-else class="h-4 w-4" />
+            </Button>
 
-            <!-- 帮助信息 -->
-            <div class="text-center">
-                <p class="text-xs text-gray-500 dark:text-gray-400">
-                    访问令牌可以在您的 Memos 服务器设置中找到
-                </p>
-            </div>
+            <DropdownMenu>
+                <DropdownMenuTrigger as-child>
+                    <Button variant="outline" size="icon" class="shadow-lg">
+                        <Languages class="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem v-for="locale in locales" :key="locale.value" @click="setLocale(locale.value)"
+                        class="cursor-pointer" :class="{ 'bg-accent': currentLocale === locale.value }">
+                        {{ locale.label }}
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
         </div>
     </div>
 </template>

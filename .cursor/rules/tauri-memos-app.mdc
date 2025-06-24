@@ -12,6 +12,7 @@ This is a Tauri 2.0-based desktop/mobile application for building a memos client
 - **Backend**: Tauri 2.0 (Rust)
 - **Frontend**: Vue 3 + TypeScript + Vite
 - **Styling**: Tailwind CSS + shadcn-vue components
+- **State Management**: Pinia
 - **Target Platform**: iOS (primary), with desktop support
 - **Package Manager**: pnpm
 
@@ -22,6 +23,7 @@ This is a Tauri 2.0-based desktop/mobile application for building a memos client
 - **Main Component**: [src/App.vue](mdc:src/App.vue) - Root Vue component
 - **Configuration**: [vite.config.ts](mdc:vite.config.ts) - Vite build configuration
 - **TypeScript Config**: [tsconfig.json](mdc:tsconfig.json) - TypeScript settings
+- **State Management**: [src/stores/](mdc:src/stores) - Pinia stores directory
 
 ### Backend (Tauri/Rust)
 - **Tauri Config**: [src-tauri/tauri.conf.json](mdc:src-tauri/tauri.conf.json) - App configuration
@@ -30,8 +32,8 @@ This is a Tauri 2.0-based desktop/mobile application for building a memos client
 - **Library**: [src-tauri/src/lib.rs](mdc:src-tauri/src/lib.rs) - Rust library code
 
 ### iOS Specific
-- **iOS Assets**: [src-tauri/gen/apple/assets/](mdc:src-tauri/gen/apple/assets/) - iOS app icons and assets
-- **iOS Project**: [src-tauri/gen/apple/mmm-memos.xcodeproj/](mdc:src-tauri/gen/apple/mmm-memos.xcodeproj/) - Xcode project files
+- **iOS Assets**: [src-tauri/gen/apple/assets/](mdc:src-tauri/gen/apple/assets) - iOS app icons and assets
+- **iOS Project**: [src-tauri/gen/apple/mmm-memos.xcodeproj/](mdc:src-tauri/gen/apple/mmm-memos.xcodeproj) - Xcode project files
 
 ## Development Guidelines
 
@@ -40,7 +42,19 @@ This is a Tauri 2.0-based desktop/mobile application for building a memos client
 2. **TypeScript**: All components should be typed with TypeScript
 3. **Tauri Integration**: Use `@tauri-apps/api` for Rust communication
 4. **Styling**: Use Tailwind CSS classes and shadcn-vue components
-5. **State Management**: Use Vue's reactive system with `ref()` and `reactive()`
+5. **State Management**: Use Pinia for global state management
+
+### Pinia State Management
+1. **Store Structure**: Create stores in [src/stores/](mdc:src/stores) directory
+2. **Store Naming**: Use descriptive names like `useMemoStore`, `useAuthStore`, `useSettingsStore`
+3. **Store Composition**: Use `defineStore()` with composition API style
+4. **State Persistence**: Use `pinia-plugin-persistedstate` for local storage persistence
+5. **Type Safety**: Define TypeScript interfaces for store state and actions
+6. **Store Organization**:
+   - `src/stores/index.ts` - Store exports and initialization
+   - `src/stores/memo.ts` - Memo-related state and operations
+   - `src/stores/auth.ts` - Authentication state
+   - `src/stores/settings.ts` - App settings and preferences
 
 ### Backend Development
 1. **Rust Commands**: Define Tauri commands in [src-tauri/src/lib.rs](mdc:src-tauri/src/lib.rs)
@@ -49,7 +63,7 @@ This is a Tauri 2.0-based desktop/mobile application for building a memos client
 4. **iOS Compatibility**: Ensure all Rust code is compatible with iOS targets
 
 ### iOS Deployment
-1. **App Icons**: Place iOS app icons in [src-tauri/gen/apple/assets/Assets.xcassets/](mdc:src-tauri/gen/apple/assets/Assets.xcassets/)
+1. **App Icons**: Place iOS app icons in [src-tauri/gen/apple/assets/Assets.xcassets/](mdc:src-tauri/gen/apple/assets/Assets.xcassets)
 2. **Bundle ID**: Use `com.irisboo.mmm-memos` as the app identifier
 3. **Capabilities**: Configure iOS capabilities in [src-tauri/capabilities/default.json](mdc:src-tauri/capabilities/default.json)
 
@@ -64,6 +78,7 @@ This is a Tauri 2.0-based desktop/mobile application for building a memos client
 - Vue components: PascalCase (e.g., `MemoEditor.vue`)
 - Rust files: snake_case (e.g., `memo_operations.rs`)
 - TypeScript files: camelCase (e.g., `memoTypes.ts`)
+- Pinia stores: camelCase (e.g., `memoStore.ts`, `authStore.ts`)
 - CSS/Tailwind: Use utility classes in components
 
 ## Dependencies to Add
@@ -71,7 +86,8 @@ This is a Tauri 2.0-based desktop/mobile application for building a memos client
 - `@tailwindcss/typography` - Typography plugin
 - `shadcn-vue` - UI component library
 - `@vueuse/core` - Vue composition utilities
-- `pinia` - State management (if needed)
+- `pinia` - State management
+- `pinia-plugin-persistedstate` - State persistence
 
 ## Memos App Specific Features
 - Note creation and editing
@@ -82,9 +98,75 @@ This is a Tauri 2.0-based desktop/mobile application for building a memos client
 - Export/import capabilities
 - Sync with memos server (if applicable)
 
+## Pinia Store Examples
+
+### Memo Store Structure
+```typescript
+// src/stores/memo.ts
+export const useMemoStore = defineStore('memo', () => {
+  // State
+  const memos = ref<Memo[]>([])
+  const currentMemo = ref<Memo | null>(null)
+  const isLoading = ref(false)
+  
+  // Actions
+  const createMemo = async (content: string) => { /* ... */ }
+  const updateMemo = async (id: string, content: string) => { /* ... */ }
+  const deleteMemo = async (id: string) => { /* ... */ }
+  const searchMemos = async (query: string) => { /* ... */ }
+  
+  return {
+    memos,
+    currentMemo,
+    isLoading,
+    createMemo,
+    updateMemo,
+    deleteMemo,
+    searchMemos
+  }
+}, {
+  persist: true
+})
+```
+
+### Auth Store Structure
+```typescript
+// src/stores/auth.ts
+export const useAuthStore = defineStore('auth', () => {
+  // State
+  const user = ref<User | null>(null)
+  const isAuthenticated = ref(false)
+  const token = ref<string | null>(null)
+  
+  // Actions
+  const login = async (credentials: LoginCredentials) => { /* ... */ }
+  const logout = () => { /* ... */ }
+  const checkAuth = async () => { /* ... */ }
+  
+  return {
+    user,
+    isAuthenticated,
+    token,
+    login,
+    logout,
+    checkAuth
+  }
+}, {
+  persist: {
+    paths: ['token', 'user']
+  }
+})
+```
+
 ## Best Practices
 1. **Responsive Design**: Ensure UI works on both desktop and mobile
 2. **Performance**: Optimize for iOS performance constraints
 3. **Accessibility**: Follow iOS accessibility guidelines
 4. **Security**: Validate all user inputs in Rust backend
 5. **Testing**: Write tests for both frontend and backend components
+6. **State Management**: 
+   - Keep stores focused and single-purpose
+   - Use computed properties for derived state
+   - Implement proper error handling in store actions
+   - Use TypeScript for type safety
+   - Persist critical state to local storage
