@@ -1,14 +1,10 @@
 import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { locales } from '@/locales'
 
 export const useLocale = () => {
     const { locale } = useI18n()
     const currentLocale = ref(locale.value)
-
-    const locales = [
-        { value: 'zh-CN', label: '中文' },
-        { value: 'en-US', label: 'English' }
-    ]
 
     const setLocale = (newLocale: string) => {
         locale.value = newLocale

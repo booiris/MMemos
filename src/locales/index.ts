@@ -13,4 +13,15 @@ const i18n = createI18n({
     }
 });
 
-export default i18n;
+const locales = [
+    {
+        value: 'zh-CN',
+        label: '中文'
+    },
+    {
+        value: 'en-US',
+        label: 'English'
+    }
+]
+
+export { i18n, locales };
