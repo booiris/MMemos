@@ -26,4 +26,5 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-display: block;
+  background-color: var(--background);
 }

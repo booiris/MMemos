@@ -65,7 +65,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class=" min-h-screen flex flex-col items-center justify-center bg-background">
+    <div class="flex flex-col items-center justify-center bg-background">
         <img :src="isDark ? logoDark : logo" alt="logo" class="w-40 h-40 mb-8 -mt-40" />
 
         <h1 class="text-2xl dark:text-primary font-bold mb-8">{{ $t('login.title') }}</h1>
@@ -126,7 +126,7 @@ onMounted(() => {
             </Button>
         </div>
 
-        <div class="fixed bottom-12 right-6 flex flex-col gap-5">
+        <div class="fixed bottom-6 right-6 flex flex-col gap-4">
             <Button variant="outline" size="icon" @click="toggleDarkMode"
                 class="shadow-none border-primary !bg-transparent h-10 w-10">
                 <Sun v-if="isDark" class="!h-5 !w-5 !text-primary" />
