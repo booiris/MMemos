@@ -84,10 +84,12 @@ onMounted(() => {
                                         <CircleQuestionMark class="!h-5 !w-5" />
                                     </Button>
                                 </PopoverTrigger>
-                                <PopoverContent side="top">
+                                <PopoverContent side="top" class="h-auto w-auto p-4 pt-3 pb-3">
                                     <div>
-                                        <!-- TODO: fix layout -->
-                                        https://www.usememos.com/docs
+                                        <a href="https://www.usememos.com/docs" target="_blank"
+                                            class="underline text-primary font-bold">
+                                            Help Doc
+                                        </a>
                                     </div>
                                 </PopoverContent>
                             </Popover>
@@ -107,10 +109,12 @@ onMounted(() => {
                                         <CircleQuestionMark class="!h-5 !w-5" />
                                     </Button>
                                 </PopoverTrigger>
-                                <PopoverContent side="top">
+                                <PopoverContent side="top" class="h-auto w-auto p-4 pt-3 pb-3">
                                     <div>
-                                        <!-- TODO: fix layout -->
-                                        https://www.usememos.com/docs/security/access-tokens
+                                        <a href="https://www.usememos.com/docs/security/access-tokens" target="_blank"
+                                            class="underline text-primary font-bold">
+                                            Help Doc
+                                        </a>
                                     </div>
                                 </PopoverContent>
                             </Popover>
