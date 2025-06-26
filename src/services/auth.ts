@@ -1,4 +1,5 @@
 import type { LoginData, LoginResponse } from '@/types/auth'
+import fetch from '@/lib/fetchWrapper'
 
 export class AuthService {
     private static instance: AuthService
@@ -14,17 +15,14 @@ export class AuthService {
 
     async login(data: LoginData): Promise<LoginResponse> {
         try {
-            // 验证服务器地址格式
             if (!this.isValidUrl(data.serverUrl)) {
-                throw new Error('无效的服务器地址')
+                throw new Error('invalid server url')
             }
 
-            // 验证访问令牌
             if (!data.accessToken.trim()) {
-                throw new Error('访问令牌不能为空')
+                throw new Error('access token is required')
             }
 
-            // 测试连接
             const response = await this.testConnection(data.serverUrl, data.accessToken)
 
             if (response.success) {
@@ -32,12 +30,13 @@ export class AuthService {
                 this.accessToken = data.accessToken
                 return response
             } else {
-                throw new Error(response.message || '登录失败')
+                throw new Error(response.message || 'login failed')
             }
         } catch (error) {
+            console.error(error instanceof Error ? error.message : 'unknown error')
             return {
                 success: false,
-                message: error instanceof Error ? error.message : '登录失败'
+                message: error instanceof Error ? error.message : 'login failed'
             }
         }
     }
@@ -53,16 +52,22 @@ export class AuthService {
 
     private async testConnection(serverUrl: string, accessToken: string): Promise<LoginResponse> {
         try {
-            // 构建API URL
-            const apiUrl = `${serverUrl.replace(/\/$/, '')}/api/v1/user/me`
+            const apiUrl = `${serverUrl.replace(/\/$/, '')}/api/v1/auth/status`
 
+            const controller = new AbortController()
+            const timeoutId = setTimeout(() => controller.abort(), 8000)
             const response = await fetch(apiUrl, {
-                method: 'GET',
+                method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${accessToken}`,
-                    'Content-Type': 'application/json'
-                }
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                signal: controller.signal
             })
+            clearTimeout(timeoutId)
+
+            console.log(response)
 
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`)
@@ -79,9 +84,17 @@ export class AuthService {
                 }
             }
         } catch (error) {
+            let message = 'connect to server failed'
+            if (error instanceof Error) {
+                if (error.name === 'AbortError') {
+                    message = 'connection timeout (8 seconds)'
+                } else {
+                    message = error.message
+                }
+            }
             return {
                 success: false,
-                message: error instanceof Error ? error.message : '连接服务器失败'
+                message
             }
         }
     }

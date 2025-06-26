@@ -8,9 +8,10 @@ import { Input } from '@/components/ui/input'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { useDarkMode } from '@/composables/useDarkMode'
 import { useLocale } from '@/composables/useLocale'
-import { Moon, Sun, Languages, CircleQuestionMark } from 'lucide-vue-next'
+import { Moon, Sun, Languages, CircleQuestionMark, Loader2 } from 'lucide-vue-next'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 import { Label } from '@/components/ui/label'
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import logo from '@/assets/logo.png'
 import logoDark from '@/assets/logo-dark.png'
 
@@ -19,15 +20,29 @@ const authStore = useAuthStore()
 const { toggleDarkMode, isDark } = useDarkMode()
 const { currentLocale, locales, setLocale } = useLocale()
 
-// 响应式数据
-const serverUrl = ref('')
-const accessToken = ref('')
+const serverUrl = ref(import.meta.env.VITE_DEFAULT_DEBUG_SERVER_URL || '')
+const accessToken = ref(import.meta.env.VITE_DEFAULT_DEBUG_ACCESS_TOKEN || '')
+const loading = ref(false)
+
+const showAlert = ref(false)
+const alertTitle = ref('')
+const alertMessage = ref('')
+const alertType = ref<'success' | 'error' | 'warning'>('error')
+
+const showAlertDialog = (title: string, message: string, type: 'success' | 'error' | 'warning' = 'error') => {
+    alertTitle.value = title
+    alertMessage.value = message
+    alertType.value = type
+    showAlert.value = true
+}
 
 const handleLogin = async () => {
     if (!serverUrl.value.trim() || !accessToken.value.trim()) {
-        alert('请填写完整的登录信息')
+        showAlertDialog('提示', '请填写完整的登录信息', 'warning')
         return
     }
+
+    loading.value = true
 
     const loginData: LoginData = {
         serverUrl: serverUrl.value.trim(),
@@ -38,21 +53,23 @@ const handleLogin = async () => {
         const response = await authStore.login(loginData)
 
         if (response.success) {
-            // 保存认证状态到 localStorage
             localStorage.setItem('isAuthenticated', 'true')
             localStorage.setItem('user', JSON.stringify(response.user))
             localStorage.setItem('serverUrl', loginData.serverUrl)
             localStorage.setItem('accessToken', loginData.accessToken)
 
-            alert(`登录成功！欢迎 ${response.user?.name}`)
+            showAlertDialog('登录成功', `欢迎 ${response.user?.name}！`, 'success')
 
-            // 跳转到仪表板
-            router.push({ name: 'Dashboard' })
+            setTimeout(() => {
+                router.push({ name: 'Dashboard' })
+            }, 1500)
         } else {
-            alert(`登录失败：${response.message}`)
+            showAlertDialog('登录失败', response.message || '登录失败', 'error')
         }
     } catch (error) {
-        alert('登录失败，请检查网络连接')
+        showAlertDialog('登录失败', '请检查网络连接', 'error')
+    } finally {
+        loading.value = false
     }
 }
 
@@ -94,8 +111,8 @@ onMounted(() => {
                                 </PopoverContent>
                             </Popover>
                         </div>
-                        <Input id="serverUrl" v-model="serverUrl" type="url"
-                            placeholder="http[s]://server.com[:port]" />
+                        <Input id="serverUrl" v-model="serverUrl" type="url" placeholder="http[s]://server.com[:port]"
+                            required />
                     </div>
 
                     <div class="flex flex-col space-y-1.5">
@@ -119,14 +136,22 @@ onMounted(() => {
                                 </PopoverContent>
                             </Popover>
                         </div>
-                        <Input id="accessToken" v-model="accessToken" type="password" placeholder="Access Token" />
+                        <Input id="accessToken" v-model="accessToken" type="password" placeholder="Access Token"
+                            required />
                     </div>
                 </div>
 
             </form>
 
-            <Button class="w-full h-11 font-bold text-base" @click="handleLogin">
-                {{ $t('login.loginButton') }}
+            <Button class="w-full h-11 font-bold text-base"
+                style="transition: all 0.15s ease-in-out; transform-origin: center; -webkit-tap-highlight-color: transparent;"
+                @click="handleLogin" @touchstart="(e) => e.target.style.transform = 'scale(0.96)'"
+                @touchend="(e) => e.target.style.transform = 'scale(1)'"
+                @touchcancel="(e) => e.target.style.transform = 'scale(1)'" :disabled="loading">
+                <Loader2 v-if="loading" class="!h-6 !w-6 animate-spin" />
+                <span v-else>
+                    {{ $t('login.loginButton') }}
+                </span>
             </Button>
         </div>
 
@@ -151,5 +176,19 @@ onMounted(() => {
                 </DropdownMenuContent>
             </DropdownMenu>
         </div>
+
+        <AlertDialog v-model:open="showAlert">
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>{{ alertTitle }}</AlertDialogTitle>
+                </AlertDialogHeader>
+                <AlertDialogDescription>
+                    {{ alertMessage }}
+                </AlertDialogDescription>
+                <AlertDialogFooter>
+                    <AlertDialogAction @click="showAlert = false">确定</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     </div>
 </template>

@@ -5,7 +5,7 @@ import router from "./router";
 import "./assets/index.css";
 import "./assets/global.css";
 import { createPinia } from 'pinia';
-import { useForwardConsoleLog } from './composables/useForwardConsoleLog';
+import { useForwardConsoleLog } from './lib/forwardConsoleLog';
 
 useForwardConsoleLog()
 
@@ -18,6 +18,7 @@ app.use(pinia);
 
 app.mount("#app");
 
+// prevent double tap to zoom
 window.onload = () => {
     document.addEventListener('touchstart', (event) => {
         if (event.touches.length > 1) {
