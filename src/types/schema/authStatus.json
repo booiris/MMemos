@@ -1,0 +1,81 @@
+{
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string",
+            "title": "The resource name of the user.\nFormat: users/{user}"
+        },
+        "uid": {
+            "type": "string",
+            "description": "Output only. The system generated unique identifier.",
+            "readOnly": true
+        },
+        "role": {
+            "description": "The role of the user.",
+            "type": "string",
+            "enum": [
+                "ROLE_UNSPECIFIED",
+                "HOST",
+                "ADMIN",
+                "USER"
+            ],
+            "default": "ROLE_UNSPECIFIED"
+        },
+        "username": {
+            "type": "string",
+            "description": "Required. The unique username for login."
+        },
+        "email": {
+            "type": "string",
+            "description": "Optional. The email address of the user."
+        },
+        "displayName": {
+            "type": "string",
+            "description": "Optional. The display name of the user."
+        },
+        "avatarUrl": {
+            "type": "string",
+            "description": "Optional. The avatar URL of the user."
+        },
+        "description": {
+            "type": "string",
+            "description": "Optional. The description of the user."
+        },
+        "password": {
+            "type": "string",
+            "description": "Input only. The password for the user."
+        },
+        "state": {
+            "description": "The state of the user.",
+            "type": "string",
+            "enum": [
+                "STATE_UNSPECIFIED",
+                "NORMAL",
+                "ARCHIVED"
+            ],
+            "default": "STATE_UNSPECIFIED"
+        },
+        "createTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Output only. The creation timestamp.",
+            "readOnly": true
+        },
+        "updateTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Output only. The last update timestamp.",
+            "readOnly": true
+        },
+        "etag": {
+            "type": "string",
+            "description": "Output only. The etag for this resource.",
+            "readOnly": true
+        }
+    },
+    "required": [
+        "role",
+        "username",
+        "state"
+    ]
+}

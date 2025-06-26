@@ -1,3 +1,5 @@
+import { AuthStatus } from "./gen/authStatus"
+
 export interface LoginData {
     serverUrl: string
     accessToken: string
@@ -6,11 +8,7 @@ export interface LoginData {
 export interface LoginResponse {
     success: boolean
     message?: string
-    user?: {
-        id: string
-        name: string
-        email?: string
-    }
+    user?: AuthStatus
 }
 
 export interface AuthState {

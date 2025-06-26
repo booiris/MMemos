@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { AuthState, LoginData, LoginResponse } from '@/types/auth'
-import { authService } from '@/services/auth'
+import type { AuthState, LoginData, LoginResponse, } from '@/types/auth'
+import { login as Login } from '@/api/auth'
 
 export const useAuthStore = defineStore('auth', () => {
   const authState = ref<AuthState>({
@@ -19,7 +19,7 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = true
 
     try {
-      const response = await authService.login(data)
+      const response = await Login(data)
 
       if (response.success && response.user) {
         authState.value = {
@@ -46,8 +46,6 @@ export const useAuthStore = defineStore('auth', () => {
   const logout = () => {
     console.log('logout, cleaning persisted auth state')
 
-    authService.logout()
-
     authState.value = {
       isAuthenticated: false
     }
@@ -72,8 +70,6 @@ export const useAuthStore = defineStore('auth', () => {
           accessToken
         }
 
-        authService.login({ serverUrl, accessToken })
-
         console.log('restore auth state from localStorage', {
           user: user.name,
           serverUrl
@@ -91,23 +87,13 @@ export const useAuthStore = defineStore('auth', () => {
     return false
   }
 
-  const updateUser = (userData: any) => {
-    if (authState.value.isAuthenticated) {
-      authState.value.user = { ...authState.value.user, ...userData }
-
-      localStorage.setItem('user', JSON.stringify(authState.value.user))
-
-      console.log('update user info', userData)
-    }
-  }
-
   const debugStore = () => {
-    console.log('debug auth store', authState.value)
-    console.log('- isAuthenticated:', isAuthenticated.value)
-    console.log('- user:', user.value)
-    console.log('- serverUrl:', serverUrl.value)
-    console.log('- isLoading:', isLoading.value)
-    console.log('- localStorage:', {
+    console.debug('debug auth store', authState.value)
+    console.debug('- isAuthenticated:', isAuthenticated.value)
+    console.debug('- user:', user.value)
+    console.debug('- serverUrl:', serverUrl.value)
+    console.debug('- isLoading:', isLoading.value)
+    console.debug('- localStorage:', {
       isAuthenticated: localStorage.getItem('isAuthenticated'),
       user: localStorage.getItem('user'),
       serverUrl: localStorage.getItem('serverUrl'),
@@ -146,7 +132,6 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     logout,
     checkAuth,
-    updateUser,
 
     // dev tools
     debugStore
