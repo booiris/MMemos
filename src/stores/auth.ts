@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { AuthState, LoginData, LoginResponse, } from '@/types/auth'
-import { login as Login } from '@/api/auth'
+import { login as Login, logout as Logout } from '@/api/auth'
 
 export const useAuthStore = defineStore('auth', () => {
   const authState = ref<AuthState>({
@@ -45,6 +45,8 @@ export const useAuthStore = defineStore('auth', () => {
 
   const logout = () => {
     console.log('logout, cleaning persisted auth state')
+
+    Logout()
 
     authState.value = {
       isAuthenticated: false

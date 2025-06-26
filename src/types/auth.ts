@@ -1,4 +1,4 @@
-import { AuthStatus } from "./gen/authStatus"
+import { V1User } from "@/api/schema/api"
 
 export interface LoginData {
     serverUrl: string
@@ -8,7 +8,7 @@ export interface LoginData {
 export interface LoginResponse {
     success: boolean
     message?: string
-    user?: AuthStatus
+    user?: V1User
 }
 
 export interface AuthState {

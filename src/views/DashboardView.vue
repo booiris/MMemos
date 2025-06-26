@@ -33,7 +33,7 @@ onMounted(() => {
 
                     <div class="flex items-center space-x-4">
                         <span class="text-sm text-gray-700 dark:text-gray-300">
-                            欢迎，{{ authStore.user?.name || '用户' }}
+                            欢迎，{{ authStore.user?.username || '用户' }}
                         </span>
                         <button @click="handleLogout"
                             class="text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300">

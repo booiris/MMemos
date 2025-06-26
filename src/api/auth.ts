@@ -1,5 +1,5 @@
 import type { LoginData, LoginResponse } from '@/types/auth'
-import fetch from '@/lib/fetchWrapper'
+import { client } from './client'
 
 export async function login(data: LoginData): Promise<LoginResponse> {
     try {
@@ -27,6 +27,11 @@ export async function login(data: LoginData): Promise<LoginResponse> {
     }
 }
 
+export function logout() {
+    client.http.setSecurityData(null)
+    client.http.baseUrl = ''
+}
+
 function isValidUrl(url: string): boolean {
     try {
         new URL(url)
@@ -38,40 +43,19 @@ function isValidUrl(url: string): boolean {
 
 async function testConnection(serverUrl: string, accessToken: string): Promise<LoginResponse> {
     try {
-        const apiUrl = `${serverUrl.replace(/\/$/, '')}/api/v1/auth/status`
+        client.http.baseUrl = serverUrl
+        client.http.setSecurityData(accessToken)
 
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 4000)
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            signal: controller.signal
+        const response = await client.api.authServiceGetAuthStatus({
+            secure: true,
         })
-        clearTimeout(timeoutId)
-
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-        }
-
-        const userData = await response.json()
 
         return {
             success: true,
-            user: userData
+            user: response
         }
     } catch (error) {
-        let message = 'connect to server failed'
-        if (error instanceof Error) {
-            if (error.name === 'AbortError') {
-                message = 'connection timeout (4 seconds)'
-            } else {
-                message = error.message
-            }
-        }
+        let message = 'connect to server failed, error: ' + error
         return {
             success: false,
             message
