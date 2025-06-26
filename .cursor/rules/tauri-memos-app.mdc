@@ -97,6 +97,7 @@ This is a Tauri 2.0-based desktop/mobile application for building a memos client
 - Tags and categories
 - Export/import capabilities
 - Sync with memos server (if applicable)
+- Support I18N
 
 ## Pinia Store Examples
 

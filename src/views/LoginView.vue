@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import type { LoginData } from '@/types/auth'
 import { useAuthStore } from '@/stores/auth'
@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label'
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import logo from '@/assets/logo.png'
 import logoDark from '@/assets/logo-dark.png'
+import { useI18n } from 'vue-i18n'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -23,6 +24,8 @@ const { currentLocale, locales, setLocale } = useLocale()
 const serverUrl = ref(import.meta.env.VITE_DEFAULT_DEBUG_SERVER_URL || '')
 const accessToken = ref(import.meta.env.VITE_DEFAULT_DEBUG_ACCESS_TOKEN || '')
 const loading = ref(false)
+const initializing = ref(true)
+const { t } = useI18n()
 
 const showAlert = ref(false)
 const alertTitle = ref('')
@@ -38,7 +41,7 @@ const showAlertDialog = (title: string, message: string, type: 'success' | 'erro
 
 const handleLogin = async () => {
     if (!serverUrl.value.trim() || !accessToken.value.trim()) {
-        showAlertDialog('提示', '请填写完整的登录信息', 'warning')
+        showAlertDialog(t('login.alert.title'), t('login.alert.message'), 'warning')
         return
     }
 
@@ -53,37 +56,40 @@ const handleLogin = async () => {
         const response = await authStore.login(loginData)
 
         if (response.success) {
-            localStorage.setItem('isAuthenticated', 'true')
-            localStorage.setItem('user', JSON.stringify(response.user))
-            localStorage.setItem('serverUrl', loginData.serverUrl)
-            localStorage.setItem('accessToken', loginData.accessToken)
-
-            showAlertDialog('登录成功', `欢迎 ${response.user?.name}！`, 'success')
-
-            setTimeout(() => {
-                router.push({ name: 'Dashboard' })
-            }, 1500)
+            router.push({ name: 'Dashboard' })
         } else {
-            showAlertDialog('登录失败', response.message || '登录失败', 'error')
+            showAlertDialog(t('login.alert.loginFailed'), response.message || t('login.alert.loginFailed'), 'error')
         }
     } catch (error) {
-        showAlertDialog('登录失败', '请检查网络连接', 'error')
+        showAlertDialog(t('login.alert.loginFailed'), t('login.alert.loginFailed'), 'error')
     } finally {
         loading.value = false
     }
 }
 
-onMounted(() => {
+onMounted(async () => {
+    await nextTick()
+
+    if (!authStore.isAuthenticated) {
+        authStore.checkAuth()
+    }
+
     if (authStore.isAuthenticated) {
         router.push({ name: 'Dashboard' })
+        return
     }
+
+    initializing.value = false
 })
 
 </script>
 
 <template>
-    <div class="flex flex-col items-center justify-center bg-background">
-        <img :src="isDark ? logoDark : logo" alt="logo" class="w-40 h-40 mb-8 -mt-40" />
+    <div v-if="initializing" class="bg-background">
+    </div>
+
+    <div v-else class="flex flex-col items-center justify-center bg-background">
+        <img :src="isDark ? logoDark : logo" alt="logo" class="w-40 h-40 mb-8 -mt-46" />
 
         <h1 class="text-2xl dark:text-primary font-bold mb-8">{{ $t('login.title') }}</h1>
 
@@ -155,7 +161,7 @@ onMounted(() => {
             </Button>
         </div>
 
-        <div class="fixed bottom-6 right-6 flex flex-col gap-4">
+        <div class="fixed right-6 flex flex-col gap-4" style="bottom: calc(2rem + env(safe-area-inset-bottom))">
             <Button variant="outline" size="icon" @click="toggleDarkMode"
                 class="shadow-none border-primary !bg-transparent h-10 w-10">
                 <Sun v-if="isDark" class="!h-5 !w-5 !text-primary" />
@@ -178,15 +184,16 @@ onMounted(() => {
         </div>
 
         <AlertDialog v-model:open="showAlert">
-            <AlertDialogContent>
+            <AlertDialogContent class="pl-8 pr-8 gap-4">
                 <AlertDialogHeader>
-                    <AlertDialogTitle>{{ alertTitle }}</AlertDialogTitle>
+                    <AlertDialogTitle class="text-xl font-bold">{{ alertTitle }}</AlertDialogTitle>
                 </AlertDialogHeader>
-                <AlertDialogDescription>
+                <AlertDialogDescription class="text-base">
                     {{ alertMessage }}
                 </AlertDialogDescription>
                 <AlertDialogFooter>
-                    <AlertDialogAction @click="showAlert = false">确定</AlertDialogAction>
+                    <AlertDialogAction class="h-10" @click="showAlert = false">{{ $t('login.alert.confirm') }}
+                    </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>

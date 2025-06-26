@@ -37,13 +37,11 @@ router.beforeEach(async (to, _from, next) => {
         const { useAuthStore } = await import('@/stores/auth');
         const authStore = useAuthStore();
 
-        let isAuthenticated = authStore.isAuthenticated;
-
-        if (!isAuthenticated) {
-            isAuthenticated = authStore.checkAuth();
+        if (!authStore.isAuthenticated) {
+            authStore.checkAuth();
         }
 
-        if (!isAuthenticated) {
+        if (!authStore.isAuthenticated) {
             next({ name: 'Login' });
             return;
         }

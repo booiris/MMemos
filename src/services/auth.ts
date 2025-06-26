@@ -55,7 +55,7 @@ export class AuthService {
             const apiUrl = `${serverUrl.replace(/\/$/, '')}/api/v1/auth/status`
 
             const controller = new AbortController()
-            const timeoutId = setTimeout(() => controller.abort(), 8000)
+            const timeoutId = setTimeout(() => controller.abort(), 4000)
             const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: {
@@ -87,7 +87,7 @@ export class AuthService {
             let message = 'connect to server failed'
             if (error instanceof Error) {
                 if (error.name === 'AbortError') {
-                    message = 'connection timeout (8 seconds)'
+                    message = 'connection timeout (4 seconds)'
                 } else {
                     message = error.message
                 }

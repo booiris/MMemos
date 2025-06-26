@@ -13,7 +13,7 @@
 }
 
 .main-content {
-  height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  height: calc(100vh - env(safe-area-inset-top));
   overflow-y: auto;
 }
 </style>
