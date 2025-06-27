@@ -1,5 +1,6 @@
 import type { LoginData, LoginResponse } from '@/types/auth'
-import { client } from './client'
+import client from './client'
+import { getError } from './error'
 
 export async function login(data: LoginData): Promise<LoginResponse> {
     try {
@@ -19,7 +20,7 @@ export async function login(data: LoginData): Promise<LoginResponse> {
             throw new Error(response.message || 'login failed')
         }
     } catch (error) {
-        console.error(error instanceof Error ? error.message : 'unknown error')
+        console.error('[login] ' + error)
         return {
             success: false,
             message: error instanceof Error ? error.message : 'login failed'
@@ -46,8 +47,11 @@ async function testConnection(serverUrl: string, accessToken: string): Promise<L
         client.http.baseUrl = serverUrl
         client.http.setSecurityData(accessToken)
 
+        console.log("[testConnection] serverUrl", serverUrl)
+
         const response = await client.api.authServiceGetAuthStatus({
             secure: true,
+            signal: AbortSignal.timeout(6000)
         })
 
         return {
@@ -55,7 +59,7 @@ async function testConnection(serverUrl: string, accessToken: string): Promise<L
             user: response
         }
     } catch (error) {
-        let message = 'connect to server failed, error: ' + error
+        let message = 'Error: ' + getError(error)
         return {
             success: false,
             message

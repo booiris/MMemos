@@ -11,7 +11,9 @@ function forwardConsole(
 
     const original = console[fnName];
     console[fnName] = (message) => {
-        original(message);
+        if (import.meta.env.DEV) {
+            original(message);
+        }
         logger(message);
     };
 }

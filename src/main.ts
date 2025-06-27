@@ -6,6 +6,7 @@ import "./assets/index.css";
 import "./assets/global.css";
 import { createPinia } from 'pinia';
 import { useForwardConsoleLog } from './lib/forwardConsoleLog';
+import "@fontsource/eb-garamond/500.css";
 
 useForwardConsoleLog()
 

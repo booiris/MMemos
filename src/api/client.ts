@@ -8,6 +8,11 @@ const myHttpClient = new HttpClient({
         },
     }),
     customFetch: fetch,
+    baseUrl: localStorage.getItem('serverUrl') || '',
 });
 
-export const client = new Api(myHttpClient);
+const client = new Api(myHttpClient);
+
+client.http.setSecurityData(localStorage.getItem('accessToken') || '')
+
+export default client;
