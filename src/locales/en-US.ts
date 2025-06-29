@@ -28,7 +28,7 @@ export default {
         about: {
             title: "About",
             privacy: "Privacy",
-            feedback: "Feedback",
+            feedback: "Bug Report",
         },
     },
 } 
