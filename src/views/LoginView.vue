@@ -150,7 +150,7 @@ onMounted(async () => {
             <TouchAnimation :disabled="loading">
                 <Button class="w-full h-11 font-bold text-base" @click="handleLogin" :disabled="loading">
                     <Loader2 v-if="loading" class="!h-6 !w-6 animate-spin" />
-                    <span v-else>
+                    <span v-else class="text-lg">
                         {{ $t('login.loginButton') }}
                     </span>
                 </Button>

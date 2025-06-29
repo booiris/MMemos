@@ -13,5 +13,22 @@ export default {
             confirm: '确定',
             loginFailed: '登录失败',
         },
-    }
+    },
+    settings: {
+        title: "设置",
+        logout: "退出登录",
+
+        function: {
+            title: "功能",
+            language: "语言",
+            // imageSearch: "启用图片搜索",
+            autoTitle: "自动获取网页标题",
+        },
+
+        about: {
+            title: "关于",
+            privacy: "隐私政策",
+            feedback: "反馈问题",
+        },
+    },
 } 

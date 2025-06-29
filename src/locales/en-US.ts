@@ -13,5 +13,22 @@ export default {
             confirm: 'Confirm',
             loginFailed: 'Login failed',
         },
-    }
+    },
+    settings: {
+        title: "Settings",
+        logout: "Logout",
+
+        function: {
+            title: "Function",
+            language: "Language",
+            // imageSearch: "Image Search",
+            autoTitle: "Auto Link Title",
+        },
+
+        about: {
+            title: "About",
+            privacy: "Privacy",
+            feedback: "Feedback",
+        },
+    },
 } 

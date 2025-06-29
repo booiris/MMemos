@@ -1,112 +1,169 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { ChevronLeft, ChevronRight, ExternalLink, Bug, Languages, Link } from 'lucide-vue-next'
+import { ref } from 'vue'
+import { Switch } from '@/components/ui/switch'
+import { Button } from '@/components/ui/button'
+import TouchAnimation from '@/components/ui/touch-animation/index.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
+
+const handleBack = () => {
+    router.back()
+}
+
+const handleLogout = () => {
+    router.push({ name: 'Login' })
+    authStore.logout()
+}
+
+const enableAutoTitle = ref(true)
+
+// 处理设置项点击
+const handleSettingClick = (type: string) => {
+    switch (type) {
+        case 'privacy':
+            // 打开隐私政策
+            window.open('/privacy', '_blank')
+            break
+        case 'feedback':
+            // 打开反馈页面或邮件
+            window.open('mailto:feedback@example.com?subject=Bug反馈', '_blank')
+            break
+        case 'language':
+            // 切换语言设置
+            console.log('切换语言设置')
+            break
+    }
+}
 </script>
 
+
 <template>
-    <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <!-- 顶部导航栏 -->
-        <nav class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-16">
-                    <div class="flex items-center space-x-4">
-                        <button @click="router.push({ name: 'Dashboard' })"
-                            class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
-                            ← 返回
-                        </button>
-                        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
-                            设置
-                        </h1>
-                    </div>
-                </div>
-            </div>
-        </nav>
+    <div class="flex flex-col px-3 gap-3"
+        style="height: calc(100vh - env(safe-area-inset-bottom) - env(safe-area-inset-top));">
+        <div>
+            <button @click="handleBack" class="flex items-center">
+                <ChevronLeft class="!h-8 !w-8 text-primary" />
+                <span class="font-primary text-xl">{{ authStore.user?.username || '' }}</span>
+            </button>
+        </div>
 
-        <!-- 主要内容 -->
-        <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-            <div class="max-w-2xl mx-auto">
-                <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                    <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
-                        应用设置
-                    </h2>
+        <div class="mx-3">
+            <h1 class="ml-2 text-4xl font-bold text-primary font-style mb-5">
+                {{ $t('settings.title') }}
+            </h1>
 
-                    <div class="space-y-6">
-                        <!-- 主题设置 -->
-                        <div>
-                            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-3">
-                                外观
-                            </h3>
-                            <div class="space-y-2">
-                                <label class="flex items-center">
-                                    <input type="radio" name="theme" value="light" class="mr-3">
-                                    <span class="text-gray-700 dark:text-gray-300">浅色主题</span>
-                                </label>
-                                <label class="flex items-center">
-                                    <input type="radio" name="theme" value="dark" class="mr-3">
-                                    <span class="text-gray-700 dark:text-gray-300">深色主题</span>
-                                </label>
-                                <label class="flex items-center">
-                                    <input type="radio" name="theme" value="auto" class="mr-3" checked>
-                                    <span class="text-gray-700 dark:text-gray-300">跟随系统</span>
-                                </label>
-                            </div>
-                        </div>
+            <div class="space-y-4 mt-3">
 
-                        <!-- 用户信息 -->
-                        <div>
-                            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-3">
-                                用户信息
-                            </h3>
-                            <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-md">
-                                <div class="text-sm space-y-2">
-                                    <div>
-                                        <span class="font-medium text-gray-700 dark:text-gray-300">用户名：</span>
-                                        <span class="text-gray-600 dark:text-gray-400">{{ authStore.user?.name || '未设置'
-                                            }}</span>
-                                    </div>
-                                    <div v-if="authStore.user?.email">
-                                        <span class="font-medium text-gray-700 dark:text-gray-300">邮箱：</span>
-                                        <span class="text-gray-600 dark:text-gray-400">{{ authStore.user.email }}</span>
-                                    </div>
+                <div>
+                    <h2 class="text-2xl text-primary font-style mb-1"> {{ $t('settings.function.title') }} </h2>
+
+                    <div class="p-4 border rounded-lg border-primary space-y-2">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 flex items-center justify-center">
+                                    <Languages class="!w-6 !h-6 text-primary" />
+                                </div>
+                                <div>
+                                    <h3 class="font-medium text-primary text-xl">
+                                        {{ $t('settings.function.language') }}
+                                    </h3>
                                 </div>
                             </div>
+                            <button @click="handleSettingClick('language')" class="text-primary">
+                                <ChevronRight class="!w-6 !h-6" />
+                            </button>
                         </div>
 
-                        <!-- 服务器信息 -->
-                        <div>
-                            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-3">
-                                服务器信息
-                            </h3>
-                            <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-md">
-                                <div class="text-sm space-y-2">
-                                    <div>
-                                        <span class="font-medium text-gray-700 dark:text-gray-300">服务器地址：</span>
-                                        <span class="text-gray-600 dark:text-gray-400">{{ authStore.serverUrl || '未设置'
-                                            }}</span>
-                                    </div>
-                                    <div>
-                                        <span class="font-medium text-gray-700 dark:text-gray-300">登录状态：</span>
-                                        <span class="text-green-600 dark:text-green-400">已连接</span>
-                                    </div>
+                        <div class="border-b border-primary my-3"></div>
+
+                        <!-- 是否启用图片搜索 -->
+                        <!-- <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-lg flex items-center justify-center">
+                                    <Languages class="!w-6 !h-6 text-primary" />
+                                </div>
+                                <div>
+                                    <h3 class="font-medium text-primary text-lg">
+                                        {{ $t('settings.function.imageSearch') }}
+                                    </h3>
                                 </div>
                             </div>
-                        </div>
+                            <button @click="handleSettingClick('language')" class="text-primary">
+                                <ChevronRight class="!w-6 !h-6" />
+                            </button>
+                        </div> -->
 
-                        <!-- 其他设置 -->
-                        <div>
-                            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-3">
-                                其他
-                            </h3>
-                            <div class="text-sm text-gray-500 dark:text-gray-400">
-                                更多设置功能正在开发中...
+                        <!-- <div class="border-b border-primary my-3"></div> -->
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10  flex items-center justify-center">
+                                    <Link class="!w-6 !h-6 text-primary" />
+                                </div>
+                                <div>
+                                    <h3 class="font-medium text-primary text-xl">
+                                        {{ $t('settings.function.autoTitle') }}
+                                    </h3>
+                                </div>
                             </div>
+                            <Switch v-model="enableAutoTitle">
+                            </Switch>
                         </div>
                     </div>
                 </div>
+
+                <div>
+                    <h2 class="text-2xl text-primary font-style mb-1"> {{ $t('settings.about.title') }} </h2>
+
+                    <div class="p-4 border rounded-lg border-primary space-y-2">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 flex items-center justify-center">
+                                    <ExternalLink class="!w-6 !h-6 text-primary" />
+                                </div>
+                                <div>
+                                    <h3 class="font-medium text-primary text-xl">
+                                        {{ $t('settings.about.privacy') }}
+                                    </h3>
+                                </div>
+                            </div>
+                            <button @click="handleSettingClick('privacy')" class="text-primary">
+                                <ChevronRight class="!w-6 !h-6" />
+                            </button>
+                        </div>
+
+                        <div class="border-b border-primary my-3"></div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10  flex items-center justify-center">
+                                    <Bug class="!w-6 !h-6 text-primary" />
+                                </div>
+                                <div>
+                                    <h3 class="font-medium text-primary text-xl">
+                                        {{ $t('settings.about.feedback') }}
+                                    </h3>
+                                </div>
+                            </div>
+                            <button @click="handleSettingClick('feedback')" class="text-primary">
+                                <ChevronRight class="!w-6 !h-6" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
+        </div>
+
+        <div class="mt-auto mb-8 mx-3">
+            <TouchAnimation>
+                <Button @click="handleLogout" class="w-full h-12 text-xl font-bold !shadow-none">
+                    {{ $t('settings.logout') }}
+                </Button>
+            </TouchAnimation>
         </div>
     </div>
 </template>
