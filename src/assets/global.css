@@ -26,3 +26,8 @@ body {
   font-display: block;
   background-color: var(--background);
 }
+
+@font-face {
+  font-family: 'LXGW ZhenKai GB';
+  src: url('./LXGWZhenKaiGB-Regular.subset.ttf') format('truetype');
+}

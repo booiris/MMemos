@@ -130,7 +130,7 @@ onMounted(async () => {
             @contextmenu.prevent
             @dragstart.prevent />
 
-        <h1 class="text-2xl dark:text-primary font-bold mb-8">
+        <h1 class="text-3xl dark:text-primary font-bold mb-8 font-style">
             {{ $t('login.title') }}
         </h1>
 
