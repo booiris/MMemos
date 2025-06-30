@@ -29,6 +29,7 @@ export default {
             title: "About",
             privacy: "Privacy",
             feedback: "Bug Report",
+            acknowledgments: "Acknowledgments",
         },
     },
 } 

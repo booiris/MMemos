@@ -3,19 +3,21 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import {
     ChevronLeft,
-    ChevronRight,
     ExternalLink,
     Bug,
     Languages,
     Link,
+    ThumbsUp,
 } from 'lucide-vue-next'
-import { ref } from 'vue'
-import { Switch } from '@/components/ui/switch'
+import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import TouchAnimation from '@/components/ui/touch-animation/index.vue'
+import SettingsList from '@/components/ui/list-item/settings-list.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const { t } = useI18n()
 
 const handleBack = () => {
     router.back()
@@ -45,6 +47,50 @@ const handleSettingClick = (type: string) => {
             break
     }
 }
+
+// 处理设置项值更新
+const handleItemUpdate = (index: number, value: boolean) => {
+    if (index === 1) {
+        // autoTitle 是第二个项目
+        enableAutoTitle.value = value
+    }
+}
+
+const functionItems = computed(() => [
+    {
+        icon: Languages,
+        title: t('settings.function.language'),
+        type: 'arrow' as const,
+        onClick: () => handleSettingClick('language'),
+    },
+    {
+        icon: Link,
+        title: t('settings.function.autoTitle'),
+        type: 'switch' as const,
+        modelValue: enableAutoTitle.value,
+    },
+])
+
+const aboutItems = computed(() => [
+    {
+        icon: ExternalLink,
+        title: t('settings.about.privacy'),
+        type: 'arrow' as const,
+        onClick: () => handleSettingClick('privacy'),
+    },
+    {
+        icon: Bug,
+        title: t('settings.about.feedback'),
+        type: 'arrow' as const,
+        onClick: () => handleSettingClick('feedback'),
+    },
+    {
+        icon: ThumbsUp,
+        title: t('settings.about.acknowledgments'),
+        type: 'arrow' as const,
+        onClick: () => handleSettingClick('feedback'),
+    },
+])
 </script>
 
 <template>
@@ -70,121 +116,15 @@ const handleSettingClick = (type: string) => {
             </h1>
 
             <div class="space-y-4 mt-3">
-                <div>
-                    <h2 class="text-xl text-primary font-style mb-1">
-                        {{ $t('settings.function.title') }}
-                    </h2>
+                <SettingsList
+                    :title="$t('settings.function.title')"
+                    :items="functionItems"
+                    @update:item="handleItemUpdate" />
 
-                    <div class="p-4 border rounded-lg border-primary space-y-2">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div
-                                    class="w-8 h-8 flex items-center justify-center">
-                                    <Languages class="!w-5 !h-5 text-primary" />
-                                </div>
-                                <div>
-                                    <h3
-                                        class="font-medium text-primary text-lg">
-                                        {{ $t('settings.function.language') }}
-                                    </h3>
-                                </div>
-                            </div>
-                            <button
-                                @click="handleSettingClick('language')"
-                                class="text-primary">
-                                <ChevronRight class="!w-5 !h-5" />
-                            </button>
-                        </div>
-
-                        <div class="border-b border-primary my-3"></div>
-
-                        <!-- 是否启用图片搜索 -->
-                        <!-- <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div class="w-10 h-10 rounded-lg flex items-center justify-center">
-                                    <Languages class="!w-6 !h-6 text-primary" />
-                                </div>
-                                <div>
-                                    <h3 class="font-medium text-primary text-lg">
-                                        {{ $t('settings.function.imageSearch') }}
-                                    </h3>
-                                </div>
-                            </div>
-                            <button @click="handleSettingClick('language')" class="text-primary">
-                                <ChevronRight class="!w-6 !h-6" />
-                            </button>
-                        </div> -->
-
-                        <!-- <div class="border-b border-primary my-3"></div> -->
-
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div
-                                    class="w-8 h-8 flex items-center justify-center">
-                                    <Link class="!w-5 !h-5 text-primary" />
-                                </div>
-                                <div>
-                                    <h3
-                                        class="font-medium text-primary text-lg">
-                                        {{ $t('settings.function.autoTitle') }}
-                                    </h3>
-                                </div>
-                            </div>
-                            <Switch v-model="enableAutoTitle"> </Switch>
-                        </div>
-                    </div>
-                </div>
-
-                <div>
-                    <h2 class="text-xl text-primary font-style mb-1">
-                        {{ $t('settings.about.title') }}
-                    </h2>
-
-                    <div class="p-4 border rounded-lg border-primary space-y-2">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div
-                                    class="w-8 h-8 flex items-center justify-center">
-                                    <ExternalLink
-                                        class="!w-5 !h-5 text-primary" />
-                                </div>
-                                <div>
-                                    <h3
-                                        class="font-medium text-primary text-lg">
-                                        {{ $t('settings.about.privacy') }}
-                                    </h3>
-                                </div>
-                            </div>
-                            <button
-                                @click="handleSettingClick('privacy')"
-                                class="text-primary">
-                                <ChevronRight class="!w-5 !h-5" />
-                            </button>
-                        </div>
-
-                        <div class="border-b border-primary my-3"></div>
-
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div
-                                    class="w-8 h-8 flex items-center justify-center">
-                                    <Bug class="!w-5 !h-5 text-primary" />
-                                </div>
-                                <div>
-                                    <h3
-                                        class="font-medium text-primary text-lg">
-                                        {{ $t('settings.about.feedback') }}
-                                    </h3>
-                                </div>
-                            </div>
-                            <button
-                                @click="handleSettingClick('feedback')"
-                                class="text-primary">
-                                <ChevronRight class="!w-5 !h-5" />
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <SettingsList
+                    :title="$t('settings.about.title')"
+                    :items="aboutItems"
+                    @update:item="handleItemUpdate" />
             </div>
         </div>
 
