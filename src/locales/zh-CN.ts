@@ -28,7 +28,7 @@ export default {
         about: {
             title: "关于",
             privacy: "隐私政策",
-            feedback: "提交 Bug",
+            bugReport: "提交 Bug",
             acknowledgments: "鸣谢",
         },
     },

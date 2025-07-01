@@ -14,6 +14,7 @@ import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import TouchAnimation from '@/components/ui/touch-animation/index.vue'
 import SettingsList from '@/components/ui/list-item/settings-list.vue'
+import { openUrl } from '@tauri-apps/plugin-opener'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -80,9 +81,11 @@ const aboutItems = computed(() => [
     },
     {
         icon: Bug,
-        title: t('settings.about.feedback'),
+        title: t('settings.about.bugReport'),
         type: 'arrow' as const,
-        onClick: () => handleSettingClick('feedback'),
+        onClick: () => {
+            openUrl('https://github.com/booiris/mmm-memos/issues')
+        },
     },
     {
         icon: ThumbsUp,

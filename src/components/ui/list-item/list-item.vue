@@ -41,7 +41,7 @@ const handleSwitchChange = (value: boolean) => {
                     <component :is="icon" class="!w-5 !h-5 text-primary" />
                 </div>
                 <div>
-                    <h3 class="font-medium text-primary text-lg">
+                    <h3 class="text-primary text-lg">
                         {{ title }}
                     </h3>
                 </div>

@@ -24,7 +24,7 @@ dependencies:
     specifier: ~2.5.1
     version: 2.5.1
   '@tauri-apps/plugin-opener':
-    specifier: ^2
+    specifier: ^2.4.0
     version: 2.4.0
   '@vueuse/core':
     specifier: ^13.4.0
