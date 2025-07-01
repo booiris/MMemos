@@ -35,7 +35,10 @@ const handleSwitchChange = (value: boolean) => {
 
 <template>
     <div>
-        <div class="flex items-center justify-between">
+        <div
+            v-if="type === 'arrow'"
+            @click="handleClick"
+            class="flex items-center justify-between rounded-md p-2 -m-2 transition-colors duration-150 active:bg-primary/10 touch-manipulation">
             <div class="flex items-center">
                 <div class="w-8 h-8 flex items-center justify-center">
                     <component :is="icon" class="!w-5 !h-5 text-primary" />
@@ -47,15 +50,26 @@ const handleSwitchChange = (value: boolean) => {
                 </div>
             </div>
 
-            <button
-                v-if="type === 'arrow'"
-                @click="handleClick"
-                class="text-primary">
+            <div class="text-primary">
                 <ChevronRight class="!w-5 !h-5" />
-            </button>
+            </div>
+        </div>
+
+        <div
+            v-else-if="type === 'switch'"
+            class="flex items-center justify-between">
+            <div class="flex items-center">
+                <div class="w-8 h-8 flex items-center justify-center">
+                    <component :is="icon" class="!w-5 !h-5 text-primary" />
+                </div>
+                <div>
+                    <h3 class="text-primary text-lg">
+                        {{ title }}
+                    </h3>
+                </div>
+            </div>
 
             <Switch
-                v-else-if="type === 'switch'"
                 :model-value="modelValue"
                 @update:model-value="handleSwitchChange" />
         </div>

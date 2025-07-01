@@ -1,7 +1,7 @@
 ---
-description: Tauri Memos Client App Rules
+description: 
 globs: 
-alwaysApply: false
+alwaysApply: true
 ---
 # Tauri Memos Client App Rules
 

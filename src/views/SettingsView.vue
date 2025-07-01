@@ -31,24 +31,6 @@ const handleLogout = () => {
 
 const enableAutoTitle = ref(true)
 
-// 处理设置项点击
-const handleSettingClick = (type: string) => {
-    switch (type) {
-        case 'privacy':
-            // 打开隐私政策
-            window.open('/privacy', '_blank')
-            break
-        case 'feedback':
-            // 打开反馈页面或邮件
-            window.open('mailto:feedback@example.com?subject=Bug反馈', '_blank')
-            break
-        case 'language':
-            // 切换语言设置
-            console.log('切换语言设置')
-            break
-    }
-}
-
 // 处理设置项值更新
 const handleItemUpdate = (index: number, value: boolean) => {
     if (index === 1) {
@@ -62,7 +44,7 @@ const functionItems = computed(() => [
         icon: Languages,
         title: t('settings.function.language'),
         type: 'arrow' as const,
-        onClick: () => handleSettingClick('language'),
+        onClick: () => console.log('language'),
     },
     {
         icon: Link,
@@ -77,7 +59,7 @@ const aboutItems = computed(() => [
         icon: ExternalLink,
         title: t('settings.about.privacy'),
         type: 'arrow' as const,
-        onClick: () => handleSettingClick('privacy'),
+        onClick: () => console.log('privacy'),
     },
     {
         icon: Bug,
@@ -91,7 +73,7 @@ const aboutItems = computed(() => [
         icon: ThumbsUp,
         title: t('settings.about.acknowledgments'),
         type: 'arrow' as const,
-        onClick: () => handleSettingClick('feedback'),
+        onClick: () => console.log('acknowledgments'),
     },
 ])
 </script>

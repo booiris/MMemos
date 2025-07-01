@@ -29,7 +29,7 @@ const handleModelValueUpdate = (index: number, value: boolean) => {
             {{ title }}
         </h2>
 
-        <div class="p-4 border rounded-lg border-primary space-y-2">
+        <div class="px-3.5 py-3 border rounded-lg border-primary space-y-2">
             <ListItem
                 v-for="(item, index) in items"
                 :key="index"
