@@ -33,5 +33,9 @@ export default {
             bugReport: "Bug Report",
             acknowledgments: "Acknowledgments",
         },
+
+        acknowledgments: {
+            ok: "OK",
+        },
     },
 } 

@@ -33,5 +33,9 @@ export default {
             bugReport: "提交 Bug",
             acknowledgments: "鸣谢",
         },
+
+        acknowledgments: {
+            ok: "确定",
+        },
     },
 } 

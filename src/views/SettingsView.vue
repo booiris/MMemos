@@ -25,6 +25,14 @@ import {
     AlertDialogTitle,
     AlertDialogDescription,
 } from '@/components/ui/alert-dialog'
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -43,6 +51,7 @@ const handleLogout = () => {
 
 const enableAutoTitle = ref(true)
 const languageSelectOpen = ref(false)
+const acknowledgmentsDialogOpen = ref(false)
 
 const handleLanguageSelect = (locale: string) => {
     selectedLocale.value = locale
@@ -91,7 +100,9 @@ const aboutItems = computed(() => [
         icon: ThumbsUp,
         title: t('settings.about.acknowledgments'),
         type: 'arrow' as const,
-        onClick: () => console.log('acknowledgments'),
+        onClick: () => {
+            acknowledgmentsDialogOpen.value = true
+        },
     },
 ])
 </script>
@@ -140,12 +151,13 @@ const aboutItems = computed(() => [
         <AlertDialog
             :open="languageSelectOpen"
             @update:open="languageSelectOpen = $event">
-            <AlertDialogContent class="px-8 gap-4">
-                <AlertDialogHeader class="-my-1.5">
+            <AlertDialogContent class="px-8 gap-4 pt-4">
+                <AlertDialogHeader>
                     <AlertDialogTitle class="text-2xl font-bold">
                         {{ $t('settings.function.language') }}
                     </AlertDialogTitle>
-                    <AlertDialogDescription> </AlertDialogDescription>
+                    <AlertDialogDescription class="sr-only">
+                    </AlertDialogDescription>
                 </AlertDialogHeader>
 
                 <div class="space-y-2">
@@ -173,12 +185,41 @@ const aboutItems = computed(() => [
 
                 <AlertDialogFooter class="mt-2">
                     <AlertDialogCancel
-                        class="h-10 !shadow-none text-base border-primary"
+                        class="h-10 !shadow-none text-base border-primary !focus:outline-none"
                         @click="handleLanguageConfirm">
                         {{ $t('settings.function.confirm') }}
                     </AlertDialogCancel>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
+
+        <Dialog
+            :open="acknowledgmentsDialogOpen"
+            @update:open="acknowledgmentsDialogOpen = $event">
+            <DialogContent class="px-3 gap-1 pt-4">
+                <DialogHeader class="-mb-2">
+                    <DialogTitle class="text-2xl">
+                        {{ $t('settings.about.acknowledgments') }}
+                    </DialogTitle>
+                    <DialogDescription class="sr-only"> </DialogDescription>
+                </DialogHeader>
+                <div class="grid gap-4 py-4 overflow-y-auto px-6">
+                    <div class="flex flex-col justify-between">
+                        <p class="text-lg">Thanks To:</p>
+                        <p class="text-lg">Rust, Tauri, Vue</p>
+                        <p class="text-lg">Shadcn, Shadcn-vue</p>
+                        <p class="text-lg">EB Garamond, LXGW-wenkai</p>
+                        <p class="text-lg">Cursor</p>
+                    </div>
+                </div>
+                <DialogFooter class="px-6 !shadow-none">
+                    <Button
+                        @click="acknowledgmentsDialogOpen = false"
+                        class="!shadow-none h-11 text-lg">
+                        {{ $t('settings.acknowledgments.ok') }}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </div>
 </template>
