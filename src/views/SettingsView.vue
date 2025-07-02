@@ -55,12 +55,6 @@ const handleLanguageConfirm = () => {
     }, 150)
 }
 
-const handleItemUpdate = (index: number, value: boolean) => {
-    if (index === 1) {
-        enableAutoTitle.value = value
-    }
-}
-
 const functionItems = computed(() => [
     {
         icon: Languages,
@@ -74,7 +68,7 @@ const functionItems = computed(() => [
         icon: Link,
         title: t('settings.function.autoTitle'),
         type: 'switch' as const,
-        modelValue: enableAutoTitle.value,
+        modelValue: enableAutoTitle,
     },
 ])
 
@@ -123,13 +117,11 @@ const aboutItems = computed(() => [
             <div class="space-y-4 mt-3">
                 <SettingsList
                     :title="$t('settings.function.title')"
-                    :items="functionItems"
-                    @update:item="handleItemUpdate" />
+                    :items="functionItems" />
 
                 <SettingsList
                     :title="$t('settings.about.title')"
-                    :items="aboutItems"
-                    @update:item="handleItemUpdate" />
+                    :items="aboutItems" />
             </div>
         </div>
 

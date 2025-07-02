@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ChevronRight } from 'lucide-vue-next'
 import { Switch } from '@/components/ui/switch'
+import type { Ref } from 'vue'
+import { computed } from 'vue'
 
 interface Props {
     icon: any
     title: string
     type?: 'arrow' | 'switch'
-    modelValue?: boolean
+    modelValue?: boolean | Ref<boolean>
     isLast?: boolean
 }
 
@@ -29,8 +31,23 @@ const handleClick = () => {
 }
 
 const handleSwitchChange = (value: boolean) => {
-    emit('update:modelValue', value)
+    if (
+        props.modelValue &&
+        typeof props.modelValue === 'object' &&
+        'value' in props.modelValue
+    ) {
+        ;(props.modelValue as Ref<boolean>).value = value
+    } else {
+        emit('update:modelValue', value)
+    }
 }
+
+const actualModelValue = computed(() => {
+    if (props.modelValue === undefined) return false
+    return typeof props.modelValue === 'object' && 'value' in props.modelValue
+        ? props.modelValue.value
+        : props.modelValue
+})
 </script>
 
 <template>
@@ -70,7 +87,7 @@ const handleSwitchChange = (value: boolean) => {
             </div>
 
             <Switch
-                :model-value="modelValue"
+                :model-value="actualModelValue"
                 @update:model-value="handleSwitchChange" />
         </div>
 

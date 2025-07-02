@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ListItem from './list-item.vue'
+import type { Ref } from 'vue'
 
 interface Props {
     title: string
@@ -7,20 +8,12 @@ interface Props {
         icon: any
         title: string
         type?: 'arrow' | 'switch'
-        modelValue?: boolean
+        modelValue?: boolean | Ref<boolean>
         onClick?: () => void
     }>
 }
 
 defineProps<Props>()
-
-const emit = defineEmits<{
-    'update:item': [index: number, value: boolean]
-}>()
-
-const handleModelValueUpdate = (index: number, value: boolean) => {
-    emit('update:item', index, value)
-}
 </script>
 
 <template>
@@ -38,10 +31,7 @@ const handleModelValueUpdate = (index: number, value: boolean) => {
                 :type="item.type"
                 :model-value="item.modelValue"
                 :is-last="index === items.length - 1"
-                @click="item.onClick"
-                @update:model-value="
-                    (value) => handleModelValueUpdate(index, value)
-                " />
+                @click="item.onClick" />
         </div>
     </div>
 </template>
