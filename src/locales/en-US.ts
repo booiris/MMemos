@@ -21,6 +21,8 @@ export default {
         function: {
             title: "Function",
             language: "Language",
+            cancel: "Cancel",
+            confirm: 'Confirm',
             // imageSearch: "Image Search",
             autoTitle: "Auto Link Title",
         },

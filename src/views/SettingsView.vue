@@ -15,10 +15,22 @@ import { Button } from '@/components/ui/button'
 import TouchAnimation from '@/components/ui/touch-animation/index.vue'
 import SettingsList from '@/components/ui/list-item/settings-list.vue'
 import { openUrl } from '@tauri-apps/plugin-opener'
+import { useLocale } from '@/composables/useLocale'
+import {
+    AlertDialog,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogDescription,
+} from '@/components/ui/alert-dialog'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const { t } = useI18n()
+const { currentLocale, locales, setLocale } = useLocale()
+var selectedLocale = ref(currentLocale)
 
 const handleBack = () => {
     router.back()
@@ -30,11 +42,19 @@ const handleLogout = () => {
 }
 
 const enableAutoTitle = ref(true)
+const languageSelectOpen = ref(false)
 
-// 处理设置项值更新
+const handleLanguageSelect = (locale: string) => {
+    selectedLocale.value = locale
+}
+
+const handleLanguageConfirm = () => {
+    setLocale(selectedLocale.value)
+    languageSelectOpen.value = false
+}
+
 const handleItemUpdate = (index: number, value: boolean) => {
     if (index === 1) {
-        // autoTitle 是第二个项目
         enableAutoTitle.value = value
     }
 }
@@ -44,7 +64,9 @@ const functionItems = computed(() => [
         icon: Languages,
         title: t('settings.function.language'),
         type: 'arrow' as const,
-        onClick: () => console.log('language'),
+        onClick: () => {
+            languageSelectOpen.value = true
+        },
     },
     {
         icon: Link,
@@ -81,11 +103,7 @@ const aboutItems = computed(() => [
 <template>
     <div
         class="flex flex-col px-3 gap-3"
-        style="
-            height: calc(
-                100vh - env(safe-area-inset-bottom) - env(safe-area-inset-top)
-            );
-        ">
+        style="height: calc(100vh - env(safe-area-inset-top))">
         <div>
             <button @click="handleBack" class="flex items-center">
                 <ChevronLeft class="!h-8 !w-8 text-primary" />
@@ -113,7 +131,9 @@ const aboutItems = computed(() => [
             </div>
         </div>
 
-        <div class="mt-auto mb-8 mx-3">
+        <div
+            class="mt-auto mx-3"
+            style="margin-bottom: calc(env(safe-area-inset-bottom) + 1rem)">
             <TouchAnimation>
                 <Button
                     @click="handleLogout"
@@ -122,5 +142,49 @@ const aboutItems = computed(() => [
                 </Button>
             </TouchAnimation>
         </div>
+
+        <AlertDialog
+            :open="languageSelectOpen"
+            @update:open="languageSelectOpen = $event">
+            <AlertDialogContent class="px-8 gap-4">
+                <AlertDialogHeader>
+                    <AlertDialogTitle class="text-2xl font-bold">
+                        {{ $t('settings.function.language') }}
+                    </AlertDialogTitle>
+                    <AlertDialogDescription> </AlertDialogDescription>
+                </AlertDialogHeader>
+
+                <div class="space-y-2">
+                    <div
+                        v-for="locale in locales"
+                        :key="locale.value"
+                        @click="handleLanguageSelect(locale.value)">
+                        <div
+                            class="flex items-center justify-between p-3 rounded-lg border border-primary transition-colors pl-5"
+                            :class="{
+                                'bg-primary text-primary-foreground':
+                                    selectedLocale === locale.value,
+                                'bg-background border-border hover:bg-accent':
+                                    selectedLocale !== locale.value,
+                            }">
+                            <span class="text-base font-medium">{{
+                                locale.label
+                            }}</span>
+                            <div
+                                v-if="selectedLocale === locale.value"
+                                class="w-2 h-2 rounded-full bg-primary-foreground"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <AlertDialogFooter class="mt-2">
+                    <AlertDialogCancel
+                        class="h-10 !shadow-none text-base border-primary"
+                        @click="handleLanguageConfirm">
+                        {{ $t('settings.function.confirm') }}
+                    </AlertDialogCancel>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     </div>
 </template>

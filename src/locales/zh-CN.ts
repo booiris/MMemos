@@ -21,6 +21,8 @@ export default {
         function: {
             title: "功能",
             language: "语言",
+            cancel: "取消",
+            confirm: '确定',
             // imageSearch: "启用图片搜索",
             autoTitle: "自动获取网页标题",
         },

@@ -274,7 +274,9 @@ onMounted(async () => {
                     {{ alertMessage }}
                 </AlertDialogDescription>
                 <AlertDialogFooter>
-                    <AlertDialogAction class="h-10" @click="showAlert = false">
+                    <AlertDialogAction
+                        class="h-10 text-base"
+                        @click="showAlert = false">
                         {{ $t('login.alert.confirm') }}
                     </AlertDialogAction>
                 </AlertDialogFooter>
