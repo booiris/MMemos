@@ -49,8 +49,10 @@ const handleLanguageSelect = (locale: string) => {
 }
 
 const handleLanguageConfirm = () => {
-    setLocale(selectedLocale.value)
     languageSelectOpen.value = false
+    setTimeout(() => {
+        setLocale(selectedLocale.value)
+    }, 150)
 }
 
 const handleItemUpdate = (index: number, value: boolean) => {
@@ -147,7 +149,7 @@ const aboutItems = computed(() => [
             :open="languageSelectOpen"
             @update:open="languageSelectOpen = $event">
             <AlertDialogContent class="px-8 gap-4">
-                <AlertDialogHeader>
+                <AlertDialogHeader class="-my-1.5">
                     <AlertDialogTitle class="text-2xl font-bold">
                         {{ $t('settings.function.language') }}
                     </AlertDialogTitle>
