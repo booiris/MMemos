@@ -23,7 +23,7 @@ onMounted(() => {})
 
 <template>
     <div>
-        <div class="flex justify-between items-center px-6 mt-2">
+        <div class="flex justify-between items-center px-6">
             <div class="text-4xl text-primary font-style">
                 {{
                     authStore.user?.displayName ||

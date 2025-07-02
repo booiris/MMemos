@@ -32,7 +32,13 @@ const router = createRouter({
     routes
 });
 
-router.beforeEach(async (to, _from, next) => {
+router.beforeEach(async (to, from, next) => {
+    if (to.name === 'Settings' && from.name === 'Dashboard') {
+        to.meta.transition = 'slide-right'
+    } else if (from.name === 'Settings' && to.name === 'Dashboard') {
+        to.meta.transition = 'slide-left'
+    }
+
     if (!to.meta.noAuth) {
         const { useAuthStore } = await import('@/stores/auth');
         const authStore = useAuthStore();
