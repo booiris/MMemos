@@ -79,7 +79,7 @@ const handleLogin = async () => {
         const response = await authStore.login(loginData)
 
         if (response.success) {
-            router.push({ name: 'Dashboard' })
+            router.push({ name: 'Main' })
         } else {
             showAlertDialog(
                 t('login.alert.loginFailed'),
@@ -106,7 +106,7 @@ onMounted(async () => {
     }
 
     if (authStore.isAuthenticated) {
-        router.push({ name: 'Dashboard' })
+        router.push({ name: 'Main' })
         return
     }
 

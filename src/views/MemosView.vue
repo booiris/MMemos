@@ -13,7 +13,7 @@ const router = useRouter()
                 <div class="flex justify-between h-16">
                     <div class="flex items-center space-x-4">
                         <button
-                            @click="router.push({ name: 'Dashboard' })"
+                            @click="router.push({ name: 'Main' })"
                             class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
                             ← 返回
                         </button>

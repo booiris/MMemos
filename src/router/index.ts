@@ -11,9 +11,9 @@ const routes: RouteRecordRaw[] = [
         }
     },
     {
-        path: '/dashboard',
-        name: 'Dashboard',
-        component: () => import('@/views/DashboardView.vue'),
+        path: '/main',
+        name: 'Main',
+        component: () => import('@/views/MainView.vue'),
     },
     {
         path: '/memos',
@@ -33,9 +33,9 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to, from, next) => {
-    if (to.name === 'Settings' && from.name === 'Dashboard') {
+    if (to.name === 'Settings' && from.name === 'Main') {
         to.meta.transition = 'slide-right'
-    } else if (from.name === 'Settings' && to.name === 'Dashboard') {
+    } else if (from.name === 'Settings' && to.name === 'Main') {
         to.meta.transition = 'slide-left'
     }
 

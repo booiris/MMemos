@@ -41,7 +41,7 @@ const { currentLocale, locales, setLocale } = useLocale()
 var selectedLocale = ref(currentLocale)
 
 const handleBack = () => {
-    router.push({ name: 'Dashboard' })
+    router.push({ name: 'Main' })
 }
 
 const handleLogout = () => {
