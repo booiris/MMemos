@@ -115,12 +115,10 @@ const aboutItems = computed(() => [
 ])
 
 let touchStartX = 0
-let touchStartY = 0
 let startFromLeft = false
 const SWIPE_THRESHOLD = 50
 const handleTouchStart = (e: any) => {
     touchStartX = e.touches[0].clientX
-    touchStartY = e.touches[0].clientY
     if (touchStartX < 35) {
         startFromLeft = true
     } else {
