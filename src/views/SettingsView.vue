@@ -10,7 +10,7 @@ import {
     ThumbsUp,
     RefreshCw,
 } from 'lucide-vue-next'
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import TouchAnimation from '@/components/ui/touch-animation/index.vue'
@@ -118,32 +118,37 @@ let touchStartX = 0
 let touchStartY = 0
 let startFromLeft = false
 const SWIPE_THRESHOLD = 50
-const SWIPE_Y_THRESHOLD = 75
-onMounted(() => {
-    document.addEventListener('touchstart', (e: any) => {
-        touchStartX = e.touches[0].clientX
-        touchStartY = e.touches[0].clientY
-        if (touchStartX < 35) {
-            startFromLeft = true
-        } else {
-            startFromLeft = false
-        }
-    })
+const handleTouchStart = (e: any) => {
+    touchStartX = e.touches[0].clientX
+    touchStartY = e.touches[0].clientY
+    if (touchStartX < 35) {
+        startFromLeft = true
+    } else {
+        startFromLeft = false
+    }
+}
 
-    document.addEventListener('touchend', (e: any) => {
-        if (!startFromLeft) {
-            return
-        }
-        const touchEndX = e.changedTouches[0].clientX
-        const deltaX = touchEndX - touchStartX
-        const deltaY = e.changedTouches[0].clientY - touchStartY
-        if (Math.abs(deltaY) > SWIPE_Y_THRESHOLD) {
-            return
-        }
-        if (deltaX > SWIPE_THRESHOLD) {
-            handleBack()
-        }
+const handleTouchEnd = (e: any) => {
+    if (!startFromLeft) {
+        return
+    }
+    const touchEndX = e.changedTouches[0].clientX
+    const deltaX = touchEndX - touchStartX
+    if (deltaX > SWIPE_THRESHOLD) {
+        handleBack()
+    }
+}
+
+onMounted(() => {
+    document.addEventListener('touchstart', handleTouchStart, {
+        passive: false,
     })
+    document.addEventListener('touchend', handleTouchEnd, { passive: false })
+})
+
+onUnmounted(() => {
+    document.removeEventListener('touchstart', handleTouchStart)
+    document.removeEventListener('touchend', handleTouchEnd)
 })
 </script>
 
