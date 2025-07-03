@@ -1,6 +1,6 @@
 import client from './client'
 import { getError } from './error'
-import { V1ListMemosResponse } from './schema/api'
+import { Apiv1Memo, V1ListMemosResponse } from './schema/api'
 
 export enum MemosState {
     NORMAL = 'NORMAL',
@@ -23,7 +23,27 @@ export async function getMemos(
         )
         return response
     } catch (error) {
-        console.error('[getMemos] ' + getError(error))
-        throw new Error(getError(error))
+        throw `[getMemos] ${getError(error)}`
+    }
+}
+
+export async function loadAllMemos(
+    pageToken?: string,
+    state?: MemosState
+): Promise<Apiv1Memo[]> {
+    let memos: Apiv1Memo[] = []
+    try {
+        while (true) {
+            const response = await getMemos(100, pageToken, state)
+            memos.push(...(response.memos || []))
+            if (response.nextPageToken) {
+                pageToken = response.nextPageToken
+            } else {
+                break
+            }
+        }
+        return memos
+    } catch (error) {
+        throw `[loadAllMemos] ${getError(error)}`
     }
 }
