@@ -1,6 +1,7 @@
 import type { LoginData, LoginResponse } from '@/types/auth'
 import client from './client'
 import { getError } from './error'
+import { isValidUrl } from '@/lib/urlHelper'
 
 export async function login(data: LoginData): Promise<LoginResponse> {
     try {
@@ -23,7 +24,7 @@ export async function login(data: LoginData): Promise<LoginResponse> {
         console.error('[login] ' + error)
         return {
             success: false,
-            message: error instanceof Error ? error.message : 'login failed'
+            message: error instanceof Error ? error.message : 'login failed',
         }
     }
 }
@@ -33,36 +34,30 @@ export function logout() {
     client.http.baseUrl = ''
 }
 
-function isValidUrl(url: string): boolean {
-    try {
-        new URL(url)
-        return true
-    } catch {
-        return false
-    }
-}
-
-async function testConnection(serverUrl: string, accessToken: string): Promise<LoginResponse> {
+async function testConnection(
+    serverUrl: string,
+    accessToken: string
+): Promise<LoginResponse> {
     try {
         client.http.baseUrl = serverUrl
         client.http.setSecurityData(accessToken)
 
-        console.log("[testConnection] serverUrl", serverUrl)
+        console.log('[testConnection] serverUrl', serverUrl)
 
         const response = await client.api.authServiceGetAuthStatus({
             secure: true,
-            signal: AbortSignal.timeout(6000)
+            signal: AbortSignal.timeout(6000),
         })
 
         return {
             success: true,
-            user: response
+            user: response,
         }
     } catch (error) {
         let message = 'Error: ' + getError(error)
         return {
             success: false,
-            message
+            message,
         }
     }
 }

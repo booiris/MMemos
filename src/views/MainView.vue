@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/auth'
 import { Button } from '@/components/ui/button'
 import { Bolt } from 'lucide-vue-next'
 import TouchAnimation from '@/components/ui/touch-animation/index.vue'
+import { getMemos } from '@/api/memos'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -13,7 +14,14 @@ const handleSettings = () => {
     router.push({ name: 'Settings' })
 }
 
-onMounted(() => {})
+onMounted(async () => {
+    try {
+        const response = await getMemos()
+        console.log(JSON.stringify(response))
+    } catch (error) {
+        console.error(error)
+    }
+})
 </script>
 
 <template>
