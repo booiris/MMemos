@@ -25,6 +25,7 @@ export default {
             confirm: '确定',
             // imageSearch: "启用图片搜索",
             autoTitle: "自动获取网页标题",
+            refresh: "启动时自动刷新",
         },
 
         about: {

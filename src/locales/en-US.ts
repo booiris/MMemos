@@ -25,6 +25,7 @@ export default {
             confirm: 'Confirm',
             // imageSearch: "Image Search",
             autoTitle: "Auto Link Title",
+            refresh: "Auto Refresh on Launch",
         },
 
         about: {

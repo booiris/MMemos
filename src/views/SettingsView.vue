@@ -8,6 +8,7 @@ import {
     Languages,
     Link,
     ThumbsUp,
+    RefreshCw,
 } from 'lucide-vue-next'
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -50,6 +51,7 @@ const handleLogout = () => {
 }
 
 const enableAutoTitle = ref(true)
+const enableAutoRefresh = ref(false)
 const languageSelectOpen = ref(false)
 const acknowledgmentsDialogOpen = ref(false)
 
@@ -78,6 +80,12 @@ const functionItems = computed(() => [
         title: t('settings.function.autoTitle'),
         type: 'switch' as const,
         modelValue: enableAutoTitle,
+    },
+    {
+        icon: RefreshCw,
+        title: t('settings.function.refresh'),
+        type: 'switch' as const,
+        modelValue: enableAutoRefresh,
     },
 ])
 
