@@ -8,6 +8,7 @@ import TouchAnimation from '@/components/ui/touch-animation/index.vue'
 import { getMemos } from '@/api/memos'
 import { V1MemoRelation, V1Reaction, V1Resource } from '@/api/schema/api'
 import { getError } from '@/api/error'
+import { Marked, Tokens } from 'marked'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -15,6 +16,21 @@ const authStore = useAuthStore()
 const handleSettings = () => {
     router.push({ name: 'Settings' })
 }
+
+const markdownRender = new Marked({
+    breaks: true,
+    pedantic: false,
+    gfm: true,
+    renderer: {
+        link(token: Tokens.Link) {
+            return `<a href="${
+                token.href
+            }" target="_blank" rel="noopener noreferrer"${
+                token.title ? ` title="${token.title}"` : ''
+            }>${token.text}</a>`
+        },
+    },
+})
 
 type Memo = {
     createTime: string
@@ -57,7 +73,7 @@ onMounted(async () => {
 
 <template>
     <div class="flex flex-col px-6">
-        <div class="flex justify-between items-center sticky top-0 z-10 mb-4">
+        <div class="flex justify-between items-center sticky top-0 z-10 mb-3">
             <div class="text-4xl text-primary font-style -mt-1">
                 {{
                     authStore.user?.displayName ||
@@ -86,10 +102,11 @@ onMounted(async () => {
                     v-for="memo in memos"
                     :key="memo.createTime"
                     class="p-5 rounded-lg border-1 border-primary">
-                    <div class="text-primary whitespace-pre-wrap break-words">
-                        {{ memo.content }}
-                    </div>
-                    <div class="text-gray-500 text-sm mt-2">
+                    <article
+                        v-html="markdownRender.parse(memo.content)"
+                        class="whitespace-pre-wrap break-words prose prose-zinc prose-p:m-0"></article>
+
+                    <div class="text-gray-500 text-sm">
                         {{ memo.displayTime }}
                     </div>
                 </div>

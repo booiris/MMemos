@@ -21,6 +21,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-vue-next": "^0.523.0",
+    "marked": "^16.0.0",
     "pinia": "^3.0.3",
     "reka-ui": "^2.3.1",
     "tailwind-merge": "^3.3.1",
@@ -32,6 +33,7 @@
     "vue-sonner": "^2.0.1"
   },
   "devDependencies": {
+    "@tailwindcss/typography": "^0.5.16",
     "@tauri-apps/cli": "^2",
     "@types/node": "^24.0.3",
     "@vitejs/plugin-vue": "^5.2.1",
