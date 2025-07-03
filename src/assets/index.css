@@ -124,4 +124,18 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: none;
+  }
+
+  /* IE/Edge */
+  * {
+    -ms-overflow-style: none;
+  }
 }
