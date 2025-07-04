@@ -140,3 +140,27 @@
     -ms-overflow-style: none;
   }
 }
+
+@utility prose {
+  p {
+    margin: 0;
+  }
+
+  li {
+    margin: 0;
+  }
+
+  ol {
+    margin: 0;
+  }
+
+  blockquote {
+    p {
+
+      &:first-of-type::before,
+      &:last-of-type::after {
+        display: none;
+      }
+    }
+  }
+}

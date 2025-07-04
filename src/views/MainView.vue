@@ -73,7 +73,7 @@ onMounted(async () => {
 
 <template>
     <div class="flex flex-col px-6">
-        <div class="flex justify-between items-center sticky top-0 z-10 mb-3">
+        <div class="flex justify-between items-center sticky top-0 z-10 mb-2">
             <div class="text-4xl text-primary font-style -mt-1">
                 {{
                     authStore.user?.displayName ||
@@ -89,7 +89,7 @@ onMounted(async () => {
             </TouchAnimation>
         </div>
 
-        <div class="flex-1 overflow-y-auto">
+        <div class="flex-1 overflow-y-auto mt-2">
             <!-- TODO: update loading page -->
             <div
                 v-if="isLoading"
@@ -97,14 +97,14 @@ onMounted(async () => {
                 <div class="text-gray-500 text-center">加载中...</div>
             </div>
 
-            <div v-else-if="memos.length > 0" class="space-y-4">
+            <div v-else-if="memos.length > 0" class="space-y-6">
                 <div
                     v-for="memo in memos"
                     :key="memo.createTime"
                     class="p-5 rounded-lg border-1 border-primary">
                     <article
                         v-html="markdownRender.parse(memo.content)"
-                        class="whitespace-pre-wrap break-words prose prose-lg prose-zinc prose-p:m-0"></article>
+                        class="whitespace-pre-wrap break-words prose prose-base prose-zinc"></article>
 
                     <div class="text-gray-500 text-sm">
                         {{ memo.displayTime }}
