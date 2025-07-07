@@ -89,7 +89,7 @@ onMounted(async () => {
             </TouchAnimation>
         </div>
 
-        <div class="flex-1 overflow-y-auto mt-2.5">
+        <div class="flex-1 overflow-y-auto">
             <!-- TODO: update loading page -->
             <div
                 v-if="isLoading"
@@ -98,6 +98,8 @@ onMounted(async () => {
             </div>
 
             <div v-else-if="memos.length > 0" class="space-y-6">
+                <div style="margin-top: -1rem"></div>
+
                 <div
                     v-for="memo in memos"
                     :key="memo.createTime"
