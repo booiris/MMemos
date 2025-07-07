@@ -129,21 +129,15 @@
   ::-webkit-scrollbar {
     display: none;
   }
-
-  /* Firefox */
-  * {
-    scrollbar-width: none;
-  }
-
-  /* IE/Edge */
-  * {
-    -ms-overflow-style: none;
-  }
 }
 
 @utility prose {
   p {
     margin: 0;
+  }
+
+  a {
+    font-size: 1.05rem;
   }
 
   li {
@@ -152,6 +146,10 @@
 
   ol {
     margin: 0;
+    line-height: 1.5;
+    margin-top: -1rem !important;
+    margin-bottom: -1rem !important;
+    border: 0 !important;
   }
 
   blockquote {

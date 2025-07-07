@@ -73,7 +73,7 @@ onMounted(async () => {
 
 <template>
     <div class="flex flex-col px-6">
-        <div class="flex justify-between items-center sticky top-0 z-10 mb-2">
+        <div class="flex justify-between items-center sticky top-0 z-10 mb-2.5">
             <div class="text-4xl text-primary font-style -mt-1">
                 {{
                     authStore.user?.displayName ||
@@ -89,7 +89,7 @@ onMounted(async () => {
             </TouchAnimation>
         </div>
 
-        <div class="flex-1 overflow-y-auto mt-2">
+        <div class="flex-1 overflow-y-auto mt-2.5">
             <!-- TODO: update loading page -->
             <div
                 v-if="isLoading"
@@ -104,12 +104,18 @@ onMounted(async () => {
                     class="p-5 rounded-lg border-1 border-primary">
                     <article
                         v-html="markdownRender.parse(memo.content)"
-                        class="whitespace-pre-wrap break-words prose prose-base prose-zinc"></article>
+                        class="whitespace-pre-wrap break-words prose prose-lg prose-zinc"
+                        style="line-height: 1.5 !important"></article>
 
                     <div class="text-gray-500 text-sm">
                         {{ memo.displayTime }}
                     </div>
                 </div>
+
+                <div
+                    style="
+                        margin-bottom: calc(env(safe-area-inset-bottom) + 1rem);
+                    "></div>
             </div>
 
             <!-- TODO: update empty page -->
