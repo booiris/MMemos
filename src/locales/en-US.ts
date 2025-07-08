@@ -48,6 +48,7 @@ export default {
         copy: 'Copy',
         archive: 'Archive',
         delete: 'Delete',
+        search: ' Search',
     },
     time: {
         yesterday: 'Yesterday',

@@ -47,6 +47,7 @@ export default {
         copy: '复制',
         archive: '归档',
         delete: '删除',
+        search: ' 搜索',
     },
     time: {
         yesterday: '昨天',

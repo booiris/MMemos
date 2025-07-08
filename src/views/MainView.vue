@@ -11,6 +11,7 @@ import {
     Copy,
     Share2,
     Pin,
+    Plus,
 } from 'lucide-vue-next'
 import TouchAnimation from '@/components/ui/touch-animation/index.vue'
 import { getMemos } from '@/api/memos'
@@ -28,6 +29,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -144,6 +146,19 @@ const handlePinMemo = (memo: Memo) => {
     console.log('置顶备忘录:', memo)
     // TODO: 实现置顶功能
 }
+
+const handleAddMemo = () => {
+    console.log('添加新备忘录')
+    // TODO: 实现添加备忘录功能
+}
+
+const searchQuery = ref('')
+
+const handleSearch = (query: string) => {
+    searchQuery.value = query
+    console.log('搜索备忘录:', query)
+    // TODO: 实现搜索功能
+}
 </script>
 
 <template>
@@ -164,7 +179,9 @@ const handlePinMemo = (memo: Memo) => {
             </TouchAnimation>
         </div>
 
-        <div class="flex-1 overflow-y-auto">
+        <div
+            class="flex-1 overflow-y-auto"
+            style="margin-bottom: calc(env(safe-area-inset-bottom) + 0.5rem)">
             <!-- TODO: update loading page -->
             <div
                 v-if="isLoading"
@@ -250,7 +267,7 @@ const handlePinMemo = (memo: Memo) => {
 
                 <div
                     style="
-                        margin-bottom: calc(env(safe-area-inset-bottom) + 1rem);
+                        margin-bottom: calc(env(safe-area-inset-bottom) + 3rem);
                     "></div>
             </div>
 
@@ -259,5 +276,25 @@ const handlePinMemo = (memo: Memo) => {
                 <div class="text-gray-500 text-center">还没有任何备忘录</div>
             </div>
         </div>
+
+        <div
+            class="fixed left-4.5 right-4.5 z-40"
+            style="bottom: calc(env(safe-area-inset-bottom))">
+            <div class="w-full h-0.5 bg-background m-0"></div>
+            <Input
+                v-model="searchQuery"
+                @input="handleSearch($event.target.value)"
+                :placeholder="t('main.search')"
+                class="w-full h-11 rounded-base border-1 border-primary bg-background/80 backdrop-blur-sm shadow-lg" />
+        </div>
+
+        <TouchAnimation :scale="0.9">
+            <Button
+                @click="handleAddMemo"
+                class="fixed bottom-23 right-4 w-14 h-14 rounded-full bg-primary text-white shadow-lg transition-colors duration-200 z-50"
+                size="icon">
+                <Plus class="!h-7 !w-7" />
+            </Button>
+        </TouchAnimation>
     </div>
 </template>
