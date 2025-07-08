@@ -193,7 +193,7 @@ onUnmounted(() => {
             <TouchAnimation>
                 <Button
                     @click="handleLogout"
-                    class="w-full h-11 text-lg font-bold !shadow-none">
+                    class="w-full h-11 text-base font-bold !shadow-none">
                     {{ $t('settings.logout') }}
                 </Button>
             </TouchAnimation>

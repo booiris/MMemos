@@ -219,7 +219,7 @@ onMounted(async () => {
                     @click="handleLogin"
                     :disabled="loading">
                     <Loader2 v-if="loading" class="!h-6 !w-6 animate-spin" />
-                    <span v-else class="text-lg">
+                    <span v-else class="text-base">
                         {{ $t('login.loginButton') }}
                     </span>
                 </Button>
