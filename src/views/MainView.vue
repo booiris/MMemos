@@ -3,7 +3,15 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { Button } from '@/components/ui/button'
-import { Bolt } from 'lucide-vue-next'
+import {
+    Bolt,
+    MoreHorizontal,
+    Edit,
+    Trash2,
+    Copy,
+    Share2,
+    Pin,
+} from 'lucide-vue-next'
 import TouchAnimation from '@/components/ui/touch-animation/index.vue'
 import { getMemos } from '@/api/memos'
 import { V1MemoRelation, V1Reaction, V1Resource } from '@/api/schema/api'
@@ -14,6 +22,12 @@ import utc from 'dayjs/plugin/utc'
 import timezone from 'dayjs/plugin/timezone'
 import localeData from 'dayjs/plugin/localeData'
 import { useI18n } from 'vue-i18n'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -105,6 +119,31 @@ onMounted(async () => {
         isLoading.value = false
     }
 })
+
+const handleEditMemo = (memo: Memo) => {
+    console.log('编辑备忘录:', memo)
+    // TODO: 实现编辑功能
+}
+
+const handleDeleteMemo = (memo: Memo) => {
+    console.log('删除备忘录:', memo)
+    // TODO: 实现删除功能
+}
+
+const handleCopyMemo = (memo: Memo) => {
+    navigator.clipboard.writeText(memo.content)
+    // TODO: 显示复制成功提示
+}
+
+const handleShareMemo = (memo: Memo) => {
+    console.log('分享备忘录:', memo)
+    // TODO: 实现分享功能
+}
+
+const handlePinMemo = (memo: Memo) => {
+    console.log('置顶备忘录:', memo)
+    // TODO: 实现置顶功能
+}
 </script>
 
 <template>
@@ -139,15 +178,74 @@ onMounted(async () => {
                 <div
                     v-for="memo in memos"
                     :key="memo.createTime"
-                    class="p-5 rounded-lg border-1 border-primary">
+                    class="px-5 pt-3 pb-1 rounded-lg border-1 border-primary">
+                    <div class="flex justify-between items-center -mr-1.5">
+                        <div class="text-gray-500 text-sm">
+                            {{ formatLocalTime(memo.displayTime) }}
+                        </div>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger as-child>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    class="!h-5.5 !w-5.5 text-primary/77">
+                                    <MoreHorizontal class="!h-5.5 !w-5.5" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                                align="end"
+                                class="w-46 border-1 border-primary !shadow-none px-1.1 bg-popover">
+                                <DropdownMenuItem
+                                    @click="handlePinMemo(memo)"
+                                    class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5">
+                                    {{ t('main.pin') }}
+                                    <Pin
+                                        class="ml-auto text-primary !h-5 !w-5" />
+                                </DropdownMenuItem>
+                                <div
+                                    class="border-b border-primary/76 my-0"></div>
+                                <DropdownMenuItem
+                                    @click="handleEditMemo(memo)"
+                                    class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5">
+                                    {{ t('main.edit') }}
+                                    <Edit
+                                        class="ml-auto text-primary !h-5 !w-5" />
+                                </DropdownMenuItem>
+                                <div
+                                    class="border-b border-primary/76 my-0"></div>
+                                <DropdownMenuItem
+                                    @click="handleCopyMemo(memo)"
+                                    class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5">
+                                    {{ t('main.copy') }}
+                                    <Copy
+                                        class="ml-auto text-primary !h-5 !w-5" />
+                                </DropdownMenuItem>
+                                <div
+                                    class="border-b border-primary/76 my-0"></div>
+                                <DropdownMenuItem
+                                    @click="handleShareMemo(memo)"
+                                    class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5"
+                                    variant="destructive">
+                                    {{ t('main.archive') }}
+                                    <Share2 class="ml-auto !h-5 !w-5" />
+                                </DropdownMenuItem>
+                                <div
+                                    class="border-b border-primary/76 my-0"></div>
+                                <DropdownMenuItem
+                                    @click="handleDeleteMemo(memo)"
+                                    class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5"
+                                    variant="destructive">
+                                    {{ t('main.delete') }}
+                                    <Trash2 class="ml-auto !h-5 !w-5" />
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+
                     <article
                         v-html="markdownRender.parse(memo.content)"
-                        class="whitespace-pre-wrap break-words prose prose-lg prose-zinc"
+                        class="whitespace-pre-wrap break-words prose prose-lg prose-zinc mt-2.5"
                         style="line-height: 1 !important"></article>
-
-                    <div class="text-gray-500 text-sm">
-                        {{ formatLocalTime(memo.displayTime) }}
-                    </div>
                 </div>
 
                 <div

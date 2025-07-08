@@ -42,6 +42,13 @@ export default {
             ok: 'OK',
         },
     },
+    main: {
+        pin: 'Pin',
+        edit: 'Edit',
+        copy: 'Copy',
+        archive: 'Archive',
+        delete: 'Delete',
+    },
     time: {
         yesterday: 'Yesterday',
         today: 'Today',

@@ -41,6 +41,13 @@ export default {
             ok: '确定',
         },
     },
+    main: {
+        pin: '置顶',
+        edit: '编辑',
+        copy: '复制',
+        archive: '归档',
+        delete: '删除',
+    },
     time: {
         yesterday: '昨天',
         today: '今天',
