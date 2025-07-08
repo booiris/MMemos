@@ -9,6 +9,7 @@ import {
     Link,
     ThumbsUp,
     RefreshCw,
+    ClockArrowUp,
 } from 'lucide-vue-next'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -54,6 +55,7 @@ const enableAutoTitle = ref(true)
 const enableAutoRefresh = ref(false)
 const languageSelectOpen = ref(false)
 const acknowledgmentsDialogOpen = ref(false)
+const enableRandomHistory = ref(true)
 
 const handleLanguageSelect = (locale: string) => {
     selectedLocale.value = locale
@@ -86,6 +88,12 @@ const functionItems = computed(() => [
         title: t('settings.function.refresh'),
         type: 'switch' as const,
         modelValue: enableAutoRefresh,
+    },
+    {
+        icon: ClockArrowUp,
+        title: t('settings.function.randomHistory'),
+        type: 'switch' as const,
+        modelValue: enableRandomHistory,
     },
 ])
 
