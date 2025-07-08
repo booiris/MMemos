@@ -194,7 +194,7 @@ const handlePinMemo = (memo: Memo) => {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent
                                 align="end"
-                                class="w-46 border-1 border-primary !shadow-none px-1.1 bg-popover">
+                                class="w-58 border-1 border-primary !shadow-none px-1.1 bg-popover">
                                 <DropdownMenuItem
                                     @click="handlePinMemo(memo)"
                                     class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5">
