@@ -196,15 +196,6 @@ const handlePinMemo = (memo: Memo) => {
                                 align="end"
                                 class="w-58 border-1 border-primary !shadow-none px-1.1 bg-popover">
                                 <DropdownMenuItem
-                                    @click="handlePinMemo(memo)"
-                                    class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5">
-                                    {{ t('main.pin') }}
-                                    <Pin
-                                        class="ml-auto text-primary !h-5 !w-5" />
-                                </DropdownMenuItem>
-                                <div
-                                    class="border-b border-primary/76 my-0"></div>
-                                <DropdownMenuItem
                                     @click="handleEditMemo(memo)"
                                     class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5">
                                     {{ t('main.edit') }}
@@ -218,6 +209,15 @@ const handlePinMemo = (memo: Memo) => {
                                     class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5">
                                     {{ t('main.copy') }}
                                     <Copy
+                                        class="ml-auto text-primary !h-5 !w-5" />
+                                </DropdownMenuItem>
+                                <div
+                                    class="border-b border-primary/76 my-0"></div>
+                                <DropdownMenuItem
+                                    @click="handlePinMemo(memo)"
+                                    class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5">
+                                    {{ t('main.pin') }}
+                                    <Pin
                                         class="ml-auto text-primary !h-5 !w-5" />
                                 </DropdownMenuItem>
                                 <div
