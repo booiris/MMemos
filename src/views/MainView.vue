@@ -107,7 +107,7 @@ onMounted(async () => {
                     <article
                         v-html="markdownRender.parse(memo.content)"
                         class="whitespace-pre-wrap break-words prose prose-lg prose-zinc"
-                        style="line-height: 1.5 !important"></article>
+                        style="line-height: 1 !important"></article>
 
                     <div class="text-gray-500 text-sm">
                         {{ memo.displayTime }}
