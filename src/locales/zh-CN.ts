@@ -41,4 +41,13 @@ export default {
             ok: '确定',
         },
     },
+    time: {
+        yesterday: '昨天',
+        today: '今天',
+        format: {
+            time: 'HH:mm',
+            date: 'M月D日 HH:mm',
+            fullDate: 'YYYY年M月D日 HH:mm',
+        },
+    },
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { Button } from '@/components/ui/button'
@@ -9,13 +9,49 @@ import { getMemos } from '@/api/memos'
 import { V1MemoRelation, V1Reaction, V1Resource } from '@/api/schema/api'
 import { getError } from '@/api/error'
 import { Marked, Tokens } from 'marked'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import timezone from 'dayjs/plugin/timezone'
+import localeData from 'dayjs/plugin/localeData'
+import { useI18n } from 'vue-i18n'
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
+dayjs.extend(localeData)
 
 const router = useRouter()
 const authStore = useAuthStore()
+const { t } = useI18n()
 
 const handleSettings = () => {
     router.push({ name: 'Settings' })
 }
+
+const formatLocalTime = computed(() => (utcTime: string): string => {
+    if (!utcTime) return ''
+
+    try {
+        const localTime = dayjs.utc(utcTime).local()
+        const now = dayjs()
+
+        if (localTime.isSame(now, 'day')) {
+            return localTime.format('HH:mm')
+        }
+
+        if (localTime.isSame(now.subtract(1, 'day'), 'day')) {
+            return `${t('time.yesterday')} ${localTime.format('HH:mm')}`
+        }
+
+        if (localTime.isSame(now, 'year')) {
+            return localTime.format(`${t('time.format.date')}`)
+        }
+
+        return localTime.format(`${t('time.format.fullDate')}`)
+    } catch (error) {
+        console.error('Time format error:', error)
+        return utcTime
+    }
+})
 
 const markdownRender = new Marked({
     breaks: true,
@@ -110,7 +146,7 @@ onMounted(async () => {
                         style="line-height: 1 !important"></article>
 
                     <div class="text-gray-500 text-sm">
-                        {{ memo.displayTime }}
+                        {{ formatLocalTime(memo.displayTime) }}
                     </div>
                 </div>
 

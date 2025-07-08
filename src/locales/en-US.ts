@@ -42,4 +42,13 @@ export default {
             ok: 'OK',
         },
     },
+    time: {
+        yesterday: 'Yesterday',
+        today: 'Today',
+        format: {
+            time: 'HH:mm',
+            date: 'MMM D, HH:mm',
+            fullDate: 'MMM D, YYYY HH:mm',
+        },
+    },
 }
