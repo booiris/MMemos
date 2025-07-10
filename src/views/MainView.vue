@@ -12,6 +12,7 @@ import {
     Share2,
     Pin,
     Plus,
+    ArrowUp,
 } from 'lucide-vue-next'
 import TouchAnimation from '@/components/ui/touch-animation/index.vue'
 import { getMemos } from '@/api/memos'
@@ -98,6 +99,8 @@ type Memo = {
 
 const memos = ref<Memo[]>([])
 const isLoading = ref(false)
+const searchQuery = ref('')
+const showScrollToTop = ref(false)
 
 onMounted(async () => {
     try {
@@ -152,12 +155,28 @@ const handleAddMemo = () => {
     // TODO: 实现添加备忘录功能
 }
 
-const searchQuery = ref('')
-
 const handleSearch = (query: string) => {
     searchQuery.value = query
     console.log('搜索备忘录:', query)
     // TODO: 实现搜索功能
+}
+
+const handleScrollToTop = () => {
+    const container = document.getElementById('memo-list')
+    if (container) {
+        container.scrollTo({
+            top: 0,
+            behavior: 'smooth',
+        })
+    }
+}
+
+const handleScroll = (event: Event) => {
+    const target = event.target as HTMLElement
+    if (target) {
+        const scrollTop = target.scrollTop
+        showScrollToTop.value = scrollTop > 200
+    }
 }
 </script>
 
@@ -181,7 +200,9 @@ const handleSearch = (query: string) => {
 
         <div
             class="flex-1 overflow-y-auto"
-            style="margin-bottom: calc(env(safe-area-inset-bottom) + 0.5rem)">
+            id="memo-list"
+            style="margin-bottom: calc(env(safe-area-inset-bottom) + 0.5rem)"
+            @scroll="handleScroll">
             <!-- TODO: update loading page -->
             <div
                 v-if="isLoading"
@@ -287,8 +308,30 @@ const handleSearch = (query: string) => {
                         v-model="searchQuery"
                         @input="handleSearch($event.target.value)"
                         :placeholder="t('main.search')"
-                        class="flex-1 h-11 rounded-base border-1 border-primary bg-background/80 backdrop-blur-sm shadow-lg" />
+                        :class="[
+                            'flex-1 h-11 rounded-base border-1 border-primary bg-background/80 backdrop-blur-sm shadow-lg transition-all duration-100 ease-out',
+                            showScrollToTop ? 'mr-16' : '',
+                        ]" />
                 </div>
+
+                <Transition
+                    enter-active-class="transition-all duration-300 ease-out"
+                    enter-from-class="opacity-0 scale-75 translate-y-4"
+                    enter-to-class="opacity-100 scale-100 translate-y-0"
+                    leave-active-class="transition-all duration-200 ease-in"
+                    leave-from-class="opacity-100 scale-100 translate-y-0"
+                    leave-to-class="opacity-0 scale-75 translate-y-4">
+                    <TouchAnimation
+                        v-if="showScrollToTop"
+                        :scale="0.8"
+                        @click="handleScrollToTop">
+                        <Button
+                            class="w-12 h-11 rounded-lg bg-primary text-white shadow-lg hover:bg-primary/90 transition-all duration-200"
+                            size="icon">
+                            <ArrowUp class="!h-6 !w-6" />
+                        </Button>
+                    </TouchAnimation>
+                </Transition>
 
                 <TouchAnimation :scale="0.9">
                     <Button
