@@ -1,5 +1,5 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import type { RouteRecordRaw } from 'vue-router';
+import { createRouter, createWebHistory } from 'vue-router'
+import type { RouteRecordRaw } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
     {
@@ -8,12 +8,17 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/LoginView.vue'),
         meta: {
             noAuth: true,
-        }
+        },
     },
     {
         path: '/main',
         name: 'Main',
         component: () => import('@/views/MainView.vue'),
+    },
+    {
+        path: '/home',
+        name: 'Home',
+        component: () => import('@/views/HomeView.vue'),
     },
     {
         path: '/memos',
@@ -25,35 +30,39 @@ const routes: RouteRecordRaw[] = [
         name: 'Settings',
         component: () => import('@/views/SettingsView.vue'),
     },
-];
+]
 
 const router = createRouter({
     history: createWebHistory(),
-    routes
-});
+    routes,
+})
 
 router.beforeEach(async (to, from, next) => {
     if (to.name === 'Settings' && from.name === 'Main') {
         to.meta.transition = 'slide-right'
     } else if (from.name === 'Settings' && to.name === 'Main') {
         to.meta.transition = 'slide-left'
+    } else if (to.name === 'Home' && from.name === 'Main') {
+        to.meta.transition = 'slide-right'
+    } else if (from.name === 'Home' && to.name === 'Main') {
+        to.meta.transition = 'slide-left'
     }
 
     if (!to.meta.noAuth) {
-        const { useAuthStore } = await import('@/stores/auth');
-        const authStore = useAuthStore();
+        const { useAuthStore } = await import('@/stores/auth')
+        const authStore = useAuthStore()
 
         if (!authStore.isAuthenticated) {
-            authStore.checkAuth();
+            authStore.checkAuth()
         }
 
         if (!authStore.isAuthenticated) {
-            next({ name: 'Login' });
-            return;
+            next({ name: 'Login' })
+            return
         }
     }
 
-    next();
-});
+    next()
+})
 
-export default router; 
+export default router

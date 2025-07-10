@@ -13,6 +13,7 @@ import {
     Pin,
     Plus,
     ArrowUp,
+    Home,
 } from 'lucide-vue-next'
 import TouchAnimation from '@/components/ui/touch-animation/index.vue'
 import { getMemos } from '@/api/memos'
@@ -42,6 +43,10 @@ const { t } = useI18n()
 
 const handleSettings = () => {
     router.push({ name: 'Settings' })
+}
+
+const handleHome = () => {
+    router.push({ name: 'Home' })
 }
 
 const formatLocalTime = computed(() => (utcTime: string): string => {
@@ -181,8 +186,8 @@ const handleScroll = (event: Event) => {
 </script>
 
 <template>
-    <div class="flex flex-col px-6">
-        <div class="flex justify-between items-center sticky top-0 z-10 mb-2.5">
+    <div class="flex flex-col px-6 -mt-1">
+        <div class="flex justify-between items-center sticky top-0 z-10 mb-2">
             <div class="text-4xl text-primary font-style -mt-1">
                 {{
                     authStore.user?.displayName ||
@@ -191,11 +196,19 @@ const handleScroll = (event: Event) => {
                 }}
             </div>
 
-            <TouchAnimation :scale="0.8">
-                <Button variant="ghost" size="icon" @click="handleSettings">
-                    <Bolt class="!h-7 !w-7 text-primary" />
-                </Button>
-            </TouchAnimation>
+            <div class="flex items-center gap-2">
+                <TouchAnimation :scale="0.8">
+                    <Button variant="ghost" size="icon" @click="handleHome">
+                        <Home class="!h-7 !w-7 text-primary" />
+                    </Button>
+                </TouchAnimation>
+
+                <TouchAnimation :scale="0.8">
+                    <Button variant="ghost" size="icon" @click="handleSettings">
+                        <Bolt class="!h-7 !w-7 text-primary" />
+                    </Button>
+                </TouchAnimation>
+            </div>
         </div>
 
         <div
@@ -309,16 +322,16 @@ const handleScroll = (event: Event) => {
                         @input="handleSearch($event.target.value)"
                         :placeholder="t('main.search')"
                         :class="[
-                            'flex-1 h-11 rounded-base border-1 border-primary bg-background/80 backdrop-blur-sm shadow-lg transition-all duration-100 ease-out',
+                            'flex-1 h-11 rounded-base border-1 border-primary bg-background/80 backdrop-blur-sm shadow-lg transition-all ease-out',
                             showScrollToTop ? 'mr-16' : '',
                         ]" />
                 </div>
 
                 <Transition
-                    enter-active-class="transition-all duration-300 ease-out"
+                    enter-active-class="transition-all duration-100 ease-out"
                     enter-from-class="opacity-0 scale-75 translate-y-4"
                     enter-to-class="opacity-100 scale-100 translate-y-0"
-                    leave-active-class="transition-all duration-200 ease-in"
+                    leave-active-class="transition-all duration-20 ease-in"
                     leave-from-class="opacity-100 scale-100 translate-y-0"
                     leave-to-class="opacity-0 scale-75 translate-y-4">
                     <TouchAnimation
