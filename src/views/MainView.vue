@@ -267,7 +267,7 @@ const handleSearch = (query: string) => {
 
                 <div
                     style="
-                        margin-bottom: calc(env(safe-area-inset-bottom) + 3rem);
+                        margin-bottom: calc(env(safe-area-inset-bottom) + 2rem);
                     "></div>
             </div>
 
@@ -280,21 +280,25 @@ const handleSearch = (query: string) => {
         <div
             class="fixed left-4.5 right-4.5 z-40"
             style="bottom: calc(env(safe-area-inset-bottom))">
-            <div class="w-full h-0.5 bg-background m-0"></div>
-            <Input
-                v-model="searchQuery"
-                @input="handleSearch($event.target.value)"
-                :placeholder="t('main.search')"
-                class="w-full h-11 rounded-base border-1 border-primary bg-background/80 backdrop-blur-sm shadow-lg" />
-        </div>
+            <div class="flex items-center gap-2">
+                <div class="flex-1">
+                    <div class="w-full h-0.5 bg-background -mx-2"></div>
+                    <Input
+                        v-model="searchQuery"
+                        @input="handleSearch($event.target.value)"
+                        :placeholder="t('main.search')"
+                        class="flex-1 h-11 rounded-base border-1 border-primary bg-background/80 backdrop-blur-sm shadow-lg" />
+                </div>
 
-        <TouchAnimation :scale="0.9">
-            <Button
-                @click="handleAddMemo"
-                class="fixed bottom-23 right-4 w-14 h-14 rounded-full bg-primary text-white shadow-lg transition-colors duration-200 z-50"
-                size="icon">
-                <Plus class="!h-7 !w-7" />
-            </Button>
-        </TouchAnimation>
+                <TouchAnimation :scale="0.9">
+                    <Button
+                        @click="handleAddMemo"
+                        class="w-12 h-11 rounded-lg bg-primary text-white shadow-lg transition-colors duration-200"
+                        size="icon">
+                        <Plus class="!h-7 !w-7" />
+                    </Button>
+                </TouchAnimation>
+            </div>
+        </div>
     </div>
 </template>
