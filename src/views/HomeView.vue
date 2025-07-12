@@ -90,9 +90,6 @@ onMounted(async () => {
             </div>
         </div>
 
-        <div
-            style="
-                margin-bottom: calc(env(safe-area-inset-bottom) + 1rem);
-            "></div>
+        <div style="margin-bottom: calc(env(safe-area-inset-bottom) + 1rem)" />
     </div>
 </template>
