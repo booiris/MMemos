@@ -1,20 +1,22 @@
 import { warn, debug, trace, info, error } from '@tauri-apps/plugin-log'
 import isTauriEnvironment from './tauriEnvCheck'
+import { getError } from '@/api/error'
 
 function forwardConsole(
     fnName: 'log' | 'debug' | 'info' | 'warn' | 'error',
     logger: (message: string) => Promise<void>
 ) {
-    if (!isTauriEnvironment()) {
-        return
-    }
-
     const original = console[fnName]
     console[fnName] = (message) => {
+        if (fnName === 'error') {
+            message = getError(message)
+        }
         if (import.meta.env.DEV) {
             original(message)
         }
-        logger(message)
+        if (isTauriEnvironment()) {
+            logger(message)
+        }
     }
 }
 

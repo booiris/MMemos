@@ -19,7 +19,6 @@ import {
 import TouchAnimation from '@/components/ui/touch-animation/index.vue'
 import { getMemos } from '@/api/memos'
 import { V1MemoRelation, V1Reaction, V1Resource } from '@/api/schema/api'
-import { getError } from '@/api/error'
 import { Marked, Tokens } from 'marked'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
@@ -125,7 +124,7 @@ onMounted(async () => {
                 reactions: memo.reactions || [],
             })) || []
     } catch (error) {
-        console.error(getError(error))
+        console.error(error)
     } finally {
         isLoading.value = false
     }

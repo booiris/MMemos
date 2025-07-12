@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { FileText, Archive, Bolt } from 'lucide-vue-next'
+import { FileText, Archive, Bolt, Tag } from 'lucide-vue-next'
 import SettingsList from '@/components/ui/list-item/settings-list.vue'
 import { useI18n } from 'vue-i18n'
 import TouchAnimation from '@/components/ui/touch-animation/index.vue'
 import { Button } from '@/components/ui/button'
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { getUserStats } from '@/api/stats'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -30,13 +31,37 @@ const mainMenus = computed(() => [
         onClick: () => console.log('archive'),
     },
 ])
+
+const tagValues = ref<string[]>([])
+
+const tags = computed(() => {
+    return tagValues.value.map((tag) => {
+        return {
+            icon: Tag,
+            title: tag,
+            type: 'arrow' as const,
+            onClick: () => console.log('tag'),
+        }
+    })
+})
+
+onMounted(async () => {
+    console.log('onActivated')
+    try {
+        const stats = await getUserStats(authStore.user?.name || '')
+        tagValues.value = Object.keys(stats.tagCount || {})
+    } catch (error) {
+        console.error(error)
+    }
+})
 </script>
 
 <template>
     <div
         class="flex flex-col px-5 gap-3"
         style="height: calc(100vh - env(safe-area-inset-top))">
-        <div class="flex justify-between items-center sticky top-0 z-10 mb-0.5">
+        <div
+            class="flex justify-between items-center sticky top-0 z-10 mb-0.5 bg-background">
             <div class="flex items-center gap-2">
                 <div class="text-4xl text-primary font-style">
                     {{
@@ -56,9 +81,18 @@ const mainMenus = computed(() => [
         </div>
 
         <div class="mx-2">
-            <div class="space-y-4 mt-1">
+            <div class="space-y-4">
                 <SettingsList title="MEMOS" :items="mainMenus" />
+
+                <div v-if="tags.length > 0" class="space-y-4">
+                    <SettingsList title="TAGS" :items="tags" />
+                </div>
             </div>
         </div>
+
+        <div
+            style="
+                margin-bottom: calc(env(safe-area-inset-bottom) + 1rem);
+            "></div>
     </div>
 </template>
