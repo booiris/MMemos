@@ -226,11 +226,12 @@ useSwipeBack({
                 </DialogHeader>
                 <div class="grid gap-4 py-4 overflow-y-auto px-6">
                     <div class="flex flex-col justify-between">
-                        <p class="text-lg">Thanks To:</p>
+                        <p class="text-xl font-bold">Thanks To:</p>
                         <p class="text-lg">Rust, Tauri, Vue</p>
                         <p class="text-lg">Shadcn, Shadcn-vue</p>
                         <p class="text-lg">EB Garamond, LXGW-wenkai</p>
-                        <p class="text-lg">Cursor</p>
+                        <p class="text-lg">Lucide-vue-next</p>
+                        <p class="text-lg">Cursor, Moe Memos</p>
                     </div>
                 </div>
                 <DialogFooter class="px-6 !shadow-none">

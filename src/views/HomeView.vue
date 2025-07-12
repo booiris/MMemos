@@ -34,7 +34,7 @@ const mainMenus = computed(() => [
 
 <template>
     <div
-        class="flex flex-col px-4 gap-3 -mt-1.5"
+        class="flex flex-col px-5 gap-3"
         style="height: calc(100vh - env(safe-area-inset-top))">
         <div class="flex justify-between items-center sticky top-0 z-10 mb-0.5">
             <div class="flex items-center gap-2">
@@ -55,8 +55,10 @@ const mainMenus = computed(() => [
             </div>
         </div>
 
-        <div class="space-y-4 mt-3">
-            <SettingsList title="MEMOS" :items="mainMenus" />
+        <div class="mx-2">
+            <div class="space-y-4 mt-1">
+                <SettingsList title="MEMOS" :items="mainMenus" />
+            </div>
         </div>
     </div>
 </template>
