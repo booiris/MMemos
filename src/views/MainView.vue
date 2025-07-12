@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { Button } from '@/components/ui/button'
+import { useSwipeBack } from '@/composables/useSwipeBack'
 import {
     Bolt,
     MoreHorizontal,
@@ -183,6 +184,10 @@ const handleScroll = (event: Event) => {
         showScrollToTop.value = scrollTop > 200
     }
 }
+
+useSwipeBack({
+    onSwipe: handleHome,
+})
 </script>
 
 <template>

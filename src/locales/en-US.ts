@@ -59,4 +59,8 @@ export default {
             fullDate: 'MMM D, YYYY HH:mm',
         },
     },
+    home: {
+        memos: 'Memos',
+        archive: 'Archive',
+    },
 }

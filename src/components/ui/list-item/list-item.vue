@@ -58,7 +58,7 @@ const actualModelValue = computed(() => {
             class="flex items-center justify-between rounded-md p-2 -m-2 transition-colors duration-150 active:bg-primary/10 touch-manipulation">
             <div class="flex items-center">
                 <div class="w-8 h-8 flex items-center justify-center">
-                    <component :is="icon" class="!w-5 !h-5 text-primary" />
+                    <component :is="icon" class="!w-5.5 !h-5.5 text-primary" />
                 </div>
                 <div>
                     <h3 class="text-primary text-lg">

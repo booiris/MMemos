@@ -1,28 +1,62 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
-import { ChevronLeft } from 'lucide-vue-next'
+import { FileText, Archive, Bolt } from 'lucide-vue-next'
+import SettingsList from '@/components/ui/list-item/settings-list.vue'
+import { useI18n } from 'vue-i18n'
+import TouchAnimation from '@/components/ui/touch-animation/index.vue'
+import { Button } from '@/components/ui/button'
 import { computed } from 'vue'
+import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
+const { t } = useI18n()
 const authStore = useAuthStore()
 
-const handleBack = () => {
-    router.push({ name: 'Main' })
+const handleSettings = () => {
+    router.push({ name: 'Settings' })
 }
+
+const mainMenus = computed(() => [
+    {
+        icon: FileText,
+        title: t('home.memos'),
+        type: 'arrow' as const,
+        onClick: () => router.push({ name: 'Main' }),
+    },
+    {
+        icon: Archive,
+        title: t('home.archive'),
+        type: 'arrow' as const,
+        onClick: () => console.log('archive'),
+    },
+])
 </script>
 
 <template>
     <div
-        class="flex flex-col px-3 gap-3 -mt-1.5"
+        class="flex flex-col px-4 gap-3 -mt-1.5"
         style="height: calc(100vh - env(safe-area-inset-top))">
-        <div>
-            <button @click="handleBack" class="flex items-center">
-                <ChevronLeft class="!h-8 !w-8 text-primary" />
-                <span class="font-primary text-xl">{{
-                    authStore.user?.username || ''
-                }}</span>
-            </button>
+        <div class="flex justify-between items-center sticky top-0 z-10 mb-0.5">
+            <div class="flex items-center gap-2">
+                <div class="text-4xl text-primary font-style">
+                    {{
+                        authStore.user?.displayName ||
+                        authStore.user?.username ||
+                        ''
+                    }}
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <TouchAnimation :scale="0.8">
+                    <Button variant="ghost" size="icon" @click="handleSettings">
+                        <Bolt class="!h-7 !w-7 text-primary" />
+                    </Button>
+                </TouchAnimation>
+            </div>
+        </div>
+
+        <div class="space-y-4 mt-3">
+            <SettingsList title="MEMOS" :items="mainMenus" />
         </div>
     </div>
 </template>

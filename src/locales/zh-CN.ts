@@ -58,4 +58,8 @@ export default {
             fullDate: 'YYYY年M月D日 HH:mm',
         },
     },
+    home: {
+        memos: 'Memos',
+        archive: '归档',
+    },
 }

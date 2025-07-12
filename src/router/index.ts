@@ -33,9 +33,9 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
-    if (to.name === 'Settings' && from.name === 'Main') {
+    if (to.name === 'Settings') {
         to.meta.transition = 'slide-right'
-    } else if (from.name === 'Settings' && to.name === 'Main') {
+    } else if (from.name == 'Settings') {
         to.meta.transition = 'slide-left'
     } else if (to.name === 'Home' && from.name === 'Main') {
         to.meta.transition = 'slide-left'
