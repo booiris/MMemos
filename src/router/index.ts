@@ -38,9 +38,9 @@ router.beforeEach(async (to, from, next) => {
     } else if (from.name === 'Settings' && to.name === 'Main') {
         to.meta.transition = 'slide-left'
     } else if (to.name === 'Home' && from.name === 'Main') {
-        to.meta.transition = 'slide-right'
-    } else if (from.name === 'Home' && to.name === 'Main') {
         to.meta.transition = 'slide-left'
+    } else if (from.name === 'Home' && to.name === 'Main') {
+        to.meta.transition = 'slide-right'
     }
 
     if (!to.meta.noAuth) {

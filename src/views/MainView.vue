@@ -190,9 +190,13 @@ const handleScroll = (event: Event) => {
         class="flex flex-col px-6 -mt-1.5"
         style="height: calc(100vh - env(safe-area-inset-top))">
         <div class="flex justify-between items-center sticky top-0 z-10 mb-0.5">
-            <TouchAnimation :scale="0.95" @click="handleHome">
-                <div class="flex items-center gap-2 cursor-pointer">
-                    <Home class="!h-6 !w-6 text-primary" />
+            <div
+                class="flex items-center gap-2 cursor-pointer"
+                @click="handleHome">
+                <TouchAnimation :scale="0.8"
+                    ><Home class="!h-6 !w-6 text-primary"
+                /></TouchAnimation>
+                <TouchAnimation :scale="0.95">
                     <div class="text-3xl text-primary font-style -mt-1">
                         {{
                             authStore.user?.displayName ||
@@ -200,8 +204,8 @@ const handleScroll = (event: Event) => {
                             ''
                         }}
                     </div>
-                </div>
-            </TouchAnimation>
+                </TouchAnimation>
+            </div>
 
             <div class="flex items-center gap-2">
                 <TouchAnimation :scale="0.8">
