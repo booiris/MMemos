@@ -160,7 +160,7 @@ onUnmounted(() => {
 
 <template>
     <div
-        class="flex flex-col px-3 gap-3"
+        class="flex flex-col px-3 gap-3 -mt-1.5"
         style="height: calc(100vh - env(safe-area-inset-top))">
         <div>
             <button @click="handleBack" class="flex items-center">
