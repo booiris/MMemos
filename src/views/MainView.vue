@@ -186,9 +186,9 @@ const handleScroll = (event: Event) => {
 </script>
 
 <template>
-    <div class="flex flex-col px-6 -mt-1">
-        <div class="flex justify-between items-center sticky top-0 z-10 mb-2">
-            <div class="text-4xl text-primary font-style -mt-1">
+    <div class="flex flex-col px-6 -mt-1.5">
+        <div class="flex justify-between items-center sticky top-0 z-10 mb-0.5">
+            <div class="text-3xl text-primary font-style -mt-1">
                 {{
                     authStore.user?.displayName ||
                     authStore.user?.username ||
@@ -199,13 +199,13 @@ const handleScroll = (event: Event) => {
             <div class="flex items-center gap-2">
                 <TouchAnimation :scale="0.8">
                     <Button variant="ghost" size="icon" @click="handleHome">
-                        <Home class="!h-7 !w-7 text-primary" />
+                        <Home class="!h-6 !w-6 text-primary" />
                     </Button>
                 </TouchAnimation>
 
                 <TouchAnimation :scale="0.8">
                     <Button variant="ghost" size="icon" @click="handleSettings">
-                        <Bolt class="!h-7 !w-7 text-primary" />
+                        <Bolt class="!h-6 !w-6 text-primary" />
                     </Button>
                 </TouchAnimation>
             </div>
