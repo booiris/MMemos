@@ -1,42 +1,50 @@
-import { createApp } from "vue";
-import App from "./App.vue";
-import { i18n } from "./locales";
-import router from "./router";
-import "./assets/index.css";
-import "./assets/global.css";
-import { createPinia } from 'pinia';
-import { useForwardConsoleLog } from './lib/forwardConsoleLog';
-import "@fontsource/eb-garamond/500.css";
+import { createApp } from 'vue'
+import App from './App.vue'
+import { i18n } from './locales'
+import router from './router'
+import './assets/index.css'
+import './assets/global.css'
+import { createPinia } from 'pinia'
+import { useForwardConsoleLog } from './lib/forwardConsoleLog'
+import '@fontsource/eb-garamond/500.css'
 
 useForwardConsoleLog()
 
 const pinia = createPinia()
-const app = createApp(App);
+const app = createApp(App)
 
-app.use(i18n);
-app.use(router);
-app.use(pinia);
+app.use(i18n)
+app.use(router)
+app.use(pinia)
 
-app.mount("#app");
+app.mount('#app')
 
 // prevent double tap to zoom
 window.onload = () => {
-    document.addEventListener('touchstart', (event) => {
-        if (event.touches.length > 1) {
-            event.preventDefault();
-        }
-    }, { passive: false });
+    document.addEventListener(
+        'touchstart',
+        (event) => {
+            if (event.touches.length > 1) {
+                event.preventDefault()
+            }
+        },
+        { passive: false }
+    )
 
-    let lastTouchEnd = 0;
-    document.addEventListener('touchend', (event) => {
-        const now = (new Date()).getTime();
-        if (now - lastTouchEnd <= 100) {
-            event.preventDefault();
-        }
-        lastTouchEnd = now;
-    }, false);
+    let lastTouchEnd = 0
+    document.addEventListener(
+        'touchend',
+        (event) => {
+            const now = new Date().getTime()
+            if (now - lastTouchEnd <= 100) {
+                event.preventDefault()
+            }
+            lastTouchEnd = now
+        },
+        false
+    )
 
     document.addEventListener('gesturestart', function (event) {
-        event.preventDefault();
-    });
+        event.preventDefault()
+    })
 }

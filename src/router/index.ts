@@ -21,11 +21,6 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/HomeView.vue'),
     },
     {
-        path: '/memos',
-        name: 'Memos',
-        component: () => import('@/views/MemosView.vue'),
-    },
-    {
         path: '/settings',
         name: 'Settings',
         component: () => import('@/views/SettingsView.vue'),
