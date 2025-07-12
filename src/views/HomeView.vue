@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { computed, onMounted, ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { getUserStats } from '@/api/stats'
+import { Calendar } from '@/components/ui/calendar'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -80,16 +81,19 @@ onMounted(async () => {
             </div>
         </div>
 
-        <div class="mx-2">
-            <div class="space-y-4">
-                <SettingsList title="MEMOS" :items="mainMenus" />
+        <div class="mx-1 overflow-y-auto space-y-4">
+            <div class="-mt-2" />
 
-                <div v-if="tags.length > 0" class="space-y-4">
-                    <SettingsList title="TAGS" :items="tags" />
-                </div>
-            </div>
+            <Calendar class="rounded-md border border-primary" />
+
+            <SettingsList title="MEMOS" :items="mainMenus" />
+
+            <SettingsList v-if="tags.length > 0" title="TAGS" :items="tags" />
+
+            <div
+                style="
+                    margin-bottom: calc(env(safe-area-inset-bottom) + 2rem);
+                " />
         </div>
-
-        <div style="margin-bottom: calc(env(safe-area-inset-bottom) + 1rem)" />
     </div>
 </template>
