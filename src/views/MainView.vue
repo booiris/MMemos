@@ -184,10 +184,7 @@ const handleScroll = (event: Event) => {
     }
 }
 
-useSwipeBack(
-    { onSwipe: handleHome },
-    '#main-view'
-)
+useSwipeBack({ onSwipe: handleHome }, '#main-view')
 </script>
 
 <template>

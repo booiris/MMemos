@@ -1,4 +1,4 @@
-import { onMounted, onUnmounted } from 'vue'
+import { onActivated, onDeactivated } from 'vue'
 
 interface SwipeOptions {
     threshold?: number
@@ -35,7 +35,7 @@ export function useSwipeBack(
         }
     }
 
-    onMounted(() => {
+    onActivated(() => {
         const target = document.querySelector(targetSelector) as HTMLElement
         if (target) {
             target.addEventListener('touchstart', handleTouchStart, {
@@ -47,7 +47,7 @@ export function useSwipeBack(
         }
     })
 
-    onUnmounted(() => {
+    onDeactivated(() => {
         const target = document.querySelector(targetSelector) as HTMLElement
         if (target) {
             target.removeEventListener('touchstart', handleTouchStart)

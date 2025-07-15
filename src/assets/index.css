@@ -132,13 +132,15 @@
 }
 
 @utility prose {
+  font-size: 1.05rem !important;
+
   p {
     margin: 0;
-    line-height: 1.77 !important;
+    line-height: 1.5 !important;
   }
 
   a {
-    font-size: 1.05rem;
+    font-size: 1.05rem !important;
   }
 
   li {
@@ -147,7 +149,7 @@
 
   ol {
     margin: 0;
-    line-height: 1.5;
+    line-height: 1.25;
     margin-top: -1rem !important;
     margin-bottom: -1rem !important;
     border: 0 !important;
