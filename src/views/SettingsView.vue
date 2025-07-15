@@ -123,15 +123,14 @@ const aboutItems = computed(() => [
     },
 ])
 
-useSwipeBack({
-    onSwipe: handleBack,
-})
+useSwipeBack({ onSwipe: handleBack }, '#settings-view')
 </script>
 
 <template>
     <div
         class="flex flex-col px-3 gap-3 -mt-1.5"
-        style="height: calc(100vh - env(safe-area-inset-top))">
+        style="height: calc(100vh - env(safe-area-inset-top))"
+        id="settings-view">
         <div>
             <button @click="handleBack" class="flex items-center">
                 <ChevronLeft class="!h-8 !w-8 text-primary" />

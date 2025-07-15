@@ -184,15 +184,17 @@ const handleScroll = (event: Event) => {
     }
 }
 
-useSwipeBack({
-    onSwipe: handleHome,
-})
+useSwipeBack(
+    { onSwipe: handleHome },
+    '#main-view'
+)
 </script>
 
 <template>
     <div
         class="flex flex-col px-6 -mt-1.5"
-        style="height: calc(100vh - env(safe-area-inset-top))">
+        style="height: calc(100vh - env(safe-area-inset-top))"
+        id="main-view">
         <div class="flex justify-between items-center sticky top-0 z-10 mb-0.5">
             <div
                 class="flex items-center gap-2 cursor-pointer"

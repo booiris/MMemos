@@ -13,7 +13,9 @@ const transitionName = computed(() => {
     <div class="main">
         <router-view v-slot="{ Component }" class="main-content">
             <transition :name="transitionName">
-                <component :is="Component" :key="$route.path" />
+                <KeepAlive>
+                    <component :is="Component" :key="$route.path" />
+                </KeepAlive>
             </transition>
         </router-view>
     </div>

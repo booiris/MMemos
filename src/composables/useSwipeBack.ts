@@ -6,7 +6,10 @@ interface SwipeOptions {
     onSwipe?: () => void
 }
 
-export function useSwipeBack(options: SwipeOptions = {}) {
+export function useSwipeBack(
+    options: SwipeOptions = {},
+    targetSelector: string
+) {
     const { threshold = 50, edgeWidth = 35, onSwipe } = options
 
     let touchStartX = 0
@@ -33,16 +36,22 @@ export function useSwipeBack(options: SwipeOptions = {}) {
     }
 
     onMounted(() => {
-        document.addEventListener('touchstart', handleTouchStart, {
-            passive: false,
-        })
-        document.addEventListener('touchend', handleTouchEnd, {
-            passive: false,
-        })
+        const target = document.querySelector(targetSelector) as HTMLElement
+        if (target) {
+            target.addEventListener('touchstart', handleTouchStart, {
+                passive: false,
+            })
+            target.addEventListener('touchend', handleTouchEnd, {
+                passive: false,
+            })
+        }
     })
 
     onUnmounted(() => {
-        document.removeEventListener('touchstart', handleTouchStart)
-        document.removeEventListener('touchend', handleTouchEnd)
+        const target = document.querySelector(targetSelector) as HTMLElement
+        if (target) {
+            target.removeEventListener('touchstart', handleTouchStart)
+            target.removeEventListener('touchend', handleTouchEnd)
+        }
     })
 }

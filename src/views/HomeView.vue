@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button'
 import { computed, onMounted, ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { getUserStats } from '@/api/stats'
-import { Calendar } from '@/components/ui/calendar'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -46,11 +45,16 @@ const tags = computed(() => {
     })
 })
 
+const stats = ref<any>(null)
+const memosCount = computed(() => stats.value?.totalMemoCount || 0)
+const tagCount = computed(() => Object.keys(stats.value?.tagCount || {}).length)
+const pinCount = computed(() => stats.value?.pinnedMemos.length || 0)
+
 onMounted(async () => {
-    console.log('onActivated')
     try {
-        const stats = await getUserStats(authStore.user?.name || '')
-        tagValues.value = Object.keys(stats.tagCount || {})
+        const s = await getUserStats(authStore.user?.name || '')
+        stats.value = s
+        tagValues.value = Object.keys(s.tagCount || {})
     } catch (error) {
         console.error(error)
     }
@@ -59,7 +63,7 @@ onMounted(async () => {
 
 <template>
     <div
-        class="flex flex-col px-5 gap-3"
+        class="flex flex-col px-6 gap-3"
         style="height: calc(100vh - env(safe-area-inset-top))">
         <div
             class="flex justify-between items-center sticky top-0 z-10 mb-0.5 bg-background">
@@ -81,10 +85,23 @@ onMounted(async () => {
             </div>
         </div>
 
-        <div class="mx-1 overflow-y-auto space-y-4">
-            <div class="-mt-2" />
+        <div class="overflow-y-auto space-y-6">
+            <div class="-mt-2"></div>
 
-            <Calendar class="rounded-md border border-primary" />
+            <div class="flex justify-between items-end">
+                <div class="flex-1 flex flex-col items-center">
+                    <div class="text-2xl font-bold">{{ memosCount }}</div>
+                    <div class="text-xs text-gray-500">MEMO</div>
+                </div>
+                <div class="flex-1 flex flex-col items-center">
+                    <div class="text-2xl font-bold">{{ tagCount }}</div>
+                    <div class="text-xs text-gray-500">TAG</div>
+                </div>
+                <div class="flex-1 flex flex-col items-center">
+                    <div class="text-2xl font-bold">{{ pinCount }}</div>
+                    <div class="text-xs text-gray-500">PIN</div>
+                </div>
+            </div>
 
             <SettingsList title="MEMOS" :items="mainMenus" />
 
