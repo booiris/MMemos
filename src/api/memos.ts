@@ -35,7 +35,7 @@ export async function loadAllMemos(
     let memos: Apiv1Memo[] = []
     try {
         while (true) {
-            const response = await getMemos(100, pageToken, state)
+            const response = await getMemos(15, pageToken, state)
             memos.push(...(response.memos || []))
             if (response.nextPageToken) {
                 pageToken = response.nextPageToken
