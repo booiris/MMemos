@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { Button } from '@/components/ui/button'
 import { useSwipeBack } from '@/composables/useSwipeBack'
@@ -17,7 +17,7 @@ import {
     Home,
 } from 'lucide-vue-next'
 import TouchAnimation from '@/components/ui/touch-animation/index.vue'
-import { getMemos } from '@/api/memos'
+import { getMemos, getMemosByTag } from '@/api/memos'
 import { V1MemoRelation, V1Reaction, V1Resource } from '@/api/schema/api'
 import { Marked, Tokens } from 'marked'
 import dayjs from 'dayjs'
@@ -38,6 +38,7 @@ dayjs.extend(timezone)
 dayjs.extend(localeData)
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 const { t } = useI18n()
 
@@ -107,10 +108,20 @@ const isLoading = ref(false)
 const searchQuery = ref('')
 const showScrollToTop = ref(false)
 
-onMounted(async () => {
+const currentTag = route.params.tag as string
+const pageName = route.name as string
+
+const loadMemos = async () => {
     try {
         isLoading.value = true
-        const response = await getMemos()
+
+        let response
+        if (currentTag) {
+            response = await getMemosByTag(currentTag)
+        } else {
+            response = await getMemos()
+        }
+
         memos.value =
             response.memos?.map((memo) => ({
                 createTime: memo.createTime || '',
@@ -128,7 +139,7 @@ onMounted(async () => {
     } finally {
         isLoading.value = false
     }
-})
+}
 
 const handleEditMemo = (memo: Memo) => {
     console.log('编辑备忘录:', memo)
@@ -184,6 +195,9 @@ const handleScroll = (event: Event) => {
     }
 }
 
+onMounted(() => {
+    loadMemos()
+})
 useSwipeBack({ onSwipe: handleHome }, '#main-view')
 </script>
 
@@ -231,86 +245,95 @@ useSwipeBack({ onSwipe: handleHome }, '#main-view')
                 <div class="text-gray-500 text-center">加载中...</div>
             </div>
 
-            <div v-else-if="memos.length > 0" class="space-y-6">
-                <div style="margin-top: -1rem"></div>
-
+            <div v-else-if="memos.length > 0">
                 <div
-                    v-for="memo in memos"
-                    :key="memo.createTime"
-                    class="px-5 pt-3 pb-1 rounded-lg border-1 border-primary">
-                    <div class="flex justify-between items-center -mr-1.5">
-                        <div class="text-gray-500 text-sm">
-                            {{ formatLocalTime(memo.displayTime) }}
+                    v-if="pageName == 'MainWithTag'"
+                    class="text-2xl text-primary mb-2 mt-2">
+                    # {{ currentTag }}
+                </div>
+                <div v-else style="margin-top: 1rem"></div>
+
+                <div class="space-y-6">
+                    <div
+                        v-for="memo in memos"
+                        :key="memo.createTime"
+                        class="px-5 pt-3 pb-1 rounded-lg border-1 border-primary">
+                        <div class="flex justify-between items-center -mr-1.5">
+                            <div class="text-gray-500 text-sm">
+                                {{ formatLocalTime(memo.displayTime) }}
+                            </div>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger as-child>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        class="!h-5.5 !w-5.5 text-primary/77">
+                                        <MoreHorizontal class="!h-5.5 !w-5.5" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                    align="end"
+                                    class="w-58 border-1 border-primary !shadow-none px-1.1 bg-popover">
+                                    <DropdownMenuItem
+                                        @click="handleEditMemo(memo)"
+                                        class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5">
+                                        {{ t('main.edit') }}
+                                        <Edit
+                                            class="ml-auto text-primary !h-5 !w-5" />
+                                    </DropdownMenuItem>
+                                    <div
+                                        class="border-b border-primary/76 my-0"></div>
+                                    <DropdownMenuItem
+                                        @click="handleCopyMemo(memo)"
+                                        class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5">
+                                        {{ t('main.copy') }}
+                                        <Copy
+                                            class="ml-auto text-primary !h-5 !w-5" />
+                                    </DropdownMenuItem>
+                                    <div
+                                        class="border-b border-primary/76 my-0"></div>
+                                    <DropdownMenuItem
+                                        @click="handlePinMemo(memo)"
+                                        class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5">
+                                        {{ t('main.pin') }}
+                                        <Pin
+                                            class="ml-auto text-primary !h-5 !w-5" />
+                                    </DropdownMenuItem>
+                                    <div
+                                        class="border-b border-primary/76 my-0"></div>
+                                    <DropdownMenuItem
+                                        @click="handleShareMemo(memo)"
+                                        class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5"
+                                        variant="destructive">
+                                        {{ t('main.archive') }}
+                                        <Share2 class="ml-auto !h-5 !w-5" />
+                                    </DropdownMenuItem>
+                                    <div
+                                        class="border-b border-primary/76 my-0"></div>
+                                    <DropdownMenuItem
+                                        @click="handleDeleteMemo(memo)"
+                                        class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5"
+                                        variant="destructive">
+                                        {{ t('main.delete') }}
+                                        <Trash2 class="ml-auto !h-5 !w-5" />
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger as-child>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    class="!h-5.5 !w-5.5 text-primary/77">
-                                    <MoreHorizontal class="!h-5.5 !w-5.5" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                                align="end"
-                                class="w-58 border-1 border-primary !shadow-none px-1.1 bg-popover">
-                                <DropdownMenuItem
-                                    @click="handleEditMemo(memo)"
-                                    class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5">
-                                    {{ t('main.edit') }}
-                                    <Edit
-                                        class="ml-auto text-primary !h-5 !w-5" />
-                                </DropdownMenuItem>
-                                <div
-                                    class="border-b border-primary/76 my-0"></div>
-                                <DropdownMenuItem
-                                    @click="handleCopyMemo(memo)"
-                                    class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5">
-                                    {{ t('main.copy') }}
-                                    <Copy
-                                        class="ml-auto text-primary !h-5 !w-5" />
-                                </DropdownMenuItem>
-                                <div
-                                    class="border-b border-primary/76 my-0"></div>
-                                <DropdownMenuItem
-                                    @click="handlePinMemo(memo)"
-                                    class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5">
-                                    {{ t('main.pin') }}
-                                    <Pin
-                                        class="ml-auto text-primary !h-5 !w-5" />
-                                </DropdownMenuItem>
-                                <div
-                                    class="border-b border-primary/76 my-0"></div>
-                                <DropdownMenuItem
-                                    @click="handleShareMemo(memo)"
-                                    class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5"
-                                    variant="destructive">
-                                    {{ t('main.archive') }}
-                                    <Share2 class="ml-auto !h-5 !w-5" />
-                                </DropdownMenuItem>
-                                <div
-                                    class="border-b border-primary/76 my-0"></div>
-                                <DropdownMenuItem
-                                    @click="handleDeleteMemo(memo)"
-                                    class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5"
-                                    variant="destructive">
-                                    {{ t('main.delete') }}
-                                    <Trash2 class="ml-auto !h-5 !w-5" />
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+
+                        <article
+                            v-html="markdownRender.parse(memo.content)"
+                            class="whitespace-pre-wrap break-words prose prose-lg prose-zinc mt-2.5"
+                            style="line-height: 1 !important"></article>
                     </div>
 
-                    <article
-                        v-html="markdownRender.parse(memo.content)"
-                        class="whitespace-pre-wrap break-words prose prose-lg prose-zinc mt-2.5"
-                        style="line-height: 1 !important"></article>
+                    <div
+                        style="
+                            margin-bottom: calc(
+                                env(safe-area-inset-bottom) + 2rem
+                            );
+                        "></div>
                 </div>
-
-                <div
-                    style="
-                        margin-bottom: calc(env(safe-area-inset-bottom) + 2rem);
-                    "></div>
             </div>
 
             <!-- TODO: update empty page -->

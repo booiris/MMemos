@@ -28,6 +28,28 @@ export async function getMemos(
     }
 }
 
+export async function getMemosByTag(
+    tag: string,
+    pageSize?: number,
+    pageToken?: string,
+    state?: MemosState
+): Promise<V1ListMemosResponse> {
+    try {
+        const response = await client.api.memoServiceListMemos(
+            {
+                pageSize: pageSize || 15,
+                pageToken: pageToken || '',
+                state: state || MemosState.NORMAL,
+                filter: `tag in ["${tag}"]`,
+            },
+            { secure: true, signal: AbortSignal.timeout(10000) }
+        )
+        return response
+    } catch (error) {
+        throw `[getMemosByTag] ${getError(error)}`
+    }
+}
+
 export async function loadAllMemos(
     pageToken?: string,
     state?: MemosState

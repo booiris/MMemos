@@ -16,6 +16,11 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/MainView.vue'),
     },
     {
+        path: '/main/tag/:tag',
+        name: 'MainWithTag',
+        component: () => import('@/views/MainView.vue'),
+    },
+    {
         path: '/home',
         name: 'Home',
         component: () => import('@/views/HomeView.vue'),
@@ -39,9 +44,15 @@ router.beforeEach(async (to, from, next) => {
         if (to.name !== 'Login') {
             to.meta.transition = 'slide-left'
         }
-    } else if (to.name === 'Home' && from.name === 'Main') {
+    } else if (
+        to.name === 'Home' &&
+        (from.name === 'Main' || from.name === 'MainWithTag')
+    ) {
         to.meta.transition = 'slide-left'
-    } else if (from.name === 'Home' && to.name === 'Main') {
+    } else if (
+        from.name === 'Home' &&
+        (to.name === 'Main' || to.name === 'MainWithTag')
+    ) {
         to.meta.transition = 'slide-right'
     }
 

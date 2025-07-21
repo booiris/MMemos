@@ -40,7 +40,11 @@ const tags = computed(() => {
             icon: Tag,
             title: tag,
             type: 'arrow' as const,
-            onClick: () => console.log('tag'),
+            onClick: () =>
+                router.push({
+                    name: 'MainWithTag',
+                    params: { tag },
+                }),
         }
     })
 })
