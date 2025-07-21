@@ -344,7 +344,7 @@ useSwipeBack({ onSwipe: handleHome }, '#main-view')
 
         <div
             class="fixed left-4.5 right-4.5 z-40"
-            style="bottom: calc(env(safe-area-inset-bottom))">
+            style="bottom: calc(env(safe-area-inset-bottom) - 0.5rem)">
             <div class="flex items-center gap-2">
                 <div class="flex-1">
                     <div class="w-full h-0.5 bg-background -mx-2"></div>
