@@ -50,6 +50,13 @@ export async function getMemosByTag(
     }
 }
 
+export async function getArchivedMemos(
+    pageSize?: number,
+    pageToken?: string
+): Promise<V1ListMemosResponse> {
+    return await getMemos(pageSize, pageToken, MemosState.ARCHIVED)
+}
+
 export async function loadAllMemos(
     pageToken?: string,
     state?: MemosState

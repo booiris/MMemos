@@ -28,7 +28,7 @@ const mainMenus = computed(() => [
         icon: Archive,
         title: t('home.archive'),
         type: 'arrow' as const,
-        onClick: () => console.log('archive'),
+        onClick: () => router.push({ name: 'Archive' }),
     },
 ])
 

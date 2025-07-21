@@ -17,7 +17,7 @@ import {
     Home,
 } from 'lucide-vue-next'
 import TouchAnimation from '@/components/ui/touch-animation/index.vue'
-import { getMemos, getMemosByTag } from '@/api/memos'
+import { getMemos, getMemosByTag, getArchivedMemos } from '@/api/memos'
 import { V1MemoRelation, V1Reaction, V1Resource } from '@/api/schema/api'
 import { Marked, Tokens } from 'marked'
 import dayjs from 'dayjs'
@@ -118,6 +118,8 @@ const loadMemos = async () => {
         let response
         if (currentTag) {
             response = await getMemosByTag(currentTag)
+        } else if (pageName == 'Archive') {
+            response = await getArchivedMemos()
         } else {
             response = await getMemos()
         }
