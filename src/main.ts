@@ -7,6 +7,10 @@ import './assets/global.css'
 import { createPinia } from 'pinia'
 import { useForwardConsoleLog } from './lib/forwardConsoleLog'
 import '@fontsource/eb-garamond/500.css'
+import authImage from './lib/authImageLoader'
+import { getAuthToken } from './api/client'
+import 'viewerjs/dist/viewer.css'
+import VueViewer from 'v-viewer'
 
 useForwardConsoleLog()
 
@@ -16,6 +20,14 @@ const app = createApp(App)
 app.use(i18n)
 app.use(router)
 app.use(pinia)
+app.use(authImage, {
+    getHeaders: () => {
+        return {
+            Authorization: `Bearer ${getAuthToken()}`,
+        }
+    },
+})
+app.use(VueViewer)
 
 app.mount('#app')
 

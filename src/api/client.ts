@@ -16,3 +16,11 @@ const client = new Api(myHttpClient)
 client.http.setSecurityData(localStorage.getItem('accessToken') || '')
 
 export default client
+
+export function getHost() {
+    return client.http.baseUrl
+}
+
+export function getAuthToken() {
+    return localStorage.getItem('accessToken')
+}

@@ -142,28 +142,28 @@ useSwipeBack({ onSwipe: handleBack }, '#settings-view')
 
         <div class="mx-3">
             <h1 class="ml-2 text-4xl font-bold text-primary font-style mb-5">
-                {{ $t('settings.title') }}
+                {{ t('settings.title') }}
             </h1>
 
             <div class="space-y-4 mt-3">
                 <SettingsList
-                    :title="$t('settings.function.title')"
+                    :title="t('settings.function.title')"
                     :items="functionItems" />
 
                 <SettingsList
-                    :title="$t('settings.about.title')"
+                    :title="t('settings.about.title')"
                     :items="aboutItems" />
             </div>
         </div>
 
         <div
             class="mt-auto mx-3"
-            style="margin-bottom: calc(env(safe-area-inset-bottom) + 1rem)">
+            style="margin-bottom: calc(env(safe-area-inset-bottom) + 0.5rem)">
             <TouchAnimation>
                 <Button
                     @click="handleLogout"
                     class="w-full h-11 text-base font-bold !shadow-none">
-                    {{ $t('settings.logout') }}
+                    {{ t('settings.logout') }}
                 </Button>
             </TouchAnimation>
         </div>
@@ -174,7 +174,7 @@ useSwipeBack({ onSwipe: handleBack }, '#settings-view')
             <AlertDialogContent class="px-8 gap-4 pt-4">
                 <AlertDialogHeader>
                     <AlertDialogTitle class="text-2xl font-bold">
-                        {{ $t('settings.function.language') }}
+                        {{ t('settings.function.language') }}
                     </AlertDialogTitle>
                     <AlertDialogDescription class="sr-only">
                     </AlertDialogDescription>
@@ -207,7 +207,7 @@ useSwipeBack({ onSwipe: handleBack }, '#settings-view')
                     <AlertDialogCancel
                         class="h-10 !shadow-none text-base border-primary !focus:outline-none"
                         @click="handleLanguageConfirm">
-                        {{ $t('settings.function.confirm') }}
+                        {{ t('settings.function.confirm') }}
                     </AlertDialogCancel>
                 </AlertDialogFooter>
             </AlertDialogContent>
@@ -219,7 +219,7 @@ useSwipeBack({ onSwipe: handleBack }, '#settings-view')
             <DialogContent class="px-3 gap-1 pt-4">
                 <DialogHeader class="-mb-2">
                     <DialogTitle class="text-2xl">
-                        {{ $t('settings.about.acknowledgments') }}
+                        {{ t('settings.about.acknowledgments') }}
                     </DialogTitle>
                     <DialogDescription class="sr-only"> </DialogDescription>
                 </DialogHeader>
@@ -237,7 +237,7 @@ useSwipeBack({ onSwipe: handleBack }, '#settings-view')
                     <Button
                         @click="acknowledgmentsDialogOpen = false"
                         class="!shadow-none h-11 text-lg">
-                        {{ $t('settings.acknowledgments.ok') }}
+                        {{ t('settings.acknowledgments.ok') }}
                     </Button>
                 </DialogFooter>
             </DialogContent>

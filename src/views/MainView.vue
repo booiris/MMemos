@@ -32,6 +32,8 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
+import { getAuthToken, getHost } from '@/api/client'
+import { api as viewerApi } from 'v-viewer'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -90,6 +92,32 @@ const markdownRender = new Marked({
         },
     },
 })
+
+const getImageResources = (resources: V1Resource[]): V1Resource[] => {
+    return resources.filter(
+        (resource) =>
+            resource.type?.startsWith('image/') ||
+            (resource.filename &&
+                /\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(resource.filename))
+    )
+}
+
+const getImageUrl = (
+    resource: V1Resource,
+    isNeedThumbnail: boolean
+): string => {
+    if (resource.externalLink) {
+        return resource.externalLink
+    }
+
+    if (resource.name) {
+        return `${getHost()}/file/${resource.name}/${resource.filename}${
+            isNeedThumbnail ? '?thumbnail=true' : ''
+        }`
+    }
+
+    return ''
+}
 
 type Memo = {
     createTime: string
@@ -201,12 +229,33 @@ onMounted(() => {
     loadMemos()
 })
 useSwipeBack({ onSwipe: handleHome }, '#main-view')
+
+const showImageViewer = async (resource: V1Resource) => {
+    const url = getImageUrl(resource, false)
+    const response = await fetch(url, {
+        headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+        },
+    })
+    const blob = await response.blob()
+    const base64 = URL.createObjectURL(blob)
+    viewerApi({
+        options: {
+            button: false,
+            keyboard: false,
+            toolbar: false,
+            title: false,
+            navbar: false,
+        },
+        images: [base64],
+    })
+}
 </script>
 
 <template>
     <div
         class="flex flex-col px-6 -mt-1.5"
-        style="height: calc(100vh - env(safe-area-inset-top))"
+        style="height: calc(100vh - env(safe-area-inset-top) + 8px)"
         id="main-view">
         <div class="flex justify-between items-center sticky top-0 z-10 mb-0.5">
             <div
@@ -327,12 +376,34 @@ useSwipeBack({ onSwipe: handleHome }, '#main-view')
                             v-html="markdownRender.parse(memo.content)"
                             class="whitespace-pre-wrap break-words prose prose-lg prose-zinc mt-2.5"
                             style="line-height: 1 !important"></article>
+
+                        <div
+                            v-if="getImageResources(memo.resources).length > 0"
+                            class="mt-0.5 mb-4 -mx-2.5">
+                            <div class="flex overflow-x-auto gap-2">
+                                <div
+                                    v-for="(
+                                        resource, index
+                                    ) in getImageResources(memo.resources)"
+                                    :key="resource.name || index"
+                                    class="flex-shrink-0 px-0.5">
+                                    <img
+                                        v-auth-image="
+                                            getImageUrl(resource, true)
+                                        "
+                                        :alt="resource.filename || ''"
+                                        class="rounded-lg h-40 object-fit w-auto"
+                                        loading="lazy"
+                                        @click="showImageViewer(resource)" />
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div
                         style="
                             margin-bottom: calc(
-                                env(safe-area-inset-bottom) + 2rem
+                                env(safe-area-inset-bottom) + 1.5rem
                             );
                         "></div>
                 </div>
@@ -355,7 +426,7 @@ useSwipeBack({ onSwipe: handleHome }, '#main-view')
                         @input="handleSearch($event.target.value)"
                         :placeholder="t('main.search')"
                         :class="[
-                            'flex-1 h-11 rounded-base border-1 border-primary bg-background/80 backdrop-blur-sm shadow-lg transition-all ease-out',
+                            'flex-1 h-11 rounded-base border-1 border-primary bg-background/80 backdrop-blur-sm shadow-lg',
                             showScrollToTop ? 'mr-16' : '',
                         ]" />
                 </div>
@@ -391,3 +462,9 @@ useSwipeBack({ onSwipe: handleHome }, '#main-view')
         </div>
     </div>
 </template>
+
+<style>
+.viewer-container {
+    background-color: rgba(0, 0, 0, 0.7) !important;
+}
+</style>

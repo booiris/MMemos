@@ -14,7 +14,7 @@ const transitionName = computed(() => {
         <router-view v-slot="{ Component }" class="main-content">
             <transition :name="transitionName">
                 <KeepAlive>
-                    <component :is="Component" :key="$route.path" />
+                    <component :is="Component" :key="route.path" />
                 </KeepAlive>
             </transition>
         </router-view>
@@ -31,13 +31,12 @@ body,
 }
 .main {
     height: 100%;
-    padding-top: env(safe-area-inset-top);
 }
 .main-content {
-    height: calc(100vh - env(safe-area-inset-top));
     min-height: 0;
     overflow-y: auto;
     position: relative;
+    margin-top: calc(env(safe-area-inset-top) - 8px);
 }
 
 .slide-right-enter-active,
@@ -47,7 +46,7 @@ body,
     position: absolute;
     width: 100%;
     height: 100%;
-    top: env(safe-area-inset-top);
+    top: 0;
     left: 0;
     transition: all 0.29s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }

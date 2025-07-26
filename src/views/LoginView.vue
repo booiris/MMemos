@@ -131,7 +131,7 @@ onMounted(async () => {
             @dragstart.prevent />
 
         <h1 class="text-3xl dark:text-primary font-bold mb-8 font-style">
-            {{ $t('login.title') }}
+            {{ t('login.title') }}
         </h1>
 
         <div class="w-full max-w-sm px-5">
@@ -142,7 +142,7 @@ onMounted(async () => {
                             <Label
                                 for="serverUrl"
                                 class="text-base dark:text-primary">
-                                {{ $t('login.loginServerUrlHeader') }}
+                                {{ t('login.loginServerUrlHeader') }}
                             </Label>
                             <Popover>
                                 <PopoverTrigger as-child>
@@ -179,7 +179,7 @@ onMounted(async () => {
                             <Label
                                 for="accessToken"
                                 class="text-base dark:text-primary">
-                                {{ $t('login.loginAccessTokenHeader') }}
+                                {{ t('login.loginAccessTokenHeader') }}
                             </Label>
                             <Popover>
                                 <PopoverTrigger as-child>
@@ -220,7 +220,7 @@ onMounted(async () => {
                     :disabled="loading">
                     <Loader2 v-if="loading" class="!h-6 !w-6 animate-spin" />
                     <span v-else class="text-base">
-                        {{ $t('login.loginButton') }}
+                        {{ t('login.loginButton') }}
                     </span>
                 </Button>
             </TouchAnimation>
@@ -277,7 +277,7 @@ onMounted(async () => {
                     <AlertDialogAction
                         class="h-10 text-base"
                         @click="showAlert = false">
-                        {{ $t('login.alert.confirm') }}
+                        {{ t('login.alert.confirm') }}
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
