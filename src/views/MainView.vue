@@ -10,7 +10,8 @@ import {
     Edit,
     Trash2,
     Copy,
-    Share2,
+    Archive,
+    ArchiveRestore,
     Pin,
     Plus,
     ArrowUp,
@@ -188,9 +189,14 @@ const handleCopyMemo = (memo: Memo) => {
     // TODO: 显示复制成功提示
 }
 
-const handleShareMemo = (memo: Memo) => {
-    console.log('分享备忘录:', memo)
-    // TODO: 实现分享功能
+const handleArchiveMemo = (memo: Memo) => {
+    console.log('归档备忘录:', memo)
+    // TODO: 实现归档功能
+}
+
+const handleRecoverMemo = (memo: Memo) => {
+    console.log('恢复备忘录:', memo)
+    // TODO: 实现恢复功能
 }
 
 const handlePinMemo = (memo: Memo) => {
@@ -340,6 +346,7 @@ const showImageViewer = async (resource: V1Resource) => {
                                     align="end"
                                     class="w-58 border-1 border-primary !shadow-none px-1.1 bg-popover">
                                     <DropdownMenuItem
+                                        v-if="pageName != 'Archive'"
                                         @click="handleEditMemo(memo)"
                                         class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5">
                                         {{ t('main.edit') }}
@@ -347,6 +354,7 @@ const showImageViewer = async (resource: V1Resource) => {
                                             class="ml-auto text-primary !h-5 !w-5" />
                                     </DropdownMenuItem>
                                     <div
+                                        v-if="pageName != 'Archive'"
                                         class="border-b border-primary/76 my-0"></div>
                                     <DropdownMenuItem
                                         @click="handleCopyMemo(memo)"
@@ -356,8 +364,10 @@ const showImageViewer = async (resource: V1Resource) => {
                                             class="ml-auto text-primary !h-5 !w-5" />
                                     </DropdownMenuItem>
                                     <div
+                                        v-if="pageName != 'Archive'"
                                         class="border-b border-primary/76 my-0"></div>
                                     <DropdownMenuItem
+                                        v-if="pageName != 'Archive'"
                                         @click="handlePinMemo(memo)"
                                         class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5">
                                         {{ t('main.pin') }}
@@ -367,12 +377,22 @@ const showImageViewer = async (resource: V1Resource) => {
                                     <div
                                         class="border-b border-primary/76 my-0"></div>
                                     <DropdownMenuItem
-                                        @click="handleShareMemo(memo)"
+                                        v-if="pageName != 'Archive'"
+                                        @click="handleArchiveMemo(memo)"
                                         class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5"
                                         variant="destructive">
                                         {{ t('main.archive') }}
-                                        <Share2 class="ml-auto !h-5 !w-5" />
+                                        <Archive class="ml-auto !h-5 !w-5" />
                                     </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        v-if="pageName == 'Archive'"
+                                        @click="handleRecoverMemo(memo)"
+                                        class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5">
+                                        {{ t('main.recover') }}
+                                        <ArchiveRestore
+                                            class="ml-auto !h-5 !w-5" />
+                                    </DropdownMenuItem>
+
                                     <div
                                         class="border-b border-primary/76 my-0"></div>
                                     <DropdownMenuItem

@@ -49,6 +49,7 @@ export default {
         archive: 'Archive',
         delete: 'Delete',
         search: ' Search',
+        recover: 'Recover',
     },
     time: {
         yesterday: 'Yesterday',

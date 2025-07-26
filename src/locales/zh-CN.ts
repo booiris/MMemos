@@ -48,6 +48,7 @@ export default {
         archive: '归档',
         delete: '删除',
         search: ' 搜索',
+        recover: '恢复',
     },
     time: {
         yesterday: '昨天',
