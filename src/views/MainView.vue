@@ -34,6 +34,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { getAuthToken, getHost } from '@/api/client'
 import { api as viewerApi } from 'v-viewer'
+import loading_image from '@/assets/loading_image.svg'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -43,6 +44,7 @@ const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 const { t } = useI18n()
+const viewImageLoading = ref(false)
 
 const handleSettings = () => {
     router.push({ name: 'Settings' })
@@ -231,6 +233,10 @@ onMounted(() => {
 useSwipeBack({ onSwipe: handleHome }, '#main-view')
 
 const showImageViewer = async (resource: V1Resource) => {
+    if (viewImageLoading.value) {
+        return
+    }
+    viewImageLoading.value = true
     const url = getImageUrl(resource, false)
     const response = await fetch(url, {
         headers: {
@@ -239,6 +245,8 @@ const showImageViewer = async (resource: V1Resource) => {
     })
     const blob = await response.blob()
     const base64 = URL.createObjectURL(blob)
+    await new Promise((resolve) => setTimeout(resolve, 200))
+    viewImageLoading.value = false
     viewerApi({
         options: {
             button: false,
@@ -257,6 +265,12 @@ const showImageViewer = async (resource: V1Resource) => {
         class="flex flex-col px-6 -mt-1.5"
         style="height: calc(100vh - env(safe-area-inset-top) + 12px)"
         id="main-view">
+        <div
+            v-if="viewImageLoading"
+            class="flex justify-center items-center absolute top-0 left-0 right-0 bottom-0 bg-background/70 z-50">
+            <img :src="loading_image" alt="loading" class="w-12 h-12" />
+        </div>
+
         <div class="flex justify-between items-center sticky top-0 z-10 mb-0.5">
             <div
                 class="flex items-center gap-2 cursor-pointer"
@@ -450,7 +464,7 @@ const showImageViewer = async (resource: V1Resource) => {
                     </TouchAnimation>
                 </Transition>
 
-                <TouchAnimation :scale="0.9">
+                <TouchAnimation :scale="0.9" v-if="pageName == 'Main'">
                     <Button
                         @click="handleAddMemo"
                         class="w-12 h-11 rounded-lg bg-primary text-white shadow-lg transition-colors duration-200"
@@ -465,6 +479,6 @@ const showImageViewer = async (resource: V1Resource) => {
 
 <style>
 .viewer-container {
-    background-color: rgba(0, 0, 0, 0.7) !important;
+    background-color: rgba(0, 0, 0, 0.55) !important;
 }
 </style>
