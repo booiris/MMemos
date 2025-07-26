@@ -255,7 +255,7 @@ const showImageViewer = async (resource: V1Resource) => {
 <template>
     <div
         class="flex flex-col px-6 -mt-1.5"
-        style="height: calc(100vh - env(safe-area-inset-top) + 8px)"
+        style="height: calc(100vh - env(safe-area-inset-top) + 12px)"
         id="main-view">
         <div class="flex justify-between items-center sticky top-0 z-10 mb-0.5">
             <div

@@ -120,7 +120,7 @@ onMounted(async () => {
     <div
         v-else
         class="flex flex-col items-center justify-center bg-background"
-        style="height: calc(100vh - env(safe-area-inset-top))">
+        style="height: calc(100vh - env(safe-area-inset-top) + 12px)">
         <img
             :src="logo"
             alt="logo"
@@ -231,7 +231,7 @@ onMounted(async () => {
 
         <div
             class="fixed right-6 flex flex-col gap-4"
-            style="bottom: calc(1rem + env(safe-area-inset-bottom))">
+            style="bottom: calc(0.5rem + env(safe-area-inset-bottom))">
             <!-- <TouchAnimation>
                 <Button variant="outline" size="icon" @click="toggleDarkMode"
                     class="shadow-none border-primary !bg-transparent h-10 w-10">

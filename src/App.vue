@@ -36,7 +36,7 @@ body,
     min-height: 0;
     overflow-y: auto;
     position: relative;
-    margin-top: calc(env(safe-area-inset-top) - 8px);
+    margin-top: calc(env(safe-area-inset-top) - 12px);
 }
 
 .slide-right-enter-active,
