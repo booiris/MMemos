@@ -7,9 +7,6 @@ export function getError(error: unknown) {
         }
         return error.name + ': ' + error.message
     } else if (typeof error === 'string') {
-        if (error === 'error sending request') {
-            return 'Connection timeout'
-        }
         return error
     } else if (error && typeof error === 'object' && 'error' in error) {
         const err = error.error as GooglerpcStatus

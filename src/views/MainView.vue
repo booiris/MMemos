@@ -425,7 +425,6 @@ const showImageViewer = async (resource: V1Resource) => {
                                         v-auth-image="
                                             getImageUrl(resource, true)
                                         "
-                                        :alt="resource.filename || ''"
                                         class="rounded-lg h-40 object-fit w-auto"
                                         loading="lazy"
                                         @click="showImageViewer(resource)" />

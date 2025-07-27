@@ -13,7 +13,7 @@ const transitionName = computed(() => {
     <div class="main">
         <router-view v-slot="{ Component }" class="main-content">
             <transition :name="transitionName">
-                <KeepAlive>
+                <KeepAlive include="MainView,HomeView">
                     <component :is="Component" :key="route.path" />
                 </KeepAlive>
             </transition>
