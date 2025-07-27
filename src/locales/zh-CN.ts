@@ -43,6 +43,7 @@ export default {
     },
     main: {
         pin: '置顶',
+        cancelPin: '取消置顶',
         edit: '编辑',
         copy: '复制',
         archive: '归档',

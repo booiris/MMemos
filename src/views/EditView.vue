@@ -2,6 +2,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
+import { V1Resource, V1Visibility } from '@/api/schema/api'
 
 const { t } = useI18n()
 
@@ -15,7 +16,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 interface Emits {
     close: [text: string]
-    send: [text: string]
+    send: [text: string, visibility: V1Visibility, resource: V1Resource[]]
     textChange: [text: string]
 }
 
@@ -47,7 +48,7 @@ watch(
             </button>
 
             <Button
-                @click="emit('send', textContent)"
+                @click="emit('send', textContent, V1Visibility.PRIVATE, [])"
                 :disabled="!textContent"
                 class="text-sm h-8 font-medium">
                 {{ t('main.editPage.send') }}

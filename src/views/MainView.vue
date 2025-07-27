@@ -19,8 +19,23 @@ import {
 } from 'lucide-vue-next'
 import TouchAnimation from '@/components/ui/touch-animation/index.vue'
 import EditView from '@/views/EditView.vue'
-import { getMemos, getMemosByTag, getArchivedMemos } from '@/api/memos'
-import { V1MemoRelation, V1Reaction, V1Resource } from '@/api/schema/api'
+import {
+    getMemos,
+    getMemosByTag,
+    getArchivedMemos,
+    createMemo,
+    deleteMemo,
+    archiveMemo,
+    restoreMemo,
+    togglePinMemo,
+    searchMemos,
+} from '@/api/memos'
+import {
+    V1MemoRelation,
+    V1Reaction,
+    V1Resource,
+    V1Visibility,
+} from '@/api/schema/api'
 import { Marked, Tokens } from 'marked'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
@@ -37,6 +52,7 @@ import { Input } from '@/components/ui/input'
 import { getAuthToken, getHost } from '@/api/client'
 import { api as viewerApi } from 'v-viewer'
 import loading_image from '@/assets/loading_image.svg'
+import { getError } from '@/api/error'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -127,6 +143,7 @@ const getImageUrl = (
 }
 
 type Memo = {
+    name?: string
     createTime: string
     updateTime: string
     displayTime: string
@@ -144,10 +161,16 @@ const searchQuery = ref('')
 const showScrollToTop = ref(false)
 const showEditView = ref(false)
 const editInitialText = ref('')
+const isSearching = ref(false)
+const searchResults = ref<Memo[]>([])
 let isNewMemo = false
 
 const currentTag = route.params.tag as string
 const pageName = route.name as string
+
+const displayMemos = computed(() => {
+    return isSearching.value ? searchResults.value : memos.value
+})
 
 const loadMemos = async () => {
     try {
@@ -164,6 +187,7 @@ const loadMemos = async () => {
 
         memos.value =
             response.memos?.map((memo) => ({
+                name: memo.name,
                 createTime: memo.createTime || '',
                 updateTime: memo.updateTime || '',
                 displayTime: memo.displayTime || '',
@@ -187,28 +211,68 @@ const handleEditMemo = (memo: Memo) => {
     showEditView.value = true
 }
 
-const handleDeleteMemo = (memo: Memo) => {
-    console.log('删除备忘录:', memo)
-    // TODO: 实现删除功能
+const handleDeleteMemo = async (memo: Memo) => {
+    if (!memo.name) {
+        console.error('[handleDeleteMemo] missing memo name!')
+        return
+    }
+
+    try {
+        await deleteMemo(memo.name)
+        console.info('delete memo success: ' + memo.name)
+        await loadMemos()
+    } catch (error) {
+        console.error('delete memo failed: ' + getError(error))
+    }
 }
 
 const handleCopyMemo = (memo: Memo) => {
     navigator.clipboard.writeText(memo.content)
 }
 
-const handleArchiveMemo = (memo: Memo) => {
-    console.log('归档备忘录:', memo)
-    // TODO: 实现归档功能
+const handleArchiveMemo = async (memo: Memo) => {
+    if (!memo.name) {
+        console.error('[handleArchiveMemo] missing memo name!')
+        return
+    }
+
+    try {
+        await archiveMemo(memo.name)
+        console.info('archive memo success: ' + memo.name)
+        await loadMemos()
+    } catch (error) {
+        console.error('archive memo failed: ' + getError(error))
+    }
 }
 
-const handleRecoverMemo = (memo: Memo) => {
-    console.log('恢复备忘录:', memo)
-    // TODO: 实现恢复功能
+const handleRecoverMemo = async (memo: Memo) => {
+    if (!memo.name) {
+        console.error('[handleRecoverMemo] missing memo name!')
+        return
+    }
+
+    try {
+        await restoreMemo(memo.name)
+        console.info('restore memo success: ' + memo.name)
+        await loadMemos()
+    } catch (error) {
+        console.error('restore memo failed: ' + getError(error))
+    }
 }
 
-const handlePinMemo = (memo: Memo) => {
-    console.log('置顶备忘录:', memo)
-    // TODO: 实现置顶功能
+const handlePinMemo = async (memo: Memo) => {
+    if (!memo.name) {
+        console.error('[handlePinMemo] missing memo name!')
+        return
+    }
+
+    try {
+        await togglePinMemo(memo.name, !memo.pinned)
+        console.info('toggle pin memo success: ' + memo.name)
+        await loadMemos()
+    } catch (error) {
+        console.error('toggle pin memo failed: ' + getError(error))
+    }
 }
 
 const handleAddMemo = () => {
@@ -224,23 +288,64 @@ const handleCloseEdit = (text: string) => {
     }
 }
 
-const handleSendMemo = (text: string) => {
-    console.log('发送备忘录:', text)
-    // TODO: 实现发送备忘录到服务器的功能
-    showEditView.value = false
-    localStorage.removeItem('lastEditText')
-    loadMemos()
+const handleSendMemo = async (
+    text: string,
+    visibility: V1Visibility,
+    resource?: V1Resource[]
+) => {
+    if (!text) {
+        console.error('[handleSendMemo] memo content is empty!')
+        return
+    }
+
+    try {
+        await createMemo(text, visibility, resource)
+        console.info('create memo success')
+        showEditView.value = false
+        localStorage.removeItem('lastEditText')
+        await loadMemos()
+    } catch (error) {
+        console.error('create memo failed: ' + getError(error))
+    }
 }
 
 const handleTextChange = (text: string) => {
-    // 可以在这里处理文本变化，比如自动保存草稿等
-    console.log('文本变化:', text.length, '字符')
+    console.log(text.length)
 }
 
-const handleSearch = (query: string) => {
+const handleSearch = async (query: string) => {
     searchQuery.value = query
-    console.log('搜索备忘录:', query)
-    // TODO: 实现搜索功能
+
+    if (!query.trim()) {
+        isSearching.value = false
+        searchResults.value = []
+        return
+    }
+
+    try {
+        isLoading.value = true
+        isSearching.value = true
+        const response = await searchMemos(query.trim())
+        searchResults.value =
+            response.memos?.map((memo) => ({
+                name: memo.name,
+                createTime: memo.createTime || '',
+                updateTime: memo.updateTime || '',
+                displayTime: memo.displayTime || '',
+                visibility: memo.visibility || 'PRIVATE',
+                content: memo.content || '',
+                pinned: memo.pinned || false,
+                resources: memo.resources || [],
+                relations: memo.relations || [],
+                reactions: memo.reactions || [],
+            })) || []
+        console.info('search memo success: ' + searchResults.value.length)
+    } catch (error) {
+        console.error('search memo failed: ' + getError(error))
+        searchResults.value = []
+    } finally {
+        isLoading.value = false
+    }
 }
 
 const handleScrollToTop = () => {
@@ -339,24 +444,30 @@ const showImageViewer = async (resource: V1Resource) => {
             style="margin-bottom: calc(env(safe-area-inset-bottom) + 0.5rem)"
             @scroll="handleScroll">
             <div class="px-5">
-                <!-- TODO: update loading page -->
                 <div
                     v-if="isLoading"
                     class="my-4 p-6 rounded-lg border-1 border-primary">
-                    <div class="text-gray-500 text-center">加载中...</div>
+                    <div class="text-gray-500 text-center">
+                        {{ isSearching ? '搜索中...' : '加载中...' }}
+                    </div>
                 </div>
 
-                <div v-else-if="memos.length > 0">
+                <div v-else-if="displayMemos.length > 0">
                     <div
                         v-if="pageName == 'MainWithTag'"
                         class="text-2xl text-primary mb-2 mt-2">
                         # {{ currentTag }}
                     </div>
+                    <div
+                        v-else-if="isSearching"
+                        class="text-lg text-primary mb-2 mt-2">
+                        搜索结果 ({{ displayMemos.length }} 条)
+                    </div>
                     <div v-else style="margin-top: 12px"></div>
 
                     <div class="space-y-6">
                         <div
-                            v-for="memo in memos"
+                            v-for="memo in displayMemos"
                             :key="memo.createTime"
                             class="px-5 pt-3 pb-1 rounded-lg border-1 border-primary">
                             <div
@@ -402,7 +513,11 @@ const showImageViewer = async (resource: V1Resource) => {
                                             v-if="pageName != 'Archive'"
                                             @click="handlePinMemo(memo)"
                                             class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5">
-                                            {{ t('main.pin') }}
+                                            {{
+                                                memo.pinned
+                                                    ? t('main.cancelPin')
+                                                    : t('main.pin')
+                                            }}
                                             <Pin
                                                 class="ml-auto text-primary !h-5 !w-5" />
                                         </DropdownMenuItem>
@@ -479,10 +594,13 @@ const showImageViewer = async (resource: V1Resource) => {
                     </div>
                 </div>
 
-                <!-- TODO: update empty page -->
                 <div v-else class="my-4 p-6 rounded-lg border-1 border-primary">
                     <div class="text-gray-500 text-center">
-                        还没有任何备忘录
+                        {{
+                            isSearching
+                                ? '没有找到匹配的备忘录'
+                                : '还没有任何备忘录'
+                        }}
                     </div>
                 </div>
             </div>

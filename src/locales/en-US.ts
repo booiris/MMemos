@@ -44,6 +44,7 @@ export default {
     },
     main: {
         pin: 'Pin',
+        cancelPin: 'UnPin',
         edit: 'Edit',
         copy: 'Copy',
         archive: 'Archive',

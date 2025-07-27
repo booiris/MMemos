@@ -1,6 +1,12 @@
 import client from './client'
 import { getError } from './error'
-import { Apiv1Memo, V1ListMemosResponse } from './schema/api'
+import {
+    Apiv1Memo,
+    V1ListMemosResponse,
+    V1Resource,
+    V1State,
+    V1Visibility,
+} from './schema/api'
 
 export enum MemosState {
     NORMAL = 'NORMAL',
@@ -75,5 +81,88 @@ export async function loadAllMemos(
         return memos
     } catch (error) {
         throw `[loadAllMemos] ${getError(error)}`
+    }
+}
+
+export async function createMemo(
+    content: string,
+    visibility: V1Visibility,
+    resource?: V1Resource[]
+): Promise<Apiv1Memo> {
+    try {
+        const memo: Apiv1Memo = {
+            content: content,
+            visibility: visibility,
+            resources: resource,
+        }
+        const response = await client.api.memoServiceCreateMemo(memo, {
+            secure: true,
+            signal: AbortSignal.timeout(10000),
+        })
+        return response
+    } catch (error) {
+        throw `[createMemo] ${getError(error)}`
+    }
+}
+
+export async function updateMemo(
+    name: string,
+    updates: Partial<Apiv1Memo>
+): Promise<Apiv1Memo> {
+    try {
+        const response = await client.api.memoServiceUpdateMemo(name, updates, {
+            secure: true,
+            signal: AbortSignal.timeout(10000),
+        })
+        return response
+    } catch (error) {
+        throw `[updateMemo] ${getError(error)}`
+    }
+}
+
+export async function deleteMemo(name: string): Promise<void> {
+    try {
+        await client.api.memoServiceDeleteMemo(name, {
+            secure: true,
+            signal: AbortSignal.timeout(10000),
+        })
+    } catch (error) {
+        throw `[deleteMemo] ${getError(error)}`
+    }
+}
+
+export async function archiveMemo(name: string): Promise<Apiv1Memo> {
+    return updateMemo(name, { state: V1State.ARCHIVED })
+}
+
+export async function restoreMemo(name: string): Promise<Apiv1Memo> {
+    return updateMemo(name, { state: V1State.NORMAL })
+}
+
+export async function togglePinMemo(
+    name: string,
+    pinned: boolean
+): Promise<Apiv1Memo> {
+    return updateMemo(name, { pinned })
+}
+
+export async function searchMemos(
+    query: string,
+    pageSize?: number,
+    pageToken?: string
+): Promise<V1ListMemosResponse> {
+    try {
+        const response = await client.api.memoServiceListMemos(
+            {
+                pageSize: pageSize || 15,
+                pageToken: pageToken || '',
+                filter: `content contains "${query}"`,
+                state: MemosState.NORMAL,
+            },
+            { secure: true, signal: AbortSignal.timeout(10000) }
+        )
+        return response
+    } catch (error) {
+        throw `[searchMemos] ${getError(error)}`
     }
 }
