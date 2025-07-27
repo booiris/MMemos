@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onActivated, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { Button } from '@/components/ui/button'
@@ -366,7 +366,7 @@ const handleScroll = (event: Event) => {
     }
 }
 
-onMounted(() => {
+onActivated(() => {
     loadMemos()
 })
 useSwipeBack({ onSwipe: handleHome }, '#main-view')
