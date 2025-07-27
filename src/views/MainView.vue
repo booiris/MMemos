@@ -268,8 +268,8 @@ const showImageViewer = async (resource: V1Resource) => {
 
 <template>
     <div
-        class="flex flex-col px-5 -mt-1.5"
-        style="height: calc(100vh - env(safe-area-inset-top) + 12px)"
+        class="flex flex-col px-5"
+        style="height: calc(100vh - env(safe-area-inset-top) + 8px)"
         id="main-view">
         <div
             v-if="viewImageLoading"

@@ -120,7 +120,7 @@ onMounted(async () => {
     <div
         v-else
         class="flex flex-col items-center justify-center bg-background"
-        style="height: calc(100vh - env(safe-area-inset-top) + 12px)">
+        style="height: calc(100vh - env(safe-area-inset-top) + 8px)">
         <img
             :src="logo"
             alt="logo"
