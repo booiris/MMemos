@@ -134,25 +134,32 @@
 @utility prose {
   font-size: 1.05rem !important;
 
+  * {
+    margin: 0 !important;
+  }
+
   p {
-    margin: 0;
-    line-height: 1.5 !important;
+    line-height: 1.7 !important;
   }
 
   a {
     font-size: 1.05rem !important;
   }
 
-  li {
-    margin: 0;
+  ol,
+  ul {
+    line-height: 1.25 !important;
+    border: 0 !important;
   }
 
-  ol {
-    margin: 0;
-    line-height: 1.25;
+  >ol,
+  >ul {
     margin-top: -1rem !important;
     margin-bottom: -1rem !important;
-    border: 0 !important;
+  }
+
+  li {
+    line-height: 0.7 !important;
   }
 
   blockquote {

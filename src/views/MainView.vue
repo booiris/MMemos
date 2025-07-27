@@ -268,7 +268,7 @@ const showImageViewer = async (resource: V1Resource) => {
 
 <template>
     <div
-        class="flex flex-col px-6 -mt-1.5"
+        class="flex flex-col px-5 -mt-1.5"
         style="height: calc(100vh - env(safe-area-inset-top) + 12px)"
         id="main-view">
         <div
@@ -322,7 +322,7 @@ const showImageViewer = async (resource: V1Resource) => {
                     class="text-2xl text-primary mb-2 mt-2">
                     # {{ currentTag }}
                 </div>
-                <div v-else style="margin-top: 1rem"></div>
+                <div v-else style="margin-top: 12px"></div>
 
                 <div class="space-y-6">
                     <div

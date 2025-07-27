@@ -128,7 +128,7 @@ useSwipeBack({ onSwipe: handleBack }, '#settings-view')
 
 <template>
     <div
-        class="flex flex-col px-3 gap-3 -mt-1.5"
+        class="flex flex-col px-3 gap-2 -mt-1.5"
         style="height: calc(100vh - env(safe-area-inset-top))"
         id="settings-view">
         <div>
