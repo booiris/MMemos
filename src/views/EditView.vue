@@ -49,7 +49,7 @@ onMounted(() => {
             <textarea
                 v-model="textContent"
                 :placeholder="t('main.editPage.placeholder')"
-                class="w-full h-full text-lg leading-relaxed text-primary placeholder-gray-400 px-6 pt-5"
+                class="w-full h-full text-lg leading-relaxed text-primary placeholder-gray-400 px-6 pt-4"
                 style="
                     padding-bottom: calc(
                         env(safe-area-inset-bottom) + env(safe-area-inset-top) +
