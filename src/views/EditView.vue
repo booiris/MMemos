@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 
@@ -14,7 +14,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 interface Emits {
-    close: []
+    close: [text: string]
     send: [text: string]
     textChange: [text: string]
 }
@@ -26,6 +26,13 @@ const textContent = ref<string>('')
 onMounted(() => {
     textContent.value = props.initialText
 })
+
+watch(
+    () => props.initialText,
+    (newText) => {
+        textContent.value = newText
+    }
+)
 </script>
 
 <template>
@@ -33,7 +40,9 @@ onMounted(() => {
         <div
             class="flex items-center justify-between border-b border-primary/20 shadow-xs pl-6 pr-5 pb-2"
             style="height: calc(env(safe-area-inset-top) + -10px)">
-            <button @click="emit('close')" class="text-lg font-medium pt-0.5">
+            <button
+                @click="emit('close', textContent)"
+                class="text-lg font-medium pt-0.5">
                 {{ t('main.editPage.close') }}
             </button>
 

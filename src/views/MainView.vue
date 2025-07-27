@@ -143,6 +143,8 @@ const isLoading = ref(false)
 const searchQuery = ref('')
 const showScrollToTop = ref(false)
 const showEditView = ref(false)
+const editInitialText = ref('')
+let isNewMemo = false
 
 const currentTag = route.params.tag as string
 const pageName = route.name as string
@@ -180,8 +182,9 @@ const loadMemos = async () => {
 }
 
 const handleEditMemo = (memo: Memo) => {
-    console.log('编辑备忘录:', memo)
-    // TODO: 实现编辑功能
+    editInitialText.value = memo.content
+    isNewMemo = false
+    showEditView.value = true
 }
 
 const handleDeleteMemo = (memo: Memo) => {
@@ -191,7 +194,6 @@ const handleDeleteMemo = (memo: Memo) => {
 
 const handleCopyMemo = (memo: Memo) => {
     navigator.clipboard.writeText(memo.content)
-    // TODO: 显示复制成功提示
 }
 
 const handleArchiveMemo = (memo: Memo) => {
@@ -210,19 +212,23 @@ const handlePinMemo = (memo: Memo) => {
 }
 
 const handleAddMemo = () => {
-    console.log('添加新备忘录')
+    editInitialText.value = localStorage.getItem('lastEditText') || ''
+    isNewMemo = true
     showEditView.value = true
 }
 
-const handleCloseEdit = () => {
+const handleCloseEdit = (text: string) => {
     showEditView.value = false
+    if (isNewMemo) {
+        localStorage.setItem('lastEditText', text)
+    }
 }
 
 const handleSendMemo = (text: string) => {
     console.log('发送备忘录:', text)
     // TODO: 实现发送备忘录到服务器的功能
     showEditView.value = false
-    // 刷新备忘录列表
+    localStorage.removeItem('lastEditText')
     loadMemos()
 }
 
@@ -540,6 +546,7 @@ const showImageViewer = async (resource: V1Resource) => {
                 class="fixed inset-0 z-50"
                 style="top: calc(env(safe-area-inset-top) - 8px)">
                 <EditView
+                    :initial-text="editInitialText"
                     @close="handleCloseEdit"
                     @send="handleSendMemo"
                     @text-change="handleTextChange" />
