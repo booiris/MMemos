@@ -23,7 +23,7 @@ export default {
             language: 'Language',
             cancel: 'Cancel',
             confirm: 'Confirm',
-            // imageSearch: "Image Search",
+            imageSearch: 'Image Search',
             autoTitle: 'Auto Link Title',
             refresh: 'Auto Refresh on Launch',
             randomHistory: 'Random History',
@@ -52,6 +52,8 @@ export default {
         recover: 'Recover',
         editPage: {
             placeholder: 'What is on your mind?',
+            send: 'Send',
+            close: 'Close',
         },
     },
     time: {

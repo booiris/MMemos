@@ -23,7 +23,7 @@ export default {
             language: '语言',
             cancel: '取消',
             confirm: '确定',
-            // imageSearch: "启用图片搜索",
+            imageSearch: '启用图片搜索',
             autoTitle: '自动获取网页标题',
             refresh: '启动时自动刷新',
             randomHistory: '随机回顾',
@@ -51,6 +51,8 @@ export default {
         recover: '恢复',
         editPage: {
             placeholder: '现在的想法是...',
+            send: '发送',
+            close: '关闭',
         },
     },
     time: {

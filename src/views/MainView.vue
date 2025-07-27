@@ -53,6 +53,9 @@ const handleSettings = () => {
 }
 
 const handleHome = () => {
+    if (showEditView.value) {
+        return
+    }
     router.push({ name: 'Home' })
 }
 
@@ -287,7 +290,7 @@ const showImageViewer = async (resource: V1Resource) => {
 
 <template>
     <div
-        class="flex flex-col px-5"
+        class="flex flex-col w-full"
         style="height: calc(100vh - env(safe-area-inset-top) + 8px)"
         id="main-view">
         <div
@@ -296,7 +299,8 @@ const showImageViewer = async (resource: V1Resource) => {
             <img :src="loading_image" alt="loading" class="w-12 h-12" />
         </div>
 
-        <div class="flex justify-between items-center sticky top-0 z-10 mb-0.5">
+        <div
+            class="flex justify-between items-center sticky top-0 z-10 mb-0.5 px-5">
             <div
                 class="flex items-center gap-2 cursor-pointer"
                 @click="handleHome">
@@ -324,7 +328,7 @@ const showImageViewer = async (resource: V1Resource) => {
         </div>
 
         <div
-            class="flex-1 overflow-y-auto -mx-5"
+            class="flex-1 overflow-y-auto"
             id="memo-list"
             style="margin-bottom: calc(env(safe-area-inset-bottom) + 0.5rem)"
             @scroll="handleScroll">
