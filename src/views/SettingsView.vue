@@ -129,7 +129,7 @@ useSwipeBack({ onSwipe: handleBack }, '#settings-view')
 <template>
     <div
         class="flex flex-col px-3 gap-2 -mt-1.5"
-        style="height: calc(100vh - env(safe-area-inset-top))"
+        style="height: calc(100vh - env(safe-area-inset-top) + 8px)"
         id="settings-view">
         <div>
             <button @click="handleBack" class="flex items-center">

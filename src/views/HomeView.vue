@@ -68,7 +68,7 @@ onMounted(async () => {
 <template>
     <div
         class="flex flex-col px-5 gap-3"
-        style="height: calc(100vh - env(safe-area-inset-top))">
+        style="height: calc(100vh - env(safe-area-inset-top) + 8px)">
         <div
             class="flex justify-between items-center sticky top-0 z-10 mb-0.5 bg-background">
             <div class="flex items-center gap-2">
