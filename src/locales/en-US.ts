@@ -50,6 +50,9 @@ export default {
         delete: 'Delete',
         search: ' Search',
         recover: 'Recover',
+        editPage: {
+            placeholder: 'What is on your mind?',
+        },
     },
     time: {
         yesterday: 'Yesterday',

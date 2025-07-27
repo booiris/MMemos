@@ -18,6 +18,7 @@ import {
     Home,
 } from 'lucide-vue-next'
 import TouchAnimation from '@/components/ui/touch-animation/index.vue'
+import EditView from '@/views/EditView.vue'
 import { getMemos, getMemosByTag, getArchivedMemos } from '@/api/memos'
 import { V1MemoRelation, V1Reaction, V1Resource } from '@/api/schema/api'
 import { Marked, Tokens } from 'marked'
@@ -138,6 +139,7 @@ const memos = ref<Memo[]>([])
 const isLoading = ref(false)
 const searchQuery = ref('')
 const showScrollToTop = ref(false)
+const showEditView = ref(false)
 
 const currentTag = route.params.tag as string
 const pageName = route.name as string
@@ -206,7 +208,24 @@ const handlePinMemo = (memo: Memo) => {
 
 const handleAddMemo = () => {
     console.log('添加新备忘录')
-    // TODO: 实现添加备忘录功能
+    showEditView.value = true
+}
+
+const handleCloseEdit = () => {
+    showEditView.value = false
+}
+
+const handleSendMemo = (text: string) => {
+    console.log('发送备忘录:', text)
+    // TODO: 实现发送备忘录到服务器的功能
+    showEditView.value = false
+    // 刷新备忘录列表
+    loadMemos()
+}
+
+const handleTextChange = (text: string) => {
+    // 可以在这里处理文本变化，比如自动保存草稿等
+    console.log('文本变化:', text.length, '字符')
 }
 
 const handleSearch = (query: string) => {
@@ -305,146 +324,157 @@ const showImageViewer = async (resource: V1Resource) => {
         </div>
 
         <div
-            class="flex-1 overflow-y-auto"
+            class="flex-1 overflow-y-auto -mx-5"
             id="memo-list"
             style="margin-bottom: calc(env(safe-area-inset-bottom) + 0.5rem)"
             @scroll="handleScroll">
-            <!-- TODO: update loading page -->
-            <div
-                v-if="isLoading"
-                class="my-4 p-6 rounded-lg border-1 border-primary">
-                <div class="text-gray-500 text-center">加载中...</div>
-            </div>
-
-            <div v-else-if="memos.length > 0">
+            <div class="px-5">
+                <!-- TODO: update loading page -->
                 <div
-                    v-if="pageName == 'MainWithTag'"
-                    class="text-2xl text-primary mb-2 mt-2">
-                    # {{ currentTag }}
+                    v-if="isLoading"
+                    class="my-4 p-6 rounded-lg border-1 border-primary">
+                    <div class="text-gray-500 text-center">加载中...</div>
                 </div>
-                <div v-else style="margin-top: 12px"></div>
 
-                <div class="space-y-6">
+                <div v-else-if="memos.length > 0">
                     <div
-                        v-for="memo in memos"
-                        :key="memo.createTime"
-                        class="px-5 pt-3 pb-1 rounded-lg border-1 border-primary">
-                        <div class="flex justify-between items-center -mr-1.5">
-                            <div class="text-gray-500 text-sm">
-                                {{ formatLocalTime(memo.displayTime) }}
-                            </div>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger as-child>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        class="!h-5.5 !w-5.5 text-primary/77">
-                                        <MoreHorizontal class="!h-5.5 !w-5.5" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent
-                                    align="end"
-                                    class="w-58 border-1 border-primary !shadow-none px-1.1 bg-popover">
-                                    <DropdownMenuItem
-                                        v-if="pageName != 'Archive'"
-                                        @click="handleEditMemo(memo)"
-                                        class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5">
-                                        {{ t('main.edit') }}
-                                        <Edit
-                                            class="ml-auto text-primary !h-5 !w-5" />
-                                    </DropdownMenuItem>
-                                    <div
-                                        v-if="pageName != 'Archive'"
-                                        class="border-b border-primary/76 my-0"></div>
-                                    <DropdownMenuItem
-                                        @click="handleCopyMemo(memo)"
-                                        class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5">
-                                        {{ t('main.copy') }}
-                                        <Copy
-                                            class="ml-auto text-primary !h-5 !w-5" />
-                                    </DropdownMenuItem>
-                                    <div
-                                        v-if="pageName != 'Archive'"
-                                        class="border-b border-primary/76 my-0"></div>
-                                    <DropdownMenuItem
-                                        v-if="pageName != 'Archive'"
-                                        @click="handlePinMemo(memo)"
-                                        class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5">
-                                        {{ t('main.pin') }}
-                                        <Pin
-                                            class="ml-auto text-primary !h-5 !w-5" />
-                                    </DropdownMenuItem>
-                                    <div
-                                        class="border-b border-primary/76 my-0"></div>
-                                    <DropdownMenuItem
-                                        v-if="pageName != 'Archive'"
-                                        @click="handleArchiveMemo(memo)"
-                                        class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5"
-                                        variant="destructive">
-                                        {{ t('main.archive') }}
-                                        <Archive class="ml-auto !h-5 !w-5" />
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                        v-if="pageName == 'Archive'"
-                                        @click="handleRecoverMemo(memo)"
-                                        class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5">
-                                        {{ t('main.recover') }}
-                                        <ArchiveRestore
-                                            class="ml-auto !h-5 !w-5" />
-                                    </DropdownMenuItem>
+                        v-if="pageName == 'MainWithTag'"
+                        class="text-2xl text-primary mb-2 mt-2">
+                        # {{ currentTag }}
+                    </div>
+                    <div v-else style="margin-top: 12px"></div>
 
-                                    <div
-                                        class="border-b border-primary/76 my-0"></div>
-                                    <DropdownMenuItem
-                                        @click="handleDeleteMemo(memo)"
-                                        class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5"
-                                        variant="destructive">
-                                        {{ t('main.delete') }}
-                                        <Trash2 class="ml-auto !h-5 !w-5" />
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-
-                        <article
-                            v-html="markdownRender.parse(memo.content)"
-                            class="whitespace-pre-wrap break-words prose prose-lg prose-zinc mt-2.5"
-                            style="line-height: 1 !important"></article>
-
+                    <div class="space-y-6">
                         <div
-                            v-if="getImageResources(memo.resources).length > 0"
-                            class="mt-0.5 mb-4 -mx-2.5">
-                            <div class="flex overflow-x-auto gap-2">
-                                <div
-                                    v-for="(
-                                        resource, index
-                                    ) in getImageResources(memo.resources)"
-                                    :key="resource.name || index"
-                                    class="flex-shrink-0 px-0.5">
-                                    <img
-                                        v-auth-image="
-                                            getImageUrl(resource, true)
-                                        "
-                                        class="rounded-lg h-40 object-fit w-auto"
-                                        loading="lazy"
-                                        @click="showImageViewer(resource)" />
+                            v-for="memo in memos"
+                            :key="memo.createTime"
+                            class="px-5 pt-3 pb-1 rounded-lg border-1 border-primary">
+                            <div
+                                class="flex justify-between items-center -mr-1.5">
+                                <div class="text-gray-500 text-sm">
+                                    {{ formatLocalTime(memo.displayTime) }}
+                                </div>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger as-child>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            class="!h-5.5 !w-5.5 text-primary/77">
+                                            <MoreHorizontal
+                                                class="!h-5.5 !w-5.5" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent
+                                        align="end"
+                                        class="w-58 border-1 border-primary !shadow-none px-1.1 bg-popover">
+                                        <DropdownMenuItem
+                                            v-if="pageName != 'Archive'"
+                                            @click="handleEditMemo(memo)"
+                                            class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5">
+                                            {{ t('main.edit') }}
+                                            <Edit
+                                                class="ml-auto text-primary !h-5 !w-5" />
+                                        </DropdownMenuItem>
+                                        <div
+                                            v-if="pageName != 'Archive'"
+                                            class="border-b border-primary/76 my-0"></div>
+                                        <DropdownMenuItem
+                                            @click="handleCopyMemo(memo)"
+                                            class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5">
+                                            {{ t('main.copy') }}
+                                            <Copy
+                                                class="ml-auto text-primary !h-5 !w-5" />
+                                        </DropdownMenuItem>
+                                        <div
+                                            v-if="pageName != 'Archive'"
+                                            class="border-b border-primary/76 my-0"></div>
+                                        <DropdownMenuItem
+                                            v-if="pageName != 'Archive'"
+                                            @click="handlePinMemo(memo)"
+                                            class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5">
+                                            {{ t('main.pin') }}
+                                            <Pin
+                                                class="ml-auto text-primary !h-5 !w-5" />
+                                        </DropdownMenuItem>
+                                        <div
+                                            class="border-b border-primary/76 my-0"></div>
+                                        <DropdownMenuItem
+                                            v-if="pageName != 'Archive'"
+                                            @click="handleArchiveMemo(memo)"
+                                            class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5"
+                                            variant="destructive">
+                                            {{ t('main.archive') }}
+                                            <Archive
+                                                class="ml-auto !h-5 !w-5" />
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            v-if="pageName == 'Archive'"
+                                            @click="handleRecoverMemo(memo)"
+                                            class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5">
+                                            {{ t('main.recover') }}
+                                            <ArchiveRestore
+                                                class="ml-auto !h-5 !w-5" />
+                                        </DropdownMenuItem>
+
+                                        <div
+                                            class="border-b border-primary/76 my-0"></div>
+                                        <DropdownMenuItem
+                                            @click="handleDeleteMemo(memo)"
+                                            class="text-lg my-0.5 transition-colors duration-150 active:bg-primary/10 pl-2.5"
+                                            variant="destructive">
+                                            {{ t('main.delete') }}
+                                            <Trash2 class="ml-auto !h-5 !w-5" />
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+
+                            <article
+                                v-html="markdownRender.parse(memo.content)"
+                                class="whitespace-pre-wrap break-words prose prose-lg prose-zinc mt-2.5"
+                                style="line-height: 1 !important"></article>
+
+                            <div
+                                v-if="
+                                    getImageResources(memo.resources).length > 0
+                                "
+                                class="mt-0.5 mb-4 -mx-2.5">
+                                <div class="flex overflow-x-auto gap-2">
+                                    <div
+                                        v-for="(
+                                            resource, index
+                                        ) in getImageResources(memo.resources)"
+                                        :key="resource.name || index"
+                                        class="flex-shrink-0 px-0.5">
+                                        <img
+                                            v-auth-image="
+                                                getImageUrl(resource, true)
+                                            "
+                                            class="rounded-lg h-40 object-fit w-auto"
+                                            loading="lazy"
+                                            @click="
+                                                showImageViewer(resource)
+                                            " />
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
+                        <div
+                            style="
+                                margin-bottom: calc(
+                                    env(safe-area-inset-bottom) + 1.5rem
+                                );
+                            "></div>
                     </div>
-
-                    <div
-                        style="
-                            margin-bottom: calc(
-                                env(safe-area-inset-bottom) + 1.5rem
-                            );
-                        "></div>
                 </div>
-            </div>
 
-            <!-- TODO: update empty page -->
-            <div v-else class="my-4 p-6 rounded-lg border-1 border-primary">
-                <div class="text-gray-500 text-center">还没有任何备忘录</div>
+                <!-- TODO: update empty page -->
+                <div v-else class="my-4 p-6 rounded-lg border-1 border-primary">
+                    <div class="text-gray-500 text-center">
+                        还没有任何备忘录
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -493,11 +523,33 @@ const showImageViewer = async (resource: V1Resource) => {
                 </TouchAnimation>
             </div>
         </div>
+
+        <Transition
+            enter-active-class="transition-transform duration-250 ease-out"
+            enter-from-class="transform translate-y-full"
+            enter-to-class="transform translate-y-0"
+            leave-active-class="transition-transform duration-150 ease-in"
+            leave-from-class="transform translate-y-0"
+            leave-to-class="transform translate-y-full">
+            <div
+                v-if="showEditView"
+                class="fixed inset-0 z-50"
+                style="top: calc(env(safe-area-inset-top) - 8px)">
+                <EditView
+                    @close="handleCloseEdit"
+                    @send="handleSendMemo"
+                    @text-change="handleTextChange" />
+            </div>
+        </Transition>
     </div>
 </template>
 
 <style>
 .viewer-container {
     background-color: rgba(0, 0, 0, 0.55) !important;
+}
+
+#memo-list::-webkit-scrollbar {
+    display: block !important;
 }
 </style>

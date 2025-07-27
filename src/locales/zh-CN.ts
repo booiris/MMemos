@@ -49,6 +49,9 @@ export default {
         delete: '删除',
         search: ' 搜索',
         recover: '恢复',
+        editPage: {
+            placeholder: '现在的想法是...',
+        },
     },
     time: {
         yesterday: '昨天',
