@@ -56,6 +56,14 @@ export default {
             update: '更新',
             close: '关闭',
         },
+        loading: {
+            loading: '加载中...',
+            searching: '搜索中...',
+        },
+        noMemos: {
+            noMemos: '暂无 memos',
+            noMemosSearching: '没有找到匹配的 memo',
+        },
     },
     time: {
         yesterday: '昨天',

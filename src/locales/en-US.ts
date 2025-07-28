@@ -57,6 +57,14 @@ export default {
             update: 'Update',
             close: 'Close',
         },
+        loading: {
+            loading: 'Loading...',
+            searching: 'Searching...',
+        },
+        noMemos: {
+            noMemos: 'No memos',
+            noMemosSearching: 'No memos found',
+        },
     },
     time: {
         yesterday: 'Yesterday',

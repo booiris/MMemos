@@ -398,7 +398,11 @@ const showImageViewer = async (resource: V1Resource) => {
                     v-if="isLoading"
                     class="my-4 p-6 rounded-lg border-1 border-primary">
                     <div class="text-gray-500 text-center">
-                        {{ isSearching ? '搜索中...' : '加载中...' }}
+                        {{
+                            isSearching
+                                ? t('main.loading.searching')
+                                : t('main.loading.loading')
+                        }}
                     </div>
                 </div>
 
@@ -548,8 +552,8 @@ const showImageViewer = async (resource: V1Resource) => {
                     <div class="text-gray-500 text-center">
                         {{
                             isSearching
-                                ? '没有找到匹配的备忘录'
-                                : '还没有任何备忘录'
+                                ? t('main.noMemos.noMemosSearching')
+                                : t('main.noMemos.noMemos')
                         }}
                     </div>
                 </div>
