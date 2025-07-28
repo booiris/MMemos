@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useEditModal } from '@/composables/useEditModal'
 import EditView from '@/views/EditView.vue'
 import { V1Resource, V1Visibility } from '@/api/schema/api'
@@ -12,6 +13,7 @@ interface Emits {
 const emit = defineEmits<Emits>()
 
 const { editModalState, closeEdit } = useEditModal()
+const isLoading = ref<boolean>(false)
 
 const handleCloseEdit = (text: string) => {
     closeEdit()
@@ -30,6 +32,8 @@ const handleSendMemo = async (
         console.error('[handleSendMemo] memo content is empty!')
         return
     }
+
+    isLoading.value = true
 
     try {
         if (editModalState.value.isEditMode && memo?.name) {
@@ -52,6 +56,8 @@ const handleSendMemo = async (
         emit('success')
     } catch (error) {
         console.error('memo operation failed: ' + getError(error))
+    } finally {
+        isLoading.value = false
     }
 }
 
@@ -76,6 +82,7 @@ const handleTextChange = (text: string) => {
                 :initial-text="editModalState.initialText"
                 :is-edit-mode="editModalState.isEditMode"
                 :memo="editModalState.memo"
+                :is-loading="isLoading"
                 @close="handleCloseEdit"
                 @send="handleSendMemo"
                 @text-change="handleTextChange" />
