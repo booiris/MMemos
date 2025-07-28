@@ -181,3 +181,109 @@ export type Memo = {
     relations: V1MemoRelation[]
     reactions: V1Reaction[]
 }
+
+export interface PaginationState {
+    pageToken: string
+    hasMore: boolean
+    isLoading: boolean
+}
+
+// TODO: 添加 token 失效处理
+export async function loadMoreMemos(
+    currentPageToken?: string,
+    pageSize?: number,
+    state?: MemosState
+): Promise<{
+    memos: Memo[]
+    nextPageToken?: string
+    hasMore: boolean
+}> {
+    try {
+        const response = await client.api.memoServiceListMemos(
+            {
+                pageSize: pageSize || 15,
+                pageToken: currentPageToken || '',
+                state: state || MemosState.NORMAL,
+            },
+            { secure: true, signal: AbortSignal.timeout(10000) }
+        )
+
+        const memos =
+            response.memos?.map((memo) => ({
+                name: memo.name,
+                createTime: memo.createTime || '',
+                updateTime: memo.updateTime || '',
+                displayTime: memo.displayTime || '',
+                visibility: memo.visibility || 'PRIVATE',
+                content: memo.content || '',
+                pinned: memo.pinned || false,
+                resources: memo.resources || [],
+                relations: memo.relations || [],
+                reactions: memo.reactions || [],
+            })) || []
+
+        return {
+            memos,
+            nextPageToken: response.nextPageToken,
+            hasMore: Boolean(response.nextPageToken),
+        }
+    } catch (error) {
+        throw `[loadMoreMemos] ${getError(error)}`
+    }
+}
+
+export async function loadMoreMemosByTag(
+    tag: string,
+    currentPageToken?: string,
+    pageSize?: number,
+    state?: MemosState
+): Promise<{
+    memos: Memo[]
+    nextPageToken?: string
+    hasMore: boolean
+}> {
+    try {
+        const response = await client.api.memoServiceListMemos(
+            {
+                pageSize: pageSize || 15,
+                pageToken: currentPageToken || '',
+                state: state || MemosState.NORMAL,
+                filter: `tag in ["${tag}"]`,
+            },
+            { secure: true, signal: AbortSignal.timeout(10000) }
+        )
+
+        const memos =
+            response.memos?.map((memo) => ({
+                name: memo.name,
+                createTime: memo.createTime || '',
+                updateTime: memo.updateTime || '',
+                displayTime: memo.displayTime || '',
+                visibility: memo.visibility || 'PRIVATE',
+                content: memo.content || '',
+                pinned: memo.pinned || false,
+                resources: memo.resources || [],
+                relations: memo.relations || [],
+                reactions: memo.reactions || [],
+            })) || []
+
+        return {
+            memos,
+            nextPageToken: response.nextPageToken,
+            hasMore: Boolean(response.nextPageToken),
+        }
+    } catch (error) {
+        throw `[loadMoreMemosByTag] ${getError(error)}`
+    }
+}
+
+export async function loadMoreArchivedMemos(
+    currentPageToken?: string,
+    pageSize?: number
+): Promise<{
+    memos: Memo[]
+    nextPageToken?: string
+    hasMore: boolean
+}> {
+    return await loadMoreMemos(currentPageToken, pageSize, MemosState.ARCHIVED)
+}

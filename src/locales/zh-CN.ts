@@ -59,6 +59,7 @@ export default {
         loading: {
             loading: '加载中...',
             searching: '搜索中...',
+            loadingMore: '加载更多...',
         },
         noMemos: {
             noMemos: '暂无 memos',

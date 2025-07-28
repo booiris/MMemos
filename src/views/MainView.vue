@@ -21,15 +21,16 @@ import {
 import TouchAnimation from '@/components/ui/touch-animation/index.vue'
 import EditModal from '@/components/EditModal.vue'
 import {
-    getMemos,
-    getMemosByTag,
-    getArchivedMemos,
     deleteMemo,
     archiveMemo,
     restoreMemo,
     togglePinMemo,
     searchMemos,
+    loadMoreMemos,
+    loadMoreMemosByTag,
+    loadMoreArchivedMemos,
     Memo,
+    PaginationState,
 } from '@/api/memos'
 import { V1Resource } from '@/api/schema/api'
 import { Marked, Tokens } from 'marked'
@@ -146,6 +147,12 @@ const showScrollToTop = ref(false)
 const isSearching = ref(false)
 const searchResults = ref<Memo[]>([])
 
+const paginationState = ref<PaginationState>({
+    pageToken: '',
+    hasMore: true,
+    isLoading: false,
+})
+
 const currentTag = route.params.tag as string
 const pageName = route.name as string
 
@@ -153,36 +160,68 @@ const displayMemos = computed(() => {
     return isSearching.value ? searchResults.value : memos.value
 })
 
-const loadMemos = async () => {
+const loadMemos = async (reset: boolean = true) => {
     try {
         isLoading.value = true
 
-        let response
-        if (currentTag) {
-            response = await getMemosByTag(currentTag)
-        } else if (pageName == 'Archive') {
-            response = await getArchivedMemos()
-        } else {
-            response = await getMemos()
+        if (reset) {
+            paginationState.value = {
+                pageToken: '',
+                hasMore: true,
+                isLoading: false,
+            }
         }
 
-        memos.value =
-            response.memos?.map((memo) => ({
-                name: memo.name,
-                createTime: memo.createTime || '',
-                updateTime: memo.updateTime || '',
-                displayTime: memo.displayTime || '',
-                visibility: memo.visibility || 'PRIVATE',
-                content: memo.content || '',
-                pinned: memo.pinned || false,
-                resources: memo.resources || [],
-                relations: memo.relations || [],
-                reactions: memo.reactions || [],
-            })) || []
+        let result
+        if (currentTag) {
+            result = await loadMoreMemosByTag(currentTag, '', 15)
+        } else if (pageName == 'Archive') {
+            result = await loadMoreArchivedMemos('', 15)
+        } else {
+            result = await loadMoreMemos('', 15)
+        }
+
+        memos.value = result.memos
+        paginationState.value.pageToken = result.nextPageToken || ''
+        paginationState.value.hasMore = result.hasMore
     } catch (error) {
         console.error(error)
     } finally {
         isLoading.value = false
+    }
+}
+
+const loadMoreMemosData = async () => {
+    if (paginationState.value.isLoading || !paginationState.value.hasMore) {
+        return
+    }
+
+    try {
+        paginationState.value.isLoading = true
+
+        let result
+        if (currentTag) {
+            result = await loadMoreMemosByTag(
+                currentTag,
+                paginationState.value.pageToken,
+                15
+            )
+        } else if (pageName == 'Archive') {
+            result = await loadMoreArchivedMemos(
+                paginationState.value.pageToken,
+                15
+            )
+        } else {
+            result = await loadMoreMemos(paginationState.value.pageToken, 15)
+        }
+
+        memos.value.push(...result.memos)
+        paginationState.value.pageToken = result.nextPageToken || ''
+        paginationState.value.hasMore = result.hasMore
+    } catch (error) {
+        console.error('load more memos failed:', error)
+    } finally {
+        paginationState.value.isLoading = false
     }
 }
 
@@ -312,7 +351,16 @@ const handleScroll = (event: Event) => {
     const target = event.target as HTMLElement
     if (target) {
         const scrollTop = target.scrollTop
+        const scrollHeight = target.scrollHeight
+        const clientHeight = target.clientHeight
+
         showScrollToTop.value = scrollTop > 200
+
+        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 150
+
+        if (isNearBottom && !isSearching.value) {
+            loadMoreMemosData()
+        }
     }
 }
 
@@ -545,6 +593,18 @@ const showImageViewer = async (resource: V1Resource) => {
                                     env(safe-area-inset-bottom) + 1.5rem
                                 );
                             "></div>
+                    </div>
+
+                    <div
+                        v-if="
+                            paginationState.isLoading &&
+                            !isLoading &&
+                            !isSearching
+                        "
+                        class="-mt-3 mb-14 p-4 rounded-lg border-1 border-primary">
+                        <div class="text-gray-500 text-center">
+                            {{ t('main.loading.loadingMore') }}
+                        </div>
                     </div>
                 </div>
 

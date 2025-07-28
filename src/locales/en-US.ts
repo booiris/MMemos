@@ -60,6 +60,7 @@ export default {
         loading: {
             loading: 'Loading...',
             searching: 'Searching...',
+            loadingMore: 'Loading more...',
         },
         noMemos: {
             noMemos: 'No memos',
