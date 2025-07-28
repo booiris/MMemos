@@ -29,6 +29,7 @@ import {
     restoreMemo,
     togglePinMemo,
     searchMemos,
+    updateMemo,
 } from '@/api/memos'
 import {
     V1MemoRelation,
@@ -164,6 +165,7 @@ const editInitialText = ref('')
 const isSearching = ref(false)
 const searchResults = ref<Memo[]>([])
 let isNewMemo = false
+let editMemo: Memo | null = null
 
 const currentTag = route.params.tag as string
 const pageName = route.name as string
@@ -208,6 +210,7 @@ const loadMemos = async () => {
 const handleEditMemo = (memo: Memo) => {
     editInitialText.value = memo.content
     isNewMemo = false
+    editMemo = memo
     showEditView.value = true
 }
 
@@ -278,6 +281,7 @@ const handlePinMemo = async (memo: Memo) => {
 const handleAddMemo = () => {
     editInitialText.value = localStorage.getItem('lastEditText') || ''
     isNewMemo = true
+    editMemo = null
     showEditView.value = true
 }
 
@@ -299,9 +303,24 @@ const handleSendMemo = async (
     }
 
     try {
-        await createMemo(text, visibility, resource)
+        if (editMemo) {
+            if (!editMemo.name) {
+                console.error('[handleSendMemo] missing memo name!')
+                return
+            }
+
+            await updateMemo(editMemo.name, {
+                content: text,
+                visibility: visibility,
+                resources: resource,
+            })
+        } else {
+            await createMemo(text, visibility, resource)
+        }
+
         console.info('create memo success')
         showEditView.value = false
+        editMemo = null
         localStorage.removeItem('lastEditText')
         await loadMemos()
     } catch (error) {
