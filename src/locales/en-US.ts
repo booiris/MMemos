@@ -54,6 +54,7 @@ export default {
         editPage: {
             placeholder: 'What is on your mind?',
             send: 'Send',
+            update: 'Update',
             close: 'Close',
         },
     },

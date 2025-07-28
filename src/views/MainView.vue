@@ -4,6 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { Button } from '@/components/ui/button'
 import { useSwipeBack } from '@/composables/useSwipeBack'
+import { useEditModal } from '@/composables/useEditModal'
 import {
     Bolt,
     MoreHorizontal,
@@ -18,25 +19,19 @@ import {
     Home,
 } from 'lucide-vue-next'
 import TouchAnimation from '@/components/ui/touch-animation/index.vue'
-import EditView from '@/views/EditView.vue'
+import EditModal from '@/components/EditModal.vue'
 import {
     getMemos,
     getMemosByTag,
     getArchivedMemos,
-    createMemo,
     deleteMemo,
     archiveMemo,
     restoreMemo,
     togglePinMemo,
     searchMemos,
-    updateMemo,
+    Memo,
 } from '@/api/memos'
-import {
-    V1MemoRelation,
-    V1Reaction,
-    V1Resource,
-    V1Visibility,
-} from '@/api/schema/api'
+import { V1Resource } from '@/api/schema/api'
 import { Marked, Tokens } from 'marked'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
@@ -63,6 +58,7 @@ const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 const { t } = useI18n()
+const { editModalState, openNewMemo, openEditMemo } = useEditModal()
 const viewImageLoading = ref(false)
 
 const handleSettings = () => {
@@ -70,7 +66,7 @@ const handleSettings = () => {
 }
 
 const handleHome = () => {
-    if (showEditView.value) {
+    if (editModalState.value.isVisible) {
         return
     }
     router.push({ name: 'Home' })
@@ -143,29 +139,12 @@ const getImageUrl = (
     return ''
 }
 
-type Memo = {
-    name?: string
-    createTime: string
-    updateTime: string
-    displayTime: string
-    visibility: string
-    content: string
-    pinned: boolean
-    resources: V1Resource[]
-    relations: V1MemoRelation[]
-    reactions: V1Reaction[]
-}
-
 const memos = ref<Memo[]>([])
 const isLoading = ref(false)
 const searchQuery = ref('')
 const showScrollToTop = ref(false)
-const showEditView = ref(false)
-const editInitialText = ref('')
 const isSearching = ref(false)
 const searchResults = ref<Memo[]>([])
-let isNewMemo = false
-let editMemo: Memo | null = null
 
 const currentTag = route.params.tag as string
 const pageName = route.name as string
@@ -208,10 +187,7 @@ const loadMemos = async () => {
 }
 
 const handleEditMemo = (memo: Memo) => {
-    editInitialText.value = memo.content
-    isNewMemo = false
-    editMemo = memo
-    showEditView.value = true
+    openEditMemo(memo)
 }
 
 const handleDeleteMemo = async (memo: Memo) => {
@@ -279,57 +255,12 @@ const handlePinMemo = async (memo: Memo) => {
 }
 
 const handleAddMemo = () => {
-    editInitialText.value = localStorage.getItem('lastEditText') || ''
-    isNewMemo = true
-    editMemo = null
-    showEditView.value = true
+    const lastEditText = localStorage.getItem('lastEditText') || ''
+    openNewMemo(lastEditText)
 }
 
-const handleCloseEdit = (text: string) => {
-    showEditView.value = false
-    if (isNewMemo) {
-        localStorage.setItem('lastEditText', text)
-    }
-}
-
-const handleSendMemo = async (
-    text: string,
-    visibility: V1Visibility,
-    resource?: V1Resource[]
-) => {
-    if (!text) {
-        console.error('[handleSendMemo] memo content is empty!')
-        return
-    }
-
-    try {
-        if (editMemo) {
-            if (!editMemo.name) {
-                console.error('[handleSendMemo] missing memo name!')
-                return
-            }
-
-            await updateMemo(editMemo.name, {
-                content: text,
-                visibility: visibility,
-                resources: resource,
-            })
-        } else {
-            await createMemo(text, visibility, resource)
-        }
-
-        console.info('create memo success')
-        showEditView.value = false
-        editMemo = null
-        localStorage.removeItem('lastEditText')
-        await loadMemos()
-    } catch (error) {
-        console.error('create memo failed: ' + getError(error))
-    }
-}
-
-const handleTextChange = (text: string) => {
-    console.log(text.length)
+const handleModalSuccess = async () => {
+    await loadMemos()
 }
 
 const handleSearch = async (query: string) => {
@@ -671,24 +602,7 @@ const showImageViewer = async (resource: V1Resource) => {
             </div>
         </div>
 
-        <Transition
-            enter-active-class="transition-transform duration-250 ease-out"
-            enter-from-class="transform translate-y-full"
-            enter-to-class="transform translate-y-0"
-            leave-active-class="transition-transform duration-150 ease-in"
-            leave-from-class="transform translate-y-0"
-            leave-to-class="transform translate-y-full">
-            <div
-                v-if="showEditView"
-                class="fixed inset-0 z-50"
-                style="top: calc(env(safe-area-inset-top) - 8px)">
-                <EditView
-                    :initial-text="editInitialText"
-                    @close="handleCloseEdit"
-                    @send="handleSendMemo"
-                    @text-change="handleTextChange" />
-            </div>
-        </Transition>
+        <EditModal @success="handleModalSuccess" />
     </div>
 </template>
 

@@ -3,6 +3,8 @@ import { getError } from './error'
 import {
     Apiv1Memo,
     V1ListMemosResponse,
+    V1MemoRelation,
+    V1Reaction,
     V1Resource,
     V1State,
     V1Visibility,
@@ -165,4 +167,17 @@ export async function searchMemos(
     } catch (error) {
         throw `[searchMemos] ${getError(error)}`
     }
+}
+
+export type Memo = {
+    name?: string
+    createTime: string
+    updateTime: string
+    displayTime: string
+    visibility: string
+    content: string
+    pinned: boolean
+    resources: V1Resource[]
+    relations: V1MemoRelation[]
+    reactions: V1Reaction[]
 }

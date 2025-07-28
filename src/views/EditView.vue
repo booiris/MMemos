@@ -3,20 +3,30 @@ import { ref, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import { V1Resource, V1Visibility } from '@/api/schema/api'
+import { Memo } from '@/api/memos'
 
 const { t } = useI18n()
 
 interface Props {
     initialText?: string
+    isEditMode?: boolean
+    memo?: Memo | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
     initialText: '',
+    isEditMode: false,
+    memo: null,
 })
 
 interface Emits {
     close: [text: string]
-    send: [text: string, visibility: V1Visibility, resource: V1Resource[]]
+    send: [
+        text: string,
+        visibility: V1Visibility,
+        resource: V1Resource[],
+        memo?: Memo | null
+    ]
     textChange: [text: string]
 }
 
@@ -34,6 +44,10 @@ watch(
         textContent.value = newText
     }
 )
+
+const handleSend = () => {
+    emit('send', textContent.value, V1Visibility.PRIVATE, [], props.memo)
+}
 </script>
 
 <template>
@@ -48,10 +62,14 @@ watch(
             </button>
 
             <Button
-                @click="emit('send', textContent, V1Visibility.PRIVATE, [])"
+                @click="handleSend"
                 :disabled="!textContent"
                 class="text-sm h-8 font-medium">
-                {{ t('main.editPage.send') }}
+                {{
+                    isEditMode
+                        ? t('main.editPage.update')
+                        : t('main.editPage.send')
+                }}
             </Button>
         </div>
 

@@ -53,6 +53,7 @@ export default {
         editPage: {
             placeholder: '现在的想法是...',
             send: '发送',
+            update: '更新',
             close: '关闭',
         },
     },
