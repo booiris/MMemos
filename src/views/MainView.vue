@@ -514,7 +514,9 @@ const showImageViewer = async (resource: V1Resource) => {
                     <div
                         v-else-if="isSearching"
                         class="text-lg text-primary mb-2 mt-2">
-                        搜索结果 ({{ displayMemos.length }} 条)
+                        {{ t('main.searchResult.title') }}
+                        ( {{ displayMemos.length }}
+                        {{ t('main.searchResult.count') }} )
                     </div>
                     <div v-else style="margin-top: 12px"></div>
 

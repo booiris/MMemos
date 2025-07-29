@@ -68,6 +68,10 @@ export default {
             noMemos: '暂无 memos',
             noMemosSearching: '没有找到匹配的 memo',
         },
+        searchResult: {
+            title: '搜索结果',
+            count: '条',
+        },
     },
     time: {
         yesterday: '昨天',

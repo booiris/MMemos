@@ -69,6 +69,10 @@ export default {
             noMemos: 'No memos',
             noMemosSearching: 'No memos found',
         },
+        searchResult: {
+            title: 'Search Result',
+            count: 'memos',
+        },
     },
     time: {
         yesterday: 'Yesterday',
