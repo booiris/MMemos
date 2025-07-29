@@ -49,6 +49,9 @@ export default {
         copy: 'Copy',
         archive: 'Archive',
         delete: 'Delete',
+        archiveConfirm: 'Archive',
+        deleteConfirm: 'Delete',
+        cancel: 'Cancel',
         search: ' Search',
         recover: 'Recover',
         editPage: {

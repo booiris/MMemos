@@ -48,6 +48,9 @@ export default {
         copy: '复制',
         archive: '归档',
         delete: '删除',
+        archiveConfirm: '归档',
+        deleteConfirm: '删除',
+        cancel: '取消',
         search: ' 搜索',
         recover: '恢复',
         editPage: {

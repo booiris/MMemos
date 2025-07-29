@@ -45,6 +45,16 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Input } from '@/components/ui/input'
 import { getAuthToken, getHost } from '@/api/client'
 import { api as viewerApi } from 'v-viewer'
@@ -153,6 +163,11 @@ const paginationState = ref<PaginationState>({
     isLoading: false,
 })
 
+type ConfirmAction = 'archive' | 'delete'
+const confirmDialogOpen = ref(false)
+const confirmAction = ref<ConfirmAction>('delete')
+const memoToOperate = ref<Memo | null>(null)
+
 const currentTag = route.params.tag as string
 const pageName = route.name as string
 
@@ -229,18 +244,32 @@ const handleEditMemo = (memo: Memo) => {
     openEditMemo(memo)
 }
 
-const handleDeleteMemo = async (memo: Memo) => {
-    if (!memo.name) {
-        console.error('[handleDeleteMemo] missing memo name!')
+const handleDeleteMemo = (memo: Memo) => {
+    memoToOperate.value = memo
+    confirmAction.value = 'delete'
+    confirmDialogOpen.value = true
+}
+
+const confirmOperation = async () => {
+    if (!memoToOperate.value?.name) {
+        console.error('[confirmOperation] missing memo name!')
         return
     }
 
     try {
-        await deleteMemo(memo.name)
-        console.info('delete memo success: ' + memo.name)
+        if (confirmAction.value === 'archive') {
+            await archiveMemo(memoToOperate.value.name)
+            console.info('archive memo success: ' + memoToOperate.value.name)
+        } else if (confirmAction.value === 'delete') {
+            await deleteMemo(memoToOperate.value.name)
+            console.info('delete memo success: ' + memoToOperate.value.name)
+        }
+
         await loadMemos()
+        confirmDialogOpen.value = false
+        memoToOperate.value = null
     } catch (error) {
-        console.error('delete memo failed: ' + getError(error))
+        console.error(`${confirmAction.value} memo failed: ` + getError(error))
     }
 }
 
@@ -248,19 +277,10 @@ const handleCopyMemo = (memo: Memo) => {
     navigator.clipboard.writeText(memo.content)
 }
 
-const handleArchiveMemo = async (memo: Memo) => {
-    if (!memo.name) {
-        console.error('[handleArchiveMemo] missing memo name!')
-        return
-    }
-
-    try {
-        await archiveMemo(memo.name)
-        console.info('archive memo success: ' + memo.name)
-        await loadMemos()
-    } catch (error) {
-        console.error('archive memo failed: ' + getError(error))
-    }
+const handleArchiveMemo = (memo: Memo) => {
+    memoToOperate.value = memo
+    confirmAction.value = 'archive'
+    confirmDialogOpen.value = true
 }
 
 const handleRecoverMemo = async (memo: Memo) => {
@@ -667,6 +687,46 @@ const showImageViewer = async (resource: V1Resource) => {
         </div>
 
         <EditModal @success="handleModalSuccess" />
+
+        <AlertDialog v-model:open="confirmDialogOpen">
+            <AlertDialogContent class="px-8 gap-4 pt-4">
+                <AlertDialogHeader>
+                    <AlertDialogTitle class="text-2xl font-bold">
+                        {{
+                            confirmAction === 'archive'
+                                ? t('main.archive')
+                                : t('main.delete')
+                        }}
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                        {{
+                            (confirmAction === 'archive'
+                                ? t('main.archiveConfirm')
+                                : t('main.deleteConfirm')) +
+                            ': ' +
+                            (memoToOperate?.content?.slice(0, 40) || '') +
+                            '...?'
+                        }}
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel
+                        class="h-10 !shadow-none text-base border-primary !focus:outline-none"
+                        >{{ t('main.cancel') }}</AlertDialogCancel
+                    >
+                    <AlertDialogAction
+                        @click="confirmOperation"
+                        variant="destructive"
+                        class="h-10 !shadow-none text-base border-primary !focus:outline-none">
+                        {{
+                            confirmAction === 'archive'
+                                ? t('main.archive')
+                                : t('main.delete')
+                        }}
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     </div>
 </template>
 
