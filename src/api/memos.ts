@@ -287,3 +287,35 @@ export async function loadMoreArchivedMemos(
 }> {
     return await loadMoreMemos(currentPageToken, pageSize, MemosState.ARCHIVED)
 }
+
+export async function getPinnedContent(): Promise<Memo[]> {
+    try {
+        const response = await client.api.memoServiceListMemos(
+            {
+                pageSize: 50,
+                pageToken: '',
+                filter: 'pinned',
+                state: MemosState.NORMAL,
+            },
+            { secure: true, signal: AbortSignal.timeout(10000) }
+        )
+
+        const pinnedMemos =
+            response.memos?.map((memo) => ({
+                name: memo.name,
+                createTime: memo.createTime || '',
+                updateTime: memo.updateTime || '',
+                displayTime: memo.displayTime || '',
+                visibility: memo.visibility || 'PRIVATE',
+                content: memo.content || '',
+                pinned: memo.pinned || false,
+                resources: memo.resources || [],
+                relations: memo.relations || [],
+                reactions: memo.reactions || [],
+            })) || []
+
+        return pinnedMemos
+    } catch (error) {
+        throw `[getPinnedContent] ${getError(error)}`
+    }
+}

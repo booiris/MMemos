@@ -29,6 +29,7 @@ import {
     loadMoreMemos,
     loadMoreMemosByTag,
     loadMoreArchivedMemos,
+    getPinnedContent,
     Memo,
     PaginationState,
 } from '@/api/memos'
@@ -151,6 +152,7 @@ const getImageUrl = (
 }
 
 const memos = ref<Memo[]>([])
+const pinnedContent = ref<Memo[]>([])
 const isLoading = ref(false)
 const searchQuery = ref('')
 const showScrollToTop = ref(false)
@@ -172,8 +174,38 @@ const currentTag = route.params.tag as string
 const pageName = route.name as string
 
 const displayMemos = computed(() => {
-    return isSearching.value ? searchResults.value : memos.value
+    const allMemos = isSearching.value ? searchResults.value : memos.value
+
+    if (
+        !isSearching.value &&
+        pageName !== 'Archive' &&
+        pinnedContent.value.length > 0
+    ) {
+        const pinnedNames = new Set(
+            pinnedContent.value.map((memo) => memo.name)
+        )
+        const unpinnedMemos = allMemos.filter(
+            (memo) => !pinnedNames.has(memo.name)
+        )
+        return [...pinnedContent.value, ...unpinnedMemos]
+    }
+
+    return allMemos
 })
+
+const loadPinnedContent = async () => {
+    if (pageName === 'Archive') {
+        pinnedContent.value = []
+        return
+    }
+
+    try {
+        pinnedContent.value = await getPinnedContent()
+    } catch (error) {
+        console.error('load pinned content failed: ' + getError(error))
+        pinnedContent.value = []
+    }
+}
 
 const loadMemos = async (reset: boolean = true) => {
     try {
@@ -265,7 +297,7 @@ const confirmOperation = async () => {
             console.info('delete memo success: ' + memoToOperate.value.name)
         }
 
-        await loadMemos()
+        await Promise.all([loadMemos(), loadPinnedContent()])
         confirmDialogOpen.value = false
         memoToOperate.value = null
     } catch (error) {
@@ -292,7 +324,7 @@ const handleRecoverMemo = async (memo: Memo) => {
     try {
         await restoreMemo(memo.name)
         console.info('restore memo success: ' + memo.name)
-        await loadMemos()
+        await Promise.all([loadMemos(), loadPinnedContent()])
     } catch (error) {
         console.error('restore memo failed: ' + getError(error))
     }
@@ -307,7 +339,7 @@ const handlePinMemo = async (memo: Memo) => {
     try {
         await togglePinMemo(memo.name, !memo.pinned)
         console.info('toggle pin memo success: ' + memo.name)
-        await loadMemos()
+        await Promise.all([loadMemos(), loadPinnedContent()])
     } catch (error) {
         console.error('toggle pin memo failed: ' + getError(error))
     }
@@ -319,7 +351,7 @@ const handleAddMemo = () => {
 }
 
 const handleModalSuccess = async () => {
-    await loadMemos()
+    await Promise.all([loadMemos(), loadPinnedContent()])
 }
 
 const handleSearch = async (query: string) => {
@@ -385,7 +417,7 @@ const handleScroll = (event: Event) => {
 }
 
 onActivated(() => {
-    loadMemos()
+    Promise.all([loadMemos(), loadPinnedContent()])
 })
 useSwipeBack({ onSwipe: handleHome }, '#main-view')
 
@@ -494,8 +526,12 @@ const showImageViewer = async (resource: V1Resource) => {
                             class="px-5 pt-3 pb-1 rounded-lg border-1 border-primary">
                             <div
                                 class="flex justify-between items-center -mr-1.5">
-                                <div class="text-gray-500 text-sm">
+                                <div
+                                    class="text-gray-500 text-sm flex items-center gap-1.5">
                                     {{ formatLocalTime(memo.displayTime) }}
+                                    <Pin
+                                        v-if="memo.pinned"
+                                        class="!h-4.5 !w-4.5 text-gray-800" />
                                 </div>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger as-child>
