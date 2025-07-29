@@ -158,7 +158,7 @@ export async function searchMemos(
             {
                 pageSize: pageSize || 15,
                 pageToken: pageToken || '',
-                filter: `content contains "${query}"`,
+                filter: `content.contains("${query}")`,
                 state: MemosState.NORMAL,
             },
             { secure: true, signal: AbortSignal.timeout(10000) }

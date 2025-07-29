@@ -380,7 +380,6 @@ const handleSearch = async (query: string) => {
                 relations: memo.relations || [],
                 reactions: memo.reactions || [],
             })) || []
-        console.info('search memo success: ' + searchResults.value.length)
     } catch (error) {
         console.error('search memo failed: ' + getError(error))
         searchResults.value = []
