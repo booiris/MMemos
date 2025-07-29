@@ -194,7 +194,7 @@ const displayMemos = computed(() => {
 })
 
 const loadPinnedContent = async () => {
-    if (pageName === 'Archive') {
+    if (pageName !== 'Main') {
         pinnedContent.value = []
         return
     }
