@@ -460,7 +460,7 @@ const showImageViewer = async (resource: V1Resource) => {
         </div>
 
         <div
-            class="flex justify-between items-center sticky top-0 z-10 mb-0.5 px-5">
+            class="flex justify-between items-center sticky top-0 z-10 mb-0.5 pr-5 pl-6">
             <div
                 class="flex items-center gap-2 cursor-pointer"
                 @click="handleHome">
@@ -678,7 +678,7 @@ const showImageViewer = async (resource: V1Resource) => {
         </div>
 
         <div
-            class="fixed left-4.5 right-4.5 z-40"
+            class="fixed left-4 right-4 z-40"
             style="bottom: calc(env(safe-area-inset-bottom) - 0.5rem)">
             <div class="flex items-center gap-2">
                 <div class="flex-1">
