@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watchEffect } from 'vue'
 import { useEditModal } from '@/composables/useEditModal'
 import EditView from '@/views/EditView.vue'
 import { V1Resource, V1Visibility } from '@/api/schema/api'
@@ -12,8 +12,9 @@ interface Emits {
 
 const emit = defineEmits<Emits>()
 
-const { editModalState, closeEdit } = useEditModal()
+const { editModalState, closeEdit, setSaveCallback } = useEditModal()
 const isLoading = ref<boolean>(false)
+const currentEditText = ref<string>('')
 
 const handleCloseEdit = (text: string) => {
     closeEdit()
@@ -62,8 +63,25 @@ const handleSendMemo = async (
 }
 
 const handleTextChange = (text: string) => {
+    currentEditText.value = text
     console.log(text.length)
 }
+
+const createSaveCallback = () => {
+    return () => {
+        if (!editModalState.value.isEditMode && currentEditText.value) {
+            localStorage.setItem('lastEditText', currentEditText.value)
+        }
+    }
+}
+
+setSaveCallback(createSaveCallback())
+
+watchEffect(() => {
+    if (editModalState.value.isVisible) {
+        currentEditText.value = editModalState.value.initialText
+    }
+})
 </script>
 
 <template>

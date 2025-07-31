@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useDebounceFn } from '@vueuse/core'
 import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-vue-next'
 import { V1Resource, V1Visibility } from '@/api/schema/api'
@@ -37,16 +38,15 @@ const emit = defineEmits<Emits>()
 
 const textContent = ref<string>('')
 
-onMounted(() => {
-    textContent.value = props.initialText
+watchEffect(() => {
+    textContent.value = props.initialText || ''
 })
 
-watch(
-    () => props.initialText,
-    (newText) => {
-        textContent.value = newText
-    }
-)
+const isDisabled = computed(() => !textContent.value || props.isLoading)
+
+const debouncedTextChange = useDebounceFn((text: string) => {
+    emit('textChange', text)
+}, 300)
 
 const handleSend = () => {
     if (props.isLoading) return
@@ -68,10 +68,10 @@ const handleSend = () => {
 
             <Button
                 @click="handleSend"
-                :disabled="!textContent || props.isLoading"
+                :disabled="isDisabled"
                 class="text-sm h-8 font-medium flex items-center">
                 <Loader2 v-if="props.isLoading" class="h-4 w-4 animate-spin" />
-                <span v-if="!props.isLoading">
+                <span v-if="!props.isLoading" v-memo="[props.isEditMode]">
                     {{
                         props.isEditMode
                             ? t('main.editPage.update')
@@ -93,7 +93,7 @@ const handleSend = () => {
                             7rem
                     );
                 "
-                @input="emit('textChange', textContent)">
+                @input="debouncedTextChange(textContent)">
             </textarea>
         </div>
     </div>

@@ -70,7 +70,8 @@ const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 const { t } = useI18n()
-const { editModalState, openNewMemo, openEditMemo } = useEditModal()
+const { editModalState, openNewMemo, openEditMemo, saveAndCloseEdit } =
+    useEditModal()
 const viewImageLoading = ref(false)
 
 const handleSettings = () => {
@@ -79,6 +80,7 @@ const handleSettings = () => {
 
 const handleHome = () => {
     if (editModalState.value.isVisible) {
+        saveAndCloseEdit()
         return
     }
     router.push({ name: 'Home' })

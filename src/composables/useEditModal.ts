@@ -15,6 +15,8 @@ const editModalState = ref<EditModalState>({
     memo: null,
 })
 
+let saveAndCloseCallback: (() => void) | null = null
+
 export const useEditModal = () => {
     const openEdit = (options: {
         isEditMode: boolean
@@ -49,11 +51,24 @@ export const useEditModal = () => {
         })
     }
 
+    const saveAndCloseEdit = () => {
+        if (saveAndCloseCallback) {
+            saveAndCloseCallback()
+        }
+        closeEdit()
+    }
+
+    const setSaveCallback = (callback: (() => void) | null) => {
+        saveAndCloseCallback = callback
+    }
+
     return {
         editModalState: editModalState,
         openEdit,
         closeEdit,
         openNewMemo,
         openEditMemo,
+        saveAndCloseEdit,
+        setSaveCallback,
     }
 }

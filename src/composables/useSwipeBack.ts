@@ -10,7 +10,7 @@ export function useSwipeBack(
     options: SwipeOptions = {},
     targetSelector: string
 ) {
-    const { threshold = 50, edgeWidth = 35, onSwipe } = options
+    const { threshold = 75, edgeWidth = 35, onSwipe } = options
 
     let touchStartX = 0
     let startFromLeft = false
