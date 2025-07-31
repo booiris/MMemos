@@ -58,7 +58,7 @@ const handleSend = () => {
 <template>
     <div class="flex flex-col h-screen bg-background">
         <div
-            class="flex items-center justify-between border-b border-primary/20 shadow-xs pl-6 pr-5 pb-2"
+            class="flex items-center justify-between border-b border-primary/15 pl-6 pr-5 pb-2"
             style="height: calc(env(safe-area-inset-top) + -10px)">
             <button
                 @click="emit('close', textContent)"
