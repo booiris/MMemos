@@ -3,11 +3,27 @@ import { ref, computed, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useDebounceFn } from '@vueuse/core'
 import { Button } from '@/components/ui/button'
-import { Loader2 } from 'lucide-vue-next'
+import { Loader2, View, SquareDashed } from 'lucide-vue-next'
 import { V1Resource, V1Visibility } from '@/api/schema/api'
 import { Memo } from '@/api/memos'
+import { Marked, Tokens } from 'marked'
 
 const { t } = useI18n()
+
+const markdownRender = new Marked({
+    breaks: true,
+    pedantic: false,
+    gfm: true,
+    renderer: {
+        link(token: Tokens.Link) {
+            return `<a href="${
+                token.href
+            }" target="_blank" rel="noopener noreferrer"${
+                token.title ? ` title="${token.title}"` : ''
+            }>${token.text}</a>`
+        },
+    },
+})
 
 interface Props {
     initialText?: string
@@ -38,6 +54,8 @@ const emit = defineEmits<Emits>()
 
 const textContent = ref<string>('')
 const textareaRef = ref<HTMLTextAreaElement>()
+const isKeyboardVisible = ref<boolean>(false)
+const isPreviewMode = ref<boolean>(false)
 
 watchEffect(() => {
     textContent.value = props.initialText || ''
@@ -77,6 +95,21 @@ const handleSelectAll = () => {
         }
     }
 }
+
+const handleKeyboardShow = () => {
+    isKeyboardVisible.value = true
+}
+
+const handleKeyboardHide = () => {
+    isKeyboardVisible.value = false
+}
+
+const handlePreview = () => {
+    isPreviewMode.value = !isPreviewMode.value
+    if (isPreviewMode.value && textareaRef.value) {
+        textareaRef.value.blur()
+    }
+}
 </script>
 
 <template>
@@ -92,11 +125,22 @@ const handleSelectAll = () => {
 
             <div class="flex items-center gap-3">
                 <Button
-                    @click="handleSelectAll"
-                    :disabled="props.isLoading"
+                    @click="handlePreview"
+                    :disabled="props.isLoading || isKeyboardVisible"
                     variant="outline"
-                    class="text-sm h-8 font-medium border-primary">
-                    {{ t('main.editPage.selectAll') }}
+                    :class="[
+                        'text-sm h-8 font-medium border-primary disabled:opacity-40 disabled:cursor-not-allowed',
+                        isPreviewMode ? 'bg-primary/10' : '',
+                    ]">
+                    <View class="!h-5 !w-5" />
+                </Button>
+
+                <Button
+                    @click="handleSelectAll"
+                    :disabled="props.isLoading || isPreviewMode"
+                    variant="outline"
+                    class="text-sm h-8 font-medium border-primary disabled:opacity-40 disabled:cursor-not-allowed">
+                    <SquareDashed class="!h-5 !w-5" />
                 </Button>
 
                 <Button
@@ -119,6 +163,7 @@ const handleSelectAll = () => {
 
         <div class="flex-1 overflow-hidden w-full overflow-y-auto">
             <textarea
+                v-if="!isPreviewMode"
                 ref="textareaRef"
                 v-model="textContent"
                 :disabled="props.isLoading"
@@ -130,8 +175,29 @@ const handleSelectAll = () => {
                             7rem
                     );
                 "
-                @input="debouncedTextChange(textContent)">
+                @input="debouncedTextChange(textContent)"
+                @focus="handleKeyboardShow"
+                @blur="handleKeyboardHide">
             </textarea>
+
+            <div
+                v-else
+                class="w-full h-full px-6 pt-4 overflow-y-auto"
+                style="
+                    padding-bottom: calc(
+                        env(safe-area-inset-bottom) + env(safe-area-inset-top) +
+                            7rem
+                    );
+                ">
+                <article
+                    v-if="textContent.trim()"
+                    v-html="markdownRender.parse(textContent)"
+                    class="whitespace-pre-wrap break-words prose prose-lg prose-zinc"
+                    style="line-height: 1 !important"></article>
+                <div v-else class="text-gray-400 text-lg leading-relaxed">
+                    {{ t('main.editPage.placeholder') }}
+                </div>
+            </div>
         </div>
     </div>
 </template>
