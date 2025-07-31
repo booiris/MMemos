@@ -58,6 +58,7 @@ export default {
             send: '发送',
             update: '更新',
             close: '关闭',
+            selectAll: '全选',
         },
         loading: {
             loading: '加载中...',

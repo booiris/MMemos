@@ -59,6 +59,7 @@ export default {
             send: 'Send',
             update: 'Update',
             close: 'Close',
+            selectAll: 'SelectAll',
         },
         loading: {
             loading: 'Loading...',

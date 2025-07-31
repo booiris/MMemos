@@ -37,6 +37,7 @@ interface Emits {
 const emit = defineEmits<Emits>()
 
 const textContent = ref<string>('')
+const textareaRef = ref<HTMLTextAreaElement>()
 
 watchEffect(() => {
     textContent.value = props.initialText || ''
@@ -53,36 +54,72 @@ const handleSend = () => {
 
     emit('send', textContent.value, V1Visibility.PRIVATE, [], props.memo)
 }
+
+const handleSelectAll = () => {
+    if (textareaRef.value) {
+        textareaRef.value.focus()
+
+        try {
+            textareaRef.value.setSelectionRange(
+                0,
+                textareaRef.value.value.length
+            )
+        } catch {
+            try {
+                if (document.execCommand) {
+                    document.execCommand('selectAll', false)
+                }
+            } catch {
+                const start = 0
+                const end = textareaRef.value.value.length
+                textareaRef.value.setSelectionRange(start, end)
+            }
+        }
+    }
+}
 </script>
 
 <template>
     <div class="flex flex-col h-screen bg-background">
         <div
-            class="flex items-center justify-between border-b border-primary/15 pl-6 pr-5 pb-2"
-            style="height: calc(env(safe-area-inset-top) + -10px)">
+            class="flex items-center justify-between border-b border-primary/15 pl-6 pr-5"
+            style="height: calc(env(safe-area-inset-top))">
             <button
                 @click="emit('close', textContent)"
                 class="text-lg font-medium pt-0.5">
                 {{ t('main.editPage.close') }}
             </button>
 
-            <Button
-                @click="handleSend"
-                :disabled="isDisabled"
-                class="text-sm h-8 font-medium flex items-center">
-                <Loader2 v-if="props.isLoading" class="h-4 w-4 animate-spin" />
-                <span v-if="!props.isLoading" v-memo="[props.isEditMode]">
-                    {{
-                        props.isEditMode
-                            ? t('main.editPage.update')
-                            : t('main.editPage.send')
-                    }}
-                </span>
-            </Button>
+            <div class="flex items-center gap-3">
+                <Button
+                    @click="handleSelectAll"
+                    :disabled="props.isLoading"
+                    variant="outline"
+                    class="text-sm h-8 font-medium border-primary">
+                    {{ t('main.editPage.selectAll') }}
+                </Button>
+
+                <Button
+                    @click="handleSend"
+                    :disabled="isDisabled"
+                    class="text-sm h-8 font-medium flex items-center">
+                    <Loader2
+                        v-if="props.isLoading"
+                        class="h-4 w-4 animate-spin" />
+                    <span v-if="!props.isLoading" v-memo="[props.isEditMode]">
+                        {{
+                            props.isEditMode
+                                ? t('main.editPage.update')
+                                : t('main.editPage.send')
+                        }}
+                    </span>
+                </Button>
+            </div>
         </div>
 
         <div class="flex-1 overflow-hidden w-full overflow-y-auto">
             <textarea
+                ref="textareaRef"
                 v-model="textContent"
                 :disabled="props.isLoading"
                 :placeholder="t('main.editPage.placeholder')"
