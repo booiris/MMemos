@@ -66,6 +66,7 @@ const handleLanguageConfirm = () => {
     languageSelectOpen.value = false
     setTimeout(() => {
         setLocale(selectedLocale.value)
+        localStorage.setItem('locale', selectedLocale.value)
     }, 150)
 }
 

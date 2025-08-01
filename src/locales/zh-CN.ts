@@ -59,6 +59,12 @@ export default {
             update: '更新',
             close: '关闭',
             selectAll: '全选',
+            visibility: {
+                private: '仅自己可见',
+                protected: '本地用户可见',
+                public: '访客可见',
+                unspecified: '未指定',
+            },
         },
         loading: {
             loading: '加载中...',

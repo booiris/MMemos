@@ -60,6 +60,12 @@ export default {
             update: 'Update',
             close: 'Close',
             selectAll: 'SelectAll',
+            visibility: {
+                private: 'Only Me',
+                protected: 'Local Users Only',
+                public: 'Public',
+                unspecified: 'Unspecified',
+            },
         },
         loading: {
             loading: 'Loading...',
