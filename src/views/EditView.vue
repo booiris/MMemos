@@ -204,7 +204,9 @@ const selectVisibility = (visibility: V1Visibility) => {
             <div class="flex items-center gap-3">
                 <Button
                     @click="handlePreview"
-                    :disabled="props.isLoading || isKeyboardVisible"
+                    :disabled="
+                        props.isLoading || isKeyboardVisible || !textContent
+                    "
                     variant="outline"
                     :class="[
                         'text-sm h-8 font-medium border-primary disabled:opacity-40 disabled:cursor-not-allowed',
@@ -215,7 +217,7 @@ const selectVisibility = (visibility: V1Visibility) => {
 
                 <Button
                     @click="handleSelectAll"
-                    :disabled="props.isLoading || isPreviewMode"
+                    :disabled="props.isLoading || isPreviewMode || !textContent"
                     variant="outline"
                     class="text-sm h-8 font-medium border-primary disabled:opacity-40 disabled:cursor-not-allowed">
                     <SquareDashed class="!h-5 !w-5" />
