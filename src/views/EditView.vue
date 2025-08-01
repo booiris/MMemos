@@ -35,6 +35,7 @@ const markdownRender = new Marked({
 
 interface Props {
     initialText?: string
+    initialVisibility?: V1Visibility
     isEditMode?: boolean
     memo?: Memo | null
     isLoading?: boolean
@@ -42,13 +43,14 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
     initialText: '',
+    initialVisibility: V1Visibility.PRIVATE,
     isEditMode: false,
     memo: null,
     isLoading: false,
 })
 
 interface Emits {
-    close: [text: string]
+    close: [text: string, visibility: V1Visibility]
     send: [
         text: string,
         visibility: V1Visibility,
@@ -56,6 +58,7 @@ interface Emits {
         memo?: Memo | null
     ]
     textChange: [text: string]
+    visibilityChange: [visibility: V1Visibility]
 }
 
 const emit = defineEmits<Emits>()
@@ -72,19 +75,13 @@ watchEffect(() => {
 })
 
 watchEffect(() => {
-    if (props.memo?.visibility) {
-        const visibility = props.memo.visibility as V1Visibility
-        selectedVisibility.value =
-            visibility === V1Visibility.VISIBILITY_UNSPECIFIED
-                ? V1Visibility.PRIVATE
-                : visibility
-    }
+    selectedVisibility.value = props.initialVisibility
 })
 
 const isDisabled = computed(() => !textContent.value || props.isLoading)
 
 const currentVisibility = computed(() => {
-    const visibility = props.memo?.visibility || selectedVisibility.value
+    const visibility = selectedVisibility.value
     return visibility === V1Visibility.VISIBILITY_UNSPECIFIED
         ? V1Visibility.PRIVATE
         : visibility
@@ -128,6 +125,10 @@ const visibilityConfig = computed(() => {
 
 const debouncedTextChange = useDebounceFn((text: string) => {
     emit('textChange', text)
+}, 300)
+
+const debouncedVisibilityChange = useDebounceFn((visibility: V1Visibility) => {
+    emit('visibilityChange', visibility)
 }, 300)
 
 const handleSend = () => {
@@ -187,6 +188,11 @@ const toggleVisibilityDropdown = () => {
 const selectVisibility = (visibility: V1Visibility) => {
     isVisibilityDropdownOpen.value = false
     selectedVisibility.value = visibility
+    debouncedVisibilityChange(visibility)
+}
+
+const handleClose = () => {
+    emit('close', textContent.value, currentVisibility.value as V1Visibility)
 }
 </script>
 
@@ -195,9 +201,7 @@ const selectVisibility = (visibility: V1Visibility) => {
         <div
             class="flex items-center justify-between pl-6 pr-5 -mb-1"
             style="height: calc(env(safe-area-inset-top))">
-            <button
-                @click="emit('close', textContent)"
-                class="text-lg font-medium pt-0.5">
+            <button @click="handleClose" class="text-lg font-medium pt-0.5">
                 {{ t('main.editPage.close') }}
             </button>
 

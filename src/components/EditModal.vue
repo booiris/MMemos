@@ -15,11 +15,15 @@ const emit = defineEmits<Emits>()
 const { editModalState, closeEdit, setSaveCallback } = useEditModal()
 const isLoading = ref<boolean>(false)
 const currentEditText = ref<string>('')
+const currentEditVisibility = ref<V1Visibility>(V1Visibility.PRIVATE)
 
-const handleCloseEdit = (text: string) => {
+const handleCloseEdit = (text: string, visibility: V1Visibility) => {
     closeEdit()
     if (!editModalState.value.isEditMode && text) {
         localStorage.setItem('lastEditText', text)
+    }
+    if (!editModalState.value.isEditMode && visibility) {
+        localStorage.setItem('lastEditVisibility', visibility)
     }
 }
 
@@ -52,6 +56,8 @@ const handleSendMemo = async (
 
         if (!editModalState.value.isEditMode) {
             localStorage.removeItem('lastEditText')
+        } else {
+            localStorage.removeItem('lastEditVisibility')
         }
 
         emit('success')
@@ -67,10 +73,20 @@ const handleTextChange = (text: string) => {
     console.log(text.length)
 }
 
+const handleVisibilityChange = (visibility: V1Visibility) => {
+    currentEditVisibility.value = visibility
+}
+
 const createSaveCallback = () => {
     return () => {
         if (!editModalState.value.isEditMode && currentEditText.value) {
             localStorage.setItem('lastEditText', currentEditText.value)
+        }
+        if (!editModalState.value.isEditMode && currentEditVisibility.value) {
+            localStorage.setItem(
+                'lastEditVisibility',
+                currentEditVisibility.value
+            )
         }
     }
 }
@@ -80,6 +96,16 @@ setSaveCallback(createSaveCallback())
 watchEffect(() => {
     if (editModalState.value.isVisible) {
         currentEditText.value = editModalState.value.initialText
+        if (editModalState.value.isEditMode) {
+            currentEditVisibility.value =
+                (editModalState.value.memo?.visibility as V1Visibility) ||
+                V1Visibility.PRIVATE
+        } else {
+            const savedVisibility = localStorage.getItem('lastEditVisibility')
+            if (savedVisibility) {
+                currentEditVisibility.value = savedVisibility as V1Visibility
+            }
+        }
     }
 })
 </script>
@@ -98,12 +124,14 @@ watchEffect(() => {
             style="top: calc(env(safe-area-inset-top) - 8px)">
             <EditView
                 :initial-text="editModalState.initialText"
+                :initial-visibility="currentEditVisibility"
                 :is-edit-mode="editModalState.isEditMode"
                 :memo="editModalState.memo"
                 :is-loading="isLoading"
                 @close="handleCloseEdit"
                 @send="handleSendMemo"
-                @text-change="handleTextChange" />
+                @text-change="handleTextChange"
+                @visibility-change="handleVisibilityChange" />
         </div>
     </Transition>
 </template>
