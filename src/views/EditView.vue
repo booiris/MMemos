@@ -11,6 +11,7 @@ import {
     Shield,
     Globe,
     ChevronDown,
+    X,
 } from 'lucide-vue-next'
 import { V1Resource, V1Visibility } from '@/api/schema/api'
 import { Memo } from '@/api/memos'
@@ -142,7 +143,7 @@ const handleSend = () => {
         'send',
         textContent.value,
         currentVisibility.value as V1Visibility,
-        [],
+        localResources.value,
         props.memo
     )
 }
@@ -250,6 +251,20 @@ const showImageViewer = async (resource: V1Resource) => {
         },
         images: [base64],
     })
+}
+
+const localResources = ref<V1Resource[]>([])
+
+watchEffect(() => {
+    if (props.memo?.resources) {
+        localResources.value = [...props.memo.resources]
+    }
+})
+
+const deleteImageResource = (resourceToDelete: V1Resource) => {
+    localResources.value = localResources.value.filter(
+        (resource) => resource.name !== resourceToDelete.name
+    )
 }
 </script>
 
@@ -404,8 +419,7 @@ const showImageViewer = async (resource: V1Resource) => {
 
         <div
             v-if="
-                props.memo &&
-                getImageResources(props.memo.resources || []).length > 0 &&
+                getImageResources(localResources).length > 0 &&
                 !isKeyboardVisible
             "
             class="fixed left-0 right-0 z-40"
@@ -419,15 +433,21 @@ const showImageViewer = async (resource: V1Resource) => {
             <div class="flex overflow-x-auto gap-2 px-6">
                 <div
                     v-for="(resource, index) in getImageResources(
-                        props.memo.resources || []
+                        localResources
                     )"
                     :key="resource.name || index"
-                    class="flex-shrink-0">
+                    class="flex-shrink-0 relative group">
                     <img
                         v-auth-image="getImageUrl(resource, true)"
-                        class="rounded-lg h-24 object-cover transition-opacity"
+                        class="rounded-lg h-24 object-cover transition-opacity cursor-pointer"
                         loading="lazy"
                         @click="showImageViewer(resource)" />
+
+                    <button
+                        @click.stop="deleteImageResource(resource)"
+                        class="absolute top-1 right-1 w-4 h-4 bg-red-400 text-white rounded-full flex items-center justify-center transition-all duration-200">
+                        <X class="w-3.5 h-3.5" />
+                    </button>
                 </div>
             </div>
         </div>
