@@ -11,6 +11,9 @@ function forwardConsole(
         if (fnName === 'error') {
             message = getError(message)
         }
+        if (typeof message !== 'string') {
+            message = JSON.stringify(message)
+        }
         if (import.meta.env.DEV) {
             original(message)
         }

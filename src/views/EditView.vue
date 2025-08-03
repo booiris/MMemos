@@ -15,6 +15,9 @@ import {
 import { V1Resource, V1Visibility } from '@/api/schema/api'
 import { Memo } from '@/api/memos'
 import { Marked, Tokens } from 'marked'
+import { getAuthToken, getHost } from '@/api/client'
+import { api as viewerApi } from 'v-viewer'
+import loading_image from '@/assets/loading_image.svg'
 
 const { t } = useI18n()
 
@@ -69,6 +72,7 @@ const isKeyboardVisible = ref<boolean>(false)
 const isPreviewMode = ref<boolean>(false)
 const isVisibilityDropdownOpen = ref<boolean>(false)
 const selectedVisibility = ref<V1Visibility>(V1Visibility.PRIVATE)
+const viewImageLoading = ref(false)
 
 watchEffect(() => {
     textContent.value = props.initialText || ''
@@ -193,6 +197,59 @@ const selectVisibility = (visibility: V1Visibility) => {
 
 const handleClose = () => {
     emit('close', textContent.value, currentVisibility.value as V1Visibility)
+}
+
+const getImageResources = (resources: V1Resource[]): V1Resource[] => {
+    return resources.filter(
+        (resource) =>
+            resource.type?.startsWith('image/') ||
+            (resource.filename &&
+                /\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(resource.filename))
+    )
+}
+
+const getImageUrl = (
+    resource: V1Resource,
+    isNeedThumbnail: boolean
+): string => {
+    if (resource.externalLink) {
+        return resource.externalLink
+    }
+
+    if (resource.name) {
+        return `${getHost()}/file/${resource.name}/${resource.filename}${
+            isNeedThumbnail ? '?thumbnail=true' : ''
+        }`
+    }
+
+    return ''
+}
+
+const showImageViewer = async (resource: V1Resource) => {
+    if (viewImageLoading.value) {
+        return
+    }
+    viewImageLoading.value = true
+    const url = getImageUrl(resource, false)
+    const response = await fetch(url, {
+        headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+        },
+    })
+    const blob = await response.blob()
+    const base64 = URL.createObjectURL(blob)
+    await new Promise((resolve) => setTimeout(resolve, 200))
+    viewImageLoading.value = false
+    viewerApi({
+        options: {
+            button: false,
+            keyboard: false,
+            toolbar: false,
+            title: false,
+            navbar: false,
+        },
+        images: [base64],
+    })
 }
 </script>
 
@@ -344,11 +401,53 @@ const handleClose = () => {
                 </div>
             </div>
         </div>
+
+        <div
+            v-if="
+                props.memo &&
+                getImageResources(props.memo.resources || []).length > 0 &&
+                !isKeyboardVisible
+            "
+            class="fixed left-0 right-0 z-40"
+            style="
+                height: calc(
+                    env(safe-area-inset-bottom) + env(safe-area-inset-top) +
+                        2.5rem
+                );
+                bottom: 0;
+            ">
+            <div class="flex overflow-x-auto gap-2 px-6">
+                <div
+                    v-for="(resource, index) in getImageResources(
+                        props.memo.resources || []
+                    )"
+                    :key="resource.name || index"
+                    class="flex-shrink-0">
+                    <img
+                        v-auth-image="getImageUrl(resource, true)"
+                        class="rounded-lg h-24 object-cover transition-opacity"
+                        loading="lazy"
+                        @click="showImageViewer(resource)" />
+                </div>
+            </div>
+        </div>
+
+        <div
+            v-if="viewImageLoading"
+            class="flex justify-center items-center absolute top-0 left-0 right-0 bottom-0 bg-background/70 z-50">
+            <img :src="loading_image" alt="loading" class="w-12 h-12" />
+        </div>
     </div>
 </template>
 
 <style scoped>
 textarea::-webkit-scrollbar {
     display: block !important;
+}
+</style>
+
+<style>
+.viewer-container {
+    background-color: rgba(0, 0, 0, 0.55) !important;
 }
 </style>
