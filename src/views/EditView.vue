@@ -12,6 +12,7 @@ import {
     Globe,
     ChevronDown,
     X,
+    Image,
 } from 'lucide-vue-next'
 import { V1Resource, V1Visibility } from '@/api/schema/api'
 import { Memo } from '@/api/memos'
@@ -186,6 +187,8 @@ const handlePreview = () => {
     }
 }
 
+const handleAddImage = () => {}
+
 const toggleVisibilityDropdown = () => {
     isVisibilityDropdownOpen.value = !isVisibilityDropdownOpen.value
 }
@@ -278,6 +281,19 @@ const deleteImageResource = (resourceToDelete: V1Resource) => {
             </button>
 
             <div class="flex items-center gap-3">
+                <Button
+                    @click="handleAddImage"
+                    :disabled="
+                        props.isLoading || isKeyboardVisible || !textContent
+                    "
+                    variant="outline"
+                    :class="[
+                        'text-sm h-8 font-medium border-primary disabled:opacity-40 disabled:cursor-not-allowed',
+                        isPreviewMode ? 'bg-primary/10' : '',
+                    ]">
+                    <Image class="!h-5 !w-5" />
+                </Button>
+
                 <Button
                     @click="handlePreview"
                     :disabled="
