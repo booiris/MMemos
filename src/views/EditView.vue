@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watchEffect } from 'vue'
+import { ref, computed, watchEffect, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useDebounceFn } from '@vueuse/core'
 import { Button } from '@/components/ui/button'
@@ -21,6 +21,7 @@ import { getAuthToken, getHost } from '@/api/client'
 import { api as viewerApi } from 'v-viewer'
 import loading_image from '@/assets/loading_image.svg'
 import { open } from '@tauri-apps/plugin-dialog'
+import { exists, readFile } from '@tauri-apps/plugin-fs'
 
 const { t } = useI18n()
 
@@ -199,7 +200,44 @@ const handleAddImage = async () => {
             },
         ],
     })
+    if (!file) {
+        return
+    }
     console.log(file)
+    if (!exists(file)) {
+        return
+    }
+
+    const ext = file.split('.').pop()?.toLowerCase()
+    const data = await readFile(file)
+
+    const filename = file.split('/').pop() || file.split('\\').pop() || 'image'
+
+    const mimeType =
+        ext === 'png'
+            ? 'image/png'
+            : ext === 'jpg' || ext === 'jpeg'
+            ? 'image/jpeg'
+            : ext === 'gif'
+            ? 'image/gif'
+            : ext === 'bmp'
+            ? 'image/bmp'
+            : ext === 'webp'
+            ? 'image/webp'
+            : 'image/jpeg'
+
+    const blob = new Blob([data], { type: mimeType })
+    const objectUrl = URL.createObjectURL(blob)
+
+    const newResource: V1Resource = {
+        filename: filename,
+        type: mimeType,
+        size: data.byteLength.toString(),
+        name: `local-${Date.now()}`,
+        externalLink: objectUrl,
+    }
+
+    localResources.value.push(newResource)
 }
 
 const toggleVisibilityDropdown = () => {
@@ -248,13 +286,21 @@ const showImageViewer = async (resource: V1Resource) => {
     }
     viewImageLoading.value = true
     const url = getImageUrl(resource, false)
-    const response = await fetch(url, {
-        headers: {
-            Authorization: `Bearer ${getAuthToken()}`,
-        },
-    })
-    const blob = await response.blob()
-    const base64 = URL.createObjectURL(blob)
+
+    let imageUrl: string
+
+    if (url.startsWith('blob:')) {
+        imageUrl = url
+    } else {
+        const response = await fetch(url, {
+            headers: {
+                Authorization: `Bearer ${getAuthToken()}`,
+            },
+        })
+        const blob = await response.blob()
+        imageUrl = URL.createObjectURL(blob)
+    }
+
     await new Promise((resolve) => setTimeout(resolve, 200))
     viewImageLoading.value = false
     viewerApi({
@@ -265,7 +311,7 @@ const showImageViewer = async (resource: V1Resource) => {
             title: false,
             navbar: false,
         },
-        images: [base64],
+        images: [imageUrl],
     })
 }
 
@@ -278,10 +324,28 @@ watchEffect(() => {
 })
 
 const deleteImageResource = (resourceToDelete: V1Resource) => {
+    if (
+        resourceToDelete.externalLink &&
+        resourceToDelete.externalLink.startsWith('blob:')
+    ) {
+        URL.revokeObjectURL(resourceToDelete.externalLink)
+    }
+
     localResources.value = localResources.value.filter(
         (resource) => resource.name !== resourceToDelete.name
     )
 }
+
+onBeforeUnmount(() => {
+    localResources.value.forEach((resource) => {
+        if (
+            resource.externalLink &&
+            resource.externalLink.startsWith('blob:')
+        ) {
+            URL.revokeObjectURL(resource.externalLink)
+        }
+    })
+})
 </script>
 
 <template>
