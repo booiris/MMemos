@@ -445,7 +445,7 @@ const deleteImageResource = (resourceToDelete: V1Resource) => {
 
                     <button
                         @click.stop="deleteImageResource(resource)"
-                        class="absolute top-1 right-1 w-4 h-4 bg-red-400 text-white rounded-full flex items-center justify-center transition-all duration-200">
+                        class="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center transition-all duration-200">
                         <X class="w-3.5 h-3.5" />
                     </button>
                 </div>
