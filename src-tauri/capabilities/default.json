@@ -43,6 +43,7 @@
       "deny": []
     },
     "fs:default",
-    "log:default"
+    "log:default",
+    "dialog:default"
   ]
 }

@@ -20,6 +20,7 @@ import { Marked, Tokens } from 'marked'
 import { getAuthToken, getHost } from '@/api/client'
 import { api as viewerApi } from 'v-viewer'
 import loading_image from '@/assets/loading_image.svg'
+import { open } from '@tauri-apps/plugin-dialog'
 
 const { t } = useI18n()
 
@@ -187,7 +188,19 @@ const handlePreview = () => {
     }
 }
 
-const handleAddImage = () => {}
+const handleAddImage = async () => {
+    const file = await open({
+        multiple: false,
+        directory: false,
+        filters: [
+            {
+                name: 'Image',
+                extensions: ['image/jpeg'],
+            },
+        ],
+    })
+    console.log(file)
+}
 
 const toggleVisibilityDropdown = () => {
     isVisibilityDropdownOpen.value = !isVisibilityDropdownOpen.value
@@ -283,9 +296,7 @@ const deleteImageResource = (resourceToDelete: V1Resource) => {
             <div class="flex items-center gap-3">
                 <Button
                     @click="handleAddImage"
-                    :disabled="
-                        props.isLoading || isKeyboardVisible || !textContent
-                    "
+                    :disabled="props.isLoading || isKeyboardVisible"
                     variant="outline"
                     :class="[
                         'text-sm h-8 font-medium border-primary disabled:opacity-40 disabled:cursor-not-allowed',
