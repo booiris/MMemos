@@ -83,7 +83,16 @@ watchEffect(() => {
     selectedVisibility.value = props.initialVisibility
 })
 
-const isDisabled = computed(() => !textContent.value || props.isLoading)
+const isDisabled = computed(() => {
+    return (
+        (!textContent.value &&
+            (localResources.value.length === 0 ||
+                localResources.value.every((resource) =>
+                    uploadingResources.value.has(resource.name || '')
+                ))) ||
+        props.isLoading
+    )
+})
 
 const currentVisibility = computed(() => {
     const visibility = selectedVisibility.value

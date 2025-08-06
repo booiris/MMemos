@@ -19,7 +19,7 @@ const currentEditVisibility = ref<V1Visibility>(V1Visibility.PRIVATE)
 
 const handleCloseEdit = (text: string, visibility: V1Visibility) => {
     closeEdit()
-    if (!editModalState.value.isEditMode && text) {
+    if (!editModalState.value.isEditMode) {
         localStorage.setItem('lastEditText', text)
     }
     if (!editModalState.value.isEditMode && visibility) {
@@ -33,11 +33,6 @@ const handleSendMemo = async (
     resource: V1Resource[],
     memo?: Memo | null
 ) => {
-    if (!text) {
-        console.error('[handleSendMemo] memo content is empty!')
-        return
-    }
-
     isLoading.value = true
 
     try {
@@ -79,7 +74,7 @@ const handleVisibilityChange = (visibility: V1Visibility) => {
 
 const createSaveCallback = () => {
     return () => {
-        if (!editModalState.value.isEditMode && currentEditText.value) {
+        if (!editModalState.value.isEditMode) {
             localStorage.setItem('lastEditText', currentEditText.value)
         }
         if (!editModalState.value.isEditMode && currentEditVisibility.value) {
