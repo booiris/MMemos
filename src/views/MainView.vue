@@ -34,13 +34,18 @@ import {
     Memo,
     PaginationState,
 } from '@/api/memos'
-import { V1Resource } from '@/api/schema/api'
-import { Marked, Tokens } from 'marked'
+
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import timezone from 'dayjs/plugin/timezone'
 import localeData from 'dayjs/plugin/localeData'
 import { useI18n } from 'vue-i18n'
+import {
+    getImageResources,
+    getImageUrl,
+    useImageViewer,
+} from '@/utils/imageUtils'
+import { markdownRenderer } from '@/utils/markdownUtils'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -58,8 +63,7 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Input } from '@/components/ui/input'
-import { getAuthToken, getHost } from '@/api/client'
-import { api as viewerApi } from 'v-viewer'
+
 import loading_image from '@/assets/loading_image.svg'
 import { getError } from '@/api/error'
 
@@ -73,7 +77,7 @@ const authStore = useAuthStore()
 const { t } = useI18n()
 const { editModalState, openNewMemo, openEditMemo, saveAndCloseEdit } =
     useEditModal()
-const viewImageLoading = ref(false)
+const { viewImageLoading, showImageViewer } = useImageViewer()
 
 const handleSettings = () => {
     router.push({ name: 'Settings' })
@@ -113,46 +117,7 @@ const formatLocalTime = computed(() => (utcTime: string): string => {
     }
 })
 
-const markdownRender = new Marked({
-    breaks: true,
-    pedantic: false,
-    gfm: true,
-    renderer: {
-        link(token: Tokens.Link) {
-            return `<a href="${
-                token.href
-            }" target="_blank" rel="noopener noreferrer"${
-                token.title ? ` title="${token.title}"` : ''
-            }>${token.text}</a>`
-        },
-    },
-})
-
-const getImageResources = (resources: V1Resource[]): V1Resource[] => {
-    return resources.filter(
-        (resource) =>
-            resource.type?.startsWith('image/') ||
-            (resource.filename &&
-                /\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(resource.filename))
-    )
-}
-
-const getImageUrl = (
-    resource: V1Resource,
-    isNeedThumbnail: boolean
-): string => {
-    if (resource.externalLink) {
-        return resource.externalLink
-    }
-
-    if (resource.name) {
-        return `${getHost()}/file/${resource.name}/${resource.filename}${
-            isNeedThumbnail ? '?thumbnail=true' : ''
-        }`
-    }
-
-    return ''
-}
+const markdownRender = markdownRenderer
 
 const memos = ref<Memo[]>([])
 const pinnedContent = ref<Memo[]>([])
@@ -434,33 +399,6 @@ onActivated(() => {
     Promise.all([loadMemos(), loadPinnedContent()])
 })
 useSwipeBack({ onSwipe: handleHome }, '#main-view')
-
-const showImageViewer = async (resource: V1Resource) => {
-    if (viewImageLoading.value) {
-        return
-    }
-    viewImageLoading.value = true
-    const url = getImageUrl(resource, false)
-    const response = await fetch(url, {
-        headers: {
-            Authorization: `Bearer ${getAuthToken()}`,
-        },
-    })
-    const blob = await response.blob()
-    const base64 = URL.createObjectURL(blob)
-    await new Promise((resolve) => setTimeout(resolve, 200))
-    viewImageLoading.value = false
-    viewerApi({
-        options: {
-            button: false,
-            keyboard: false,
-            toolbar: false,
-            title: false,
-            navbar: false,
-        },
-        images: [base64],
-    })
-}
 </script>
 
 <template>
@@ -475,7 +413,7 @@ const showImageViewer = async (resource: V1Resource) => {
         </div>
 
         <div
-            class="flex justify-between items-center sticky top-0 z-10 mb-0.5 pr-5 pl-6">
+            class="flex justify-between items-center sticky top-0 z-10 mb-0.5 pr-4 pl-5.5">
             <div
                 class="flex items-center gap-2 cursor-pointer"
                 @click="handleHome">

@@ -16,31 +16,22 @@ import {
 } from 'lucide-vue-next'
 import { V1Resource, V1Visibility } from '@/api/schema/api'
 import { Memo } from '@/api/memos'
-import { Marked, Tokens } from 'marked'
-import { getAuthToken, getHost } from '@/api/client'
+
 import client from '@/api/client'
-import { api as viewerApi } from 'v-viewer'
 import loading_image from '@/assets/loading_image.svg'
+import {
+    getImageResources,
+    getImageUrl,
+    useImageViewer,
+} from '@/utils/imageUtils'
+import { markdownRenderer } from '@/utils/markdownUtils'
 import { open } from '@tauri-apps/plugin-dialog'
 import { readFile } from '@tauri-apps/plugin-fs'
 import { getError } from '@/api/error'
 
 const { t } = useI18n()
 
-const markdownRender = new Marked({
-    breaks: true,
-    pedantic: false,
-    gfm: true,
-    renderer: {
-        link(token: Tokens.Link) {
-            return `<a href="${
-                token.href
-            }" target="_blank" rel="noopener noreferrer"${
-                token.title ? ` title="${token.title}"` : ''
-            }>${token.text}</a>`
-        },
-    },
-})
+const markdownRender = markdownRenderer
 
 interface Props {
     initialText?: string
@@ -78,7 +69,7 @@ const isKeyboardVisible = ref<boolean>(false)
 const isPreviewMode = ref<boolean>(false)
 const isVisibilityDropdownOpen = ref<boolean>(false)
 const selectedVisibility = ref<V1Visibility>(V1Visibility.PRIVATE)
-const viewImageLoading = ref(false)
+const { viewImageLoading, showImageViewer } = useImageViewer()
 
 const uploadingResources = ref<Set<string>>(new Set())
 const uploadControllers = new Map<string, AbortController>()
@@ -337,67 +328,6 @@ const handleClose = () => {
     loadedImages.value.clear()
 
     emit('close', textContent.value, currentVisibility.value as V1Visibility)
-}
-
-const getImageResources = (resources: V1Resource[]): V1Resource[] => {
-    return resources.filter(
-        (resource) =>
-            resource.type?.startsWith('image/') ||
-            (resource.filename &&
-                /\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(resource.filename))
-    )
-}
-
-const getImageUrl = (
-    resource: V1Resource,
-    isNeedThumbnail: boolean
-): string => {
-    if (resource.externalLink) {
-        return resource.externalLink
-    }
-
-    if (resource.name) {
-        return `${getHost()}/file/${resource.name}/${resource.filename}${
-            isNeedThumbnail ? '?thumbnail=true' : ''
-        }`
-    }
-
-    return ''
-}
-
-const showImageViewer = async (resource: V1Resource) => {
-    if (viewImageLoading.value) {
-        return
-    }
-    viewImageLoading.value = true
-    const url = getImageUrl(resource, false)
-
-    let imageUrl: string
-
-    if (url.startsWith('blob:')) {
-        imageUrl = url
-    } else {
-        const response = await fetch(url, {
-            headers: {
-                Authorization: `Bearer ${getAuthToken()}`,
-            },
-        })
-        const blob = await response.blob()
-        imageUrl = URL.createObjectURL(blob)
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, 200))
-    viewImageLoading.value = false
-    viewerApi({
-        options: {
-            button: false,
-            keyboard: false,
-            toolbar: false,
-            title: false,
-            navbar: false,
-        },
-        images: [imageUrl],
-    })
 }
 
 const localResources = ref<V1Resource[]>([])

@@ -1,7 +1,7 @@
 import type { LoginData, LoginResponse } from '@/types/auth'
 import client from './client'
 import { getError } from './error'
-import { isValidUrl } from '@/lib/urlHelper'
+import { isValidUrl } from '@/utils/urlHelper'
 
 export async function login(data: LoginData): Promise<LoginResponse> {
     try {

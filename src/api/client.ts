@@ -1,4 +1,4 @@
-import fetch from '@/lib/fetchWrapper'
+import fetch from '@/utils/fetchWrapper'
 import { HttpClient, Api } from './schema/api'
 
 const myHttpClient = new HttpClient({
