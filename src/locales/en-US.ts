@@ -67,6 +67,8 @@ export default {
                 unspecified: 'Unspecified',
             },
             uploadImageError: 'Upload image failed',
+            processingLink: 'processing link...',
+            linkFetchFailed: 'fetch failed',
         },
         loading: {
             loading: 'Loading...',

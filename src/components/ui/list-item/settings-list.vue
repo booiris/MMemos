@@ -10,6 +10,7 @@ interface Props {
         type?: 'arrow' | 'switch'
         modelValue?: boolean | Ref<boolean>
         onClick?: () => void
+        onChange?: (value: boolean) => void
     }>
 }
 
@@ -31,7 +32,8 @@ defineProps<Props>()
                 :type="item.type"
                 :model-value="item.modelValue"
                 :is-last="index === items.length - 1"
-                @click="item.onClick" />
+                @click="item.onClick"
+                @update:model-value="item.onChange" />
         </div>
     </div>
 </template>

@@ -28,8 +28,11 @@ import { markdownRenderer } from '@/utils/markdownUtils'
 import { open } from '@tauri-apps/plugin-dialog'
 import { readFile } from '@tauri-apps/plugin-fs'
 import { getError } from '@/api/error'
+import { usePasteHandler } from '@/utils/pasteUtils'
+import { useSettingsStore } from '@/stores/settings'
 
 const { t } = useI18n()
+const settingsStore = useSettingsStore()
 
 const markdownRender = markdownRenderer
 
@@ -81,6 +84,18 @@ watchEffect(() => {
 
 watchEffect(() => {
     selectedVisibility.value = props.initialVisibility
+})
+
+// Initialize clipboard paste handler
+const { handlePaste } = usePasteHandler({
+    textContent,
+    textareaRef,
+    onTextChange: (text: string) => {
+        debouncedTextChange(text)
+    },
+    isDisabled: () => isPreviewMode.value,
+    isAutoTitleEnabled: () => settingsStore.enableAutoTitle,
+    t,
 })
 
 const isDisabled = computed(() => {
@@ -412,17 +427,6 @@ onBeforeUnmount(() => {
 
             <div class="flex items-center gap-3">
                 <Button
-                    @click="handleAddImage"
-                    :disabled="props.isLoading || isKeyboardVisible"
-                    variant="outline"
-                    :class="[
-                        'text-sm h-8 font-medium border-primary disabled:opacity-40 disabled:cursor-not-allowed',
-                        isPreviewMode ? 'bg-primary/10' : '',
-                    ]">
-                    <Image class="!h-5 !w-5" />
-                </Button>
-
-                <Button
                     @click="handlePreview"
                     :disabled="
                         props.isLoading || isKeyboardVisible || !textContent
@@ -433,6 +437,18 @@ onBeforeUnmount(() => {
                         isPreviewMode ? 'bg-primary/10' : '',
                     ]">
                     <View class="!h-5 !w-5" />
+                </Button>
+
+                <Button
+                    @click="handleAddImage"
+                    :disabled="
+                        props.isLoading || isKeyboardVisible || isPreviewMode
+                    "
+                    variant="outline"
+                    :class="[
+                        'text-sm h-8 font-medium border-primary disabled:opacity-40 disabled:cursor-not-allowed',
+                    ]">
+                    <Image class="!h-5 !w-5" />
                 </Button>
 
                 <Button
@@ -538,7 +554,8 @@ onBeforeUnmount(() => {
                 "
                 @input="debouncedTextChange(textContent)"
                 @focus="handleKeyboardShow"
-                @blur="handleKeyboardHide">
+                @blur="handleKeyboardHide"
+                @paste="handlePaste">
             </textarea>
 
             <div

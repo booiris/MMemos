@@ -171,3 +171,5 @@ export const useAuthStore = defineStore('auth', () => {
    - Implement proper error handling in store actions
    - Use TypeScript for type safety
    - Persist critical state to local storage
+7. **I18N**: i18n support
+8. **English Comment**

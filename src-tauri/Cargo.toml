@@ -6,7 +6,6 @@ authors = ["you"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [lib]
 # The `_lib` suffix may seem redundant but it is necessary
 # to make the lib name unique and wouldn't conflict with the bin name.
@@ -26,4 +25,6 @@ tauri-plugin-http = "2"
 tauri-plugin-log = "2"
 tauri-plugin-fs = "2"
 tauri-plugin-dialog = "2"
-
+reqwest = { version = "0.12", features = ["json"] }
+scraper = "0.23"
+url = "2.4"

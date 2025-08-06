@@ -66,6 +66,8 @@ export default {
                 unspecified: '未指定',
             },
             uploadImageError: '上传图片失败',
+            processingLink: '处理链接中...',
+            linkFetchFailed: '获取失败',
         },
         loading: {
             loading: '加载中...',

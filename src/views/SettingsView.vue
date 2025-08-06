@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useSettingsStore } from '@/stores/settings'
 import {
     ChevronLeft,
     ExternalLink,
@@ -11,7 +12,7 @@ import {
     RefreshCw,
     ClockArrowUp,
 } from 'lucide-vue-next'
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import TouchAnimation from '@/components/ui/touch-animation/index.vue'
@@ -39,9 +40,14 @@ import {
 
 const router = useRouter()
 const authStore = useAuthStore()
+const settingsStore = useSettingsStore()
 const { t } = useI18n()
 const { currentLocale, locales, setLocale } = useLocale()
 var selectedLocale = ref(currentLocale)
+
+onMounted(() => {
+    settingsStore.initSettings()
+})
 
 const handleBack = () => {
     router.back()
@@ -52,11 +58,8 @@ const handleLogout = () => {
     authStore.logout()
 }
 
-const enableAutoTitle = ref(true)
-const enableAutoRefresh = ref(false)
 const languageSelectOpen = ref(false)
 const acknowledgmentsDialogOpen = ref(false)
-const enableRandomHistory = ref(true)
 
 const handleLanguageSelect = (locale: string) => {
     selectedLocale.value = locale
@@ -83,19 +86,22 @@ const functionItems = computed(() => [
         icon: Link,
         title: t('settings.function.autoTitle'),
         type: 'switch' as const,
-        modelValue: enableAutoTitle,
+        modelValue: settingsStore.enableAutoTitle,
+        onChange: (value: boolean) => settingsStore.setAutoTitle(value),
     },
     {
         icon: RefreshCw,
         title: t('settings.function.refresh'),
         type: 'switch' as const,
-        modelValue: enableAutoRefresh,
+        modelValue: settingsStore.enableAutoRefresh,
+        onChange: (value: boolean) => settingsStore.setAutoRefresh(value),
     },
     {
         icon: ClockArrowUp,
         title: t('settings.function.randomHistory'),
         type: 'switch' as const,
-        modelValue: enableRandomHistory,
+        modelValue: settingsStore.enableRandomHistory,
+        onChange: (value: boolean) => settingsStore.setRandomHistory(value),
     },
 ])
 
