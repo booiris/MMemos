@@ -21,7 +21,7 @@ import { getAuthToken, getHost } from '@/api/client'
 import { api as viewerApi } from 'v-viewer'
 import loading_image from '@/assets/loading_image.svg'
 import { open } from '@tauri-apps/plugin-dialog'
-import { exists, readFile } from '@tauri-apps/plugin-fs'
+import { readFile } from '@tauri-apps/plugin-fs'
 
 const { t } = useI18n()
 
@@ -190,8 +190,8 @@ const handlePreview = () => {
 }
 
 const handleAddImage = async () => {
-    const file = await open({
-        multiple: false,
+    const files = await open({
+        multiple: true,
         directory: false,
         filters: [
             {
@@ -200,44 +200,44 @@ const handleAddImage = async () => {
             },
         ],
     })
-    if (!file) {
+    if (!files) {
         return
     }
-    console.log(file)
-    if (!exists(file)) {
-        return
+    console.log(files)
+
+    for (const file of files) {
+        const ext = file.split('.').pop()?.toLowerCase()
+        const data = await readFile(file)
+
+        const filename =
+            file.split('/').pop() || file.split('\\').pop() || 'image'
+
+        const mimeType =
+            ext === 'png'
+                ? 'image/png'
+                : ext === 'jpg' || ext === 'jpeg'
+                ? 'image/jpeg'
+                : ext === 'gif'
+                ? 'image/gif'
+                : ext === 'bmp'
+                ? 'image/bmp'
+                : ext === 'webp'
+                ? 'image/webp'
+                : 'image/jpeg'
+
+        const blob = new Blob([data], { type: mimeType })
+        const objectUrl = URL.createObjectURL(blob)
+
+        const newResource: V1Resource = {
+            filename: filename,
+            type: mimeType,
+            size: data.byteLength.toString(),
+            name: `local-${Date.now()}`,
+            externalLink: objectUrl,
+        }
+
+        localResources.value.push(newResource)
     }
-
-    const ext = file.split('.').pop()?.toLowerCase()
-    const data = await readFile(file)
-
-    const filename = file.split('/').pop() || file.split('\\').pop() || 'image'
-
-    const mimeType =
-        ext === 'png'
-            ? 'image/png'
-            : ext === 'jpg' || ext === 'jpeg'
-            ? 'image/jpeg'
-            : ext === 'gif'
-            ? 'image/gif'
-            : ext === 'bmp'
-            ? 'image/bmp'
-            : ext === 'webp'
-            ? 'image/webp'
-            : 'image/jpeg'
-
-    const blob = new Blob([data], { type: mimeType })
-    const objectUrl = URL.createObjectURL(blob)
-
-    const newResource: V1Resource = {
-        filename: filename,
-        type: mimeType,
-        size: data.byteLength.toString(),
-        name: `local-${Date.now()}`,
-        externalLink: objectUrl,
-    }
-
-    localResources.value.push(newResource)
 }
 
 const toggleVisibilityDropdown = () => {
