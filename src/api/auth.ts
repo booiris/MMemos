@@ -54,6 +54,7 @@ async function testConnection(
             user: response,
         }
     } catch (error) {
+        console.error(error)
         let message = 'Error: ' + getError(error)
         return {
             success: false,

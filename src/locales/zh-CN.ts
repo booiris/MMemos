@@ -65,6 +65,7 @@ export default {
                 public: '访客可见',
                 unspecified: '未指定',
             },
+            uploadImageError: '上传图片失败',
         },
         loading: {
             loading: '加载中...',

@@ -18,10 +18,12 @@ import { V1Resource, V1Visibility } from '@/api/schema/api'
 import { Memo } from '@/api/memos'
 import { Marked, Tokens } from 'marked'
 import { getAuthToken, getHost } from '@/api/client'
+import client from '@/api/client'
 import { api as viewerApi } from 'v-viewer'
 import loading_image from '@/assets/loading_image.svg'
 import { open } from '@tauri-apps/plugin-dialog'
 import { readFile } from '@tauri-apps/plugin-fs'
+import { getError } from '@/api/error'
 
 const { t } = useI18n()
 
@@ -77,6 +79,10 @@ const isPreviewMode = ref<boolean>(false)
 const isVisibilityDropdownOpen = ref<boolean>(false)
 const selectedVisibility = ref<V1Visibility>(V1Visibility.PRIVATE)
 const viewImageLoading = ref(false)
+
+const uploadingResources = ref<Set<string>>(new Set())
+const uploadControllers = new Map<string, AbortController>()
+const loadedImages = ref<Set<string>>(new Set())
 
 watchEffect(() => {
     textContent.value = props.initialText || ''
@@ -205,6 +211,7 @@ const handleAddImage = async () => {
     }
     console.log(files)
 
+    let tempUploadingResources = []
     for (const file of files) {
         const ext = file.split('.').pop()?.toLowerCase()
         const data = await readFile(file)
@@ -225,19 +232,90 @@ const handleAddImage = async () => {
                 ? 'image/webp'
                 : 'image/jpeg'
 
-        const blob = new Blob([data], { type: mimeType })
-        const objectUrl = URL.createObjectURL(blob)
-
-        const newResource: V1Resource = {
+        const tempResourceId = `temp-${Date.now()}-${Math.random()}`
+        const tempResource: V1Resource = {
             filename: filename,
             type: mimeType,
             size: data.byteLength.toString(),
-            name: `local-${Date.now()}`,
-            externalLink: objectUrl,
+            name: tempResourceId,
+            externalLink: URL.createObjectURL(
+                new Blob([data], { type: mimeType })
+            ),
         }
 
-        localResources.value.push(newResource)
+        tempUploadingResources.push({
+            id: tempResourceId,
+            data: data,
+            mimeType: mimeType,
+            filename: filename,
+            externalLink: tempResource.externalLink,
+        })
+        localResources.value.push(tempResource)
+        uploadingResources.value.add(tempResourceId)
     }
+
+    tempUploadingResources.map(async (data) => {
+        const abortController = new AbortController()
+        uploadControllers.set(data.id, abortController)
+
+        try {
+            const base64Data = await new Promise<string>((resolve, reject) => {
+                const reader = new FileReader()
+                reader.onload = () => {
+                    const result = reader.result as string
+                    const base64 = result.split(',')[1]
+                    if (base64) {
+                        resolve(base64)
+                    } else {
+                        reject(new Error('Failed to convert to base64'))
+                    }
+                }
+                reader.onerror = reject
+                reader.readAsDataURL(
+                    new Blob([data.data], { type: data.mimeType })
+                )
+            })
+
+            const uploadedResource =
+                await client.api.resourceServiceCreateResource(
+                    {
+                        filename: data.filename,
+                        type: data.mimeType,
+                        size: data.data.byteLength.toString(),
+                        content: base64Data,
+                    },
+                    {
+                        secure: true,
+                        signal: abortController.signal,
+                    }
+                )
+
+            localResources.value = localResources.value.map((resource) => {
+                if (resource.name === data.id) {
+                    if (data.externalLink) {
+                        URL.revokeObjectURL(data.externalLink)
+                    }
+                    return uploadedResource
+                }
+                return resource
+            })
+        } catch (error) {
+            console.error('upload image failed: ' + getError(error))
+
+            localResources.value = localResources.value.filter((resource) => {
+                if (resource.name === data.id) {
+                    if (resource.externalLink) {
+                        URL.revokeObjectURL(resource.externalLink)
+                    }
+                    return false
+                }
+                return true
+            })
+        } finally {
+            uploadingResources.value.delete(data.id)
+            uploadControllers.delete(data.id)
+        }
+    })
 }
 
 const toggleVisibilityDropdown = () => {
@@ -251,6 +329,13 @@ const selectVisibility = (visibility: V1Visibility) => {
 }
 
 const handleClose = () => {
+    uploadControllers.forEach((controller) => {
+        controller.abort()
+    })
+    uploadControllers.clear()
+    uploadingResources.value.clear()
+    loadedImages.value.clear()
+
     emit('close', textContent.value, currentVisibility.value as V1Visibility)
 }
 
@@ -316,14 +401,36 @@ const showImageViewer = async (resource: V1Resource) => {
 }
 
 const localResources = ref<V1Resource[]>([])
-
 watchEffect(() => {
     if (props.memo?.resources) {
         localResources.value = [...props.memo.resources]
     }
 })
 
+const handleImageLoad = (resource: V1Resource) => {
+    if (resource.name) {
+        loadedImages.value.add(resource.name)
+    }
+}
+
+const handleImageError = (resource: V1Resource) => {
+    if (resource.name) {
+        loadedImages.value.delete(resource.name)
+    }
+}
+
 const deleteImageResource = (resourceToDelete: V1Resource) => {
+    if (resourceToDelete.name && uploadControllers.has(resourceToDelete.name)) {
+        const controller = uploadControllers.get(resourceToDelete.name)
+        controller?.abort()
+        uploadControllers.delete(resourceToDelete.name)
+        uploadingResources.value.delete(resourceToDelete.name)
+    }
+
+    if (resourceToDelete.name) {
+        loadedImages.value.delete(resourceToDelete.name)
+    }
+
     if (
         resourceToDelete.externalLink &&
         resourceToDelete.externalLink.startsWith('blob:')
@@ -337,6 +444,13 @@ const deleteImageResource = (resourceToDelete: V1Resource) => {
 }
 
 onBeforeUnmount(() => {
+    uploadControllers.forEach((controller) => {
+        controller.abort()
+    })
+    uploadControllers.clear()
+    uploadingResources.value.clear()
+    loadedImages.value.clear()
+
     localResources.value.forEach((resource) => {
         if (
             resource.externalLink &&
@@ -530,11 +644,30 @@ onBeforeUnmount(() => {
                     class="flex-shrink-0 relative group">
                     <img
                         v-auth-image="getImageUrl(resource, true)"
-                        class="rounded-lg h-24 object-cover transition-opacity cursor-pointer"
-                        loading="lazy"
-                        @click="showImageViewer(resource)" />
+                        :class="[
+                            'rounded-lg h-24 object-cover transition-opacity',
+                            uploadingResources.has(resource.name || '')
+                                ? 'opacity-50 cursor-not-allowed'
+                                : 'cursor-pointer',
+                        ]"
+                        @click="
+                            !uploadingResources.has(resource.name || '') &&
+                                showImageViewer(resource)
+                        "
+                        @load="handleImageLoad(resource)"
+                        @error="handleImageError(resource)" />
+
+                    <div
+                        v-if="uploadingResources.has(resource.name || '')"
+                        class="absolute inset-0 flex items-center justify-center bg-black opacity-35 rounded-lg">
+                        <Loader2 class="w-6 h-6 text-white animate-spin" />
+                    </div>
 
                     <button
+                        v-if="
+                            !uploadingResources.has(resource.name || '') &&
+                            loadedImages.has(resource.name || '')
+                        "
                         @click.stop="deleteImageResource(resource)"
                         class="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center transition-all duration-200">
                         <X class="w-3.5 h-3.5" />

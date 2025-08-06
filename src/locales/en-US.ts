@@ -66,6 +66,7 @@ export default {
                 public: 'Public',
                 unspecified: 'Unspecified',
             },
+            uploadImageError: 'Upload image failed',
         },
         loading: {
             loading: 'Loading...',

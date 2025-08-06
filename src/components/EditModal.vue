@@ -123,6 +123,7 @@ watchEffect(() => {
             class="fixed inset-0 z-50"
             style="top: calc(env(safe-area-inset-top) - 8px)">
             <EditView
+                :key="editModalState.key"
                 :initial-text="editModalState.initialText"
                 :initial-visibility="currentEditVisibility"
                 :is-edit-mode="editModalState.isEditMode"

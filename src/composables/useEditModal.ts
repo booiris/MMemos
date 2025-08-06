@@ -6,6 +6,7 @@ interface EditModalState {
     isEditMode: boolean
     initialText: string
     memo: Memo | null
+    key: string
 }
 
 const editModalState = ref<EditModalState>({
@@ -13,6 +14,7 @@ const editModalState = ref<EditModalState>({
     isEditMode: false,
     initialText: '',
     memo: null,
+    key: '',
 })
 
 let saveAndCloseCallback: (() => void) | null = null
@@ -28,6 +30,7 @@ export const useEditModal = () => {
             isEditMode: options.isEditMode,
             initialText: options.initialText,
             memo: options.memo || null,
+            key: `edit-${Date.now()}-${Math.random().toString(36)}`,
         }
     }
 
