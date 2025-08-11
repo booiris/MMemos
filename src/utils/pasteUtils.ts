@@ -76,7 +76,7 @@ export const processTextWithLinks = async (
         } catch (error) {
             console.warn(`Failed to process link ${url}:`, error)
             // Replace loading with failed state
-            const failedText = `[${t('main.editPage.linkFetchFailed')}](${url})`
+            const failedText = `[${url}](${url})`
             processedText = processedText.replace(loadingText, failedText)
         }
 
