@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "mmm-memos",
+  "productName": "Memos",
   "version": "0.1.0",
   "identifier": "com.booiris.mmm-memos",
   "build": {
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "mmm-memos",
+        "title": "Memos",
         "width": 800,
         "height": 600
       }

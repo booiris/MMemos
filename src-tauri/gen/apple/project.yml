@@ -1,4 +1,4 @@
-name: mmm-memos
+name: memos
 options:
   bundleIdPrefix: com.irisboo.mmm-memos
   deploymentTarget:
@@ -10,7 +10,7 @@ configs:
 settingGroups:
   app:
     base:
-      PRODUCT_NAME: mmm-memos
+      PRODUCT_NAME: Memos
       PRODUCT_BUNDLE_IDENTIFIER: com.irisboo.mmm-memos
 targetTemplates:
   app:
