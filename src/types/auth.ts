@@ -13,7 +13,7 @@ export interface LoginResponse {
 
 export interface AuthState {
     isAuthenticated: boolean
-    user?: LoginResponse['user']
+    user?: V1User
     serverUrl?: string
     accessToken?: string
 } 

@@ -37,6 +37,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog'
+import { Locale } from '@/locales'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -45,8 +46,8 @@ const { t } = useI18n()
 const { currentLocale, locales, setLocale } = useLocale()
 var selectedLocale = ref(currentLocale)
 
-onMounted(() => {
-    settingsStore.initSettings()
+onMounted(async () => {
+    await settingsStore.initSettings()
 })
 
 const handleBack = () => {
@@ -61,7 +62,7 @@ const handleLogout = () => {
 const languageSelectOpen = ref(false)
 const acknowledgmentsDialogOpen = ref(false)
 
-const handleLanguageSelect = (locale: string) => {
+const handleLanguageSelect = (locale: Locale) => {
     selectedLocale.value = locale
 }
 
@@ -69,7 +70,6 @@ const handleLanguageConfirm = () => {
     languageSelectOpen.value = false
     setTimeout(() => {
         setLocale(selectedLocale.value)
-        localStorage.setItem('locale', selectedLocale.value)
     }, 150)
 }
 

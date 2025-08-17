@@ -1,7 +1,9 @@
 import { ref } from 'vue'
 import { V1Resource } from '@/api/schema/api'
-import { getAuthToken, getHost } from '@/api/client'
+import { useAuthStore } from '@/stores/auth'
 import { api as viewerApi } from 'v-viewer'
+
+const authStore = useAuthStore()
 
 export const getImageResources = (resources: V1Resource[]): V1Resource[] => {
     return resources.filter(
@@ -21,9 +23,9 @@ export const getImageUrl = (
     }
 
     if (resource.name) {
-        return `${getHost()}/file/${resource.name}/${resource.filename}${
-            isNeedThumbnail ? '?thumbnail=true' : ''
-        }`
+        return `${authStore.serverUrl}/file/${resource.name}/${
+            resource.filename
+        }${isNeedThumbnail ? '?thumbnail=true' : ''}`
     }
 
     return ''
@@ -47,7 +49,7 @@ export const useImageViewer = () => {
         } else {
             const response = await fetch(url, {
                 headers: {
-                    Authorization: `Bearer ${getAuthToken()}`,
+                    Authorization: `Bearer ${authStore.accessToken}`,
                 },
             })
             const blob = await response.blob()

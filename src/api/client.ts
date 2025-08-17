@@ -8,19 +8,14 @@ const myHttpClient = new HttpClient({
         },
     }),
     customFetch: fetch,
-    baseUrl: localStorage.getItem('serverUrl') || '',
+    baseUrl: '', // Will be set after auth store initialization
 })
 
 const client = new Api(myHttpClient)
 
-client.http.setSecurityData(localStorage.getItem('accessToken') || '')
+export function updateClientConfig(serverUrl: string, accessToken: string) {
+    myHttpClient.baseUrl = serverUrl
+    client.http.setSecurityData(accessToken)
+}
 
 export default client
-
-export function getHost() {
-    return client.http.baseUrl
-}
-
-export function getAuthToken() {
-    return localStorage.getItem('accessToken')
-}

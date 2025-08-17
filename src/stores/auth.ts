@@ -2,6 +2,9 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { AuthState, LoginData, LoginResponse } from '@/types/auth'
 import { login as Login, logout as Logout } from '@/api/auth'
+import { TauriStore } from '@/utils/tauriStore'
+import { updateClientConfig } from '@/api/client'
+import { V1User } from '@/api/schema/api'
 
 export const useAuthStore = defineStore('auth', () => {
     const authState = ref<AuthState>({
@@ -29,11 +32,14 @@ export const useAuthStore = defineStore('auth', () => {
                     accessToken: data.accessToken,
                 }
 
-                persistAuthState(
+                await persistAuthState(
                     response.user,
                     data.serverUrl,
                     data.accessToken
                 )
+
+                // Update API client configuration
+                updateClientConfig(data.serverUrl, data.accessToken)
 
                 console.log('login success, updating persisted auth state', {
                     user: response.user,
@@ -47,7 +53,7 @@ export const useAuthStore = defineStore('auth', () => {
         }
     }
 
-    const logout = () => {
+    const logout = async () => {
         console.log('logout, cleaning persisted auth state')
 
         Logout()
@@ -56,19 +62,17 @@ export const useAuthStore = defineStore('auth', () => {
             isAuthenticated: false,
         }
 
-        clearPersistedAuthState()
+        await clearPersistedAuthState()
     }
 
-    const checkAuth = () => {
-        const isAuth = localStorage.getItem('isAuthenticated') === 'true'
-        const userStr = localStorage.getItem('user')
-        const serverUrl = localStorage.getItem('serverUrl')
-        const accessToken = localStorage.getItem('accessToken')
+    const checkAuth = async () => {
+        try {
+            const isAuth = await TauriStore.get<boolean>('isAuthenticated')
+            const user = await TauriStore.get<V1User>('user')
+            const serverUrl = await TauriStore.getItem('serverUrl')
+            const accessToken = await TauriStore.getItem('accessToken')
 
-        if (isAuth && userStr && serverUrl && accessToken) {
-            try {
-                const user = JSON.parse(userStr)
-
+            if (isAuth && user && serverUrl && accessToken) {
                 authState.value = {
                     isAuthenticated: true,
                     user,
@@ -76,58 +80,56 @@ export const useAuthStore = defineStore('auth', () => {
                     accessToken,
                 }
 
-                console.log('restore auth state from localStorage', {
+                updateClientConfig(serverUrl, accessToken)
+
+                console.log('restore auth state from TauriStore', {
                     user: user.name,
                     serverUrl,
                 })
 
                 return true
-            } catch (error) {
-                console.error('restore auth state failed', error)
-                clearPersistedAuthState()
-                return false
             }
+
+            console.log('no valid auth state found')
+            return false
+        } catch (error) {
+            console.error('restore auth state failed', error)
+            await clearPersistedAuthState()
+            return false
         }
-
-        console.log('no valid auth state found')
-        return false
     }
 
-    const debugStore = () => {
-        console.debug('debug auth store', authState.value)
-        console.debug('- isAuthenticated:', isAuthenticated.value)
-        console.debug('- user:', user.value)
-        console.debug('- serverUrl:', serverUrl.value)
-        console.debug('- isLoading:', isLoading.value)
-        console.debug('- localStorage:', {
-            isAuthenticated: localStorage.getItem('isAuthenticated'),
-            user: localStorage.getItem('user'),
-            serverUrl: localStorage.getItem('serverUrl'),
-            accessToken: localStorage.getItem('accessToken')
-                ? '[set]'
-                : '[unset]',
-        })
-    }
-
-    const persistAuthState = (
+    const persistAuthState = async (
         user: any,
         serverUrl: string,
         accessToken: string
     ) => {
-        localStorage.setItem('isAuthenticated', 'true')
-        localStorage.setItem('user', JSON.stringify(user))
-        localStorage.setItem('serverUrl', serverUrl)
-        localStorage.setItem('accessToken', accessToken)
+        try {
+            await Promise.all([
+                TauriStore.set('isAuthenticated', true),
+                TauriStore.set('user', user),
+                TauriStore.setItem('serverUrl', serverUrl),
+                TauriStore.setItem('accessToken', accessToken),
+            ])
+        } catch (error) {
+            console.error('Failed to persist auth state:', error)
+            throw error
+        }
     }
 
-    const clearPersistedAuthState = () => {
-        localStorage.removeItem('isAuthenticated')
-        localStorage.removeItem('user')
-        localStorage.removeItem('serverUrl')
-        localStorage.removeItem('accessToken')
+    const clearPersistedAuthState = async () => {
+        try {
+            await Promise.all([
+                TauriStore.remove('isAuthenticated'),
+                TauriStore.remove('user'),
+                TauriStore.remove('serverUrl'),
+                TauriStore.remove('accessToken'),
+            ])
+        } catch (error) {
+            console.error('Failed to clear persisted auth state:', error)
+            throw error
+        }
     }
-
-    checkAuth()
 
     return {
         // state
@@ -144,8 +146,5 @@ export const useAuthStore = defineStore('auth', () => {
         login,
         logout,
         checkAuth,
-
-        // dev tools
-        debugStore,
     }
 })

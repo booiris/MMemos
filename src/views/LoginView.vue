@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, nextTick } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import type { LoginData } from '@/types/auth'
 import { useAuthStore } from '@/stores/auth'
@@ -39,7 +39,6 @@ const { currentLocale, locales, setLocale } = useLocale()
 const serverUrl = ref(import.meta.env.VITE_DEFAULT_DEBUG_SERVER_URL || '')
 const accessToken = ref(import.meta.env.VITE_DEFAULT_DEBUG_ACCESS_TOKEN || '')
 const loading = ref(false)
-const initializing = ref(true)
 const { t } = useI18n()
 
 const showAlert = ref(false)
@@ -97,28 +96,10 @@ const handleLogin = async () => {
         loading.value = false
     }
 }
-
-onMounted(async () => {
-    await nextTick()
-
-    if (!authStore.isAuthenticated) {
-        authStore.checkAuth()
-    }
-
-    if (authStore.isAuthenticated) {
-        router.push({ name: 'Main' })
-        return
-    }
-
-    initializing.value = false
-})
 </script>
 
 <template>
-    <div v-if="initializing" class="bg-background"></div>
-
     <div
-        v-else
         class="flex flex-col items-center justify-center bg-background"
         style="height: calc(100vh - env(safe-area-inset-top) + 8px)">
         <img

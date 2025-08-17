@@ -3,7 +3,7 @@ import type { RouteRecordRaw } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
     {
-        path: '/',
+        path: '/login',
         name: 'Login',
         component: () => import('@/views/LoginView.vue'),
         meta: {
@@ -11,7 +11,7 @@ const routes: RouteRecordRaw[] = [
         },
     },
     {
-        path: '/main',
+        path: '/',
         name: 'Main',
         component: () => import('@/views/MainView.vue'),
     },
@@ -70,7 +70,7 @@ router.beforeEach(async (to, from, next) => {
         const authStore = useAuthStore()
 
         if (!authStore.isAuthenticated) {
-            authStore.checkAuth()
+            await authStore.checkAuth()
         }
 
         if (!authStore.isAuthenticated) {

@@ -1,5 +1,9 @@
 use serde::{Deserialize, Serialize};
+use std::sync::RwLock;
 use std::time::Duration;
+use store::model::{AppState, StoreData};
+use tauri::Manager;
+mod store;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LinkInfo {
@@ -7,12 +11,6 @@ pub struct LinkInfo {
     pub content: Option<String>,
     pub url: String,
     pub description: Option<String>,
-}
-
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
 }
 
 #[tauri::command]
@@ -112,12 +110,52 @@ async fn fetch_link_info(url: String) -> Result<LinkInfo, String> {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .setup(|app| {
+            let store_data = store::load_store_data(app.handle()).unwrap_or_else(|e| {
+                log::error!("Failed to load store data: {}, using default", e);
+                StoreData::default()
+            });
+
+            let app_state = AppState {
+                data: RwLock::new(store_data),
+            };
+
+            app.manage(app_state);
+
+            Ok(())
+        })
+        .plugin(tauri_plugin_persisted_scope::init())
         .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_log::Builder::new().build())
+        .plugin(
+            tauri_plugin_log::Builder::new()
+                .target(tauri_plugin_log::Target::new(
+                    tauri_plugin_log::TargetKind::LogDir {
+                        file_name: Some("memos-log".to_string()),
+                    },
+                ))
+                .timezone_strategy(tauri_plugin_log::TimezoneStrategy::UseLocal)
+                .max_file_size(50_000 /* bytes */)
+                .format(|out, message, record| {
+                    out.finish(format_args!(
+                        "[{} {} {}:{}] {}",
+                        record.level(),
+                        record.target(),
+                        record.file().unwrap_or("unknown"),
+                        record.line().unwrap_or(0),
+                        message
+                    ))
+                })
+                .build(),
+        )
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet, fetch_link_info])
+        .invoke_handler(tauri::generate_handler![
+            fetch_link_info,
+            store::store_data,
+            store::get_data,
+            store::remove_data
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

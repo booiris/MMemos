@@ -15,7 +15,7 @@ export enum MemosState {
     ARCHIVED = 'ARCHIVED',
 }
 
-// TODO: 添加 token 失效处理
+// TODO: Add token expiration handling
 export async function getMemos(
     pageSize?: number,
     pageToken?: string,
@@ -188,7 +188,7 @@ export interface PaginationState {
     isLoading: boolean
 }
 
-// TODO: 添加 token 失效处理
+// TODO: Add token expiration handling
 export async function loadMoreMemos(
     currentPageToken?: string,
     pageSize?: number,

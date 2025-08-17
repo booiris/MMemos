@@ -2,6 +2,7 @@
 import { computed, onActivated, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useDraftStore } from '@/stores/draft'
 import { Button } from '@/components/ui/button'
 import { useSwipeBack } from '@/composables/useSwipeBack'
 import { useEditModal } from '@/composables/useEditModal'
@@ -74,6 +75,7 @@ dayjs.extend(localeData)
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
+const draftStore = useDraftStore()
 const { t } = useI18n()
 const { editModalState, openNewMemo, openEditMemo, saveAndCloseEdit } =
     useEditModal()
@@ -314,7 +316,7 @@ const handlePinMemo = async (memo: Memo) => {
 }
 
 const handleAddMemo = () => {
-    const lastEditText = localStorage.getItem('lastEditText') || ''
+    const lastEditText = draftStore.lastEditText || ''
     openNewMemo(lastEditText)
 }
 

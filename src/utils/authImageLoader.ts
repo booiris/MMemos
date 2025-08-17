@@ -2,7 +2,7 @@ import { App, DirectiveBinding } from 'vue'
 
 // origin source: https://github.com/chenchenwuai/v-auth-image/blob/master/packages/v-auth-image.js
 const authImage = {
-    // install方法
+    // install method
     install(
         app: App,
         options = {
@@ -41,7 +41,7 @@ const authImage = {
             },
         })
     },
-    // 初始化
+    // initialization
     init(el: HTMLElement, binding: DirectiveBinding, defaults: any) {
         if (binding.arg === 'success') {
             ;(el as any)._v_auth_image_success = binding.value
@@ -53,7 +53,7 @@ const authImage = {
             el.setAttribute('src', '')
         }
     },
-    // 图片加载前的处理
+    // Processing before image loading
     load(el: HTMLElement) {
         const realSrc = el.dataset.src
         const defaults = (el as any)._v_auth_image_defaults
@@ -67,7 +67,7 @@ const authImage = {
             el.removeAttribute('data-src')
         }
     },
-    // 获取真实图片数据
+    // Get actual image data
     requestImage(
         url: string,
         el: HTMLImageElement,

@@ -3,9 +3,11 @@ import { createI18n } from 'vue-i18n'
 import enUS from './en-US'
 import zhCN from './zh-CN'
 
+export type Locale = 'en-US' | 'zh-CN'
+
 const i18n = createI18n({
     legacy: false,
-    locale: localStorage.getItem('locale') || 'en-US',
+    locale: 'en-US' as Locale, // Default language, will be loaded from TauriStore after app initialization
     fallbackLocale: 'en-US',
     messages: {
         'zh-CN': zhCN,
@@ -15,11 +17,11 @@ const i18n = createI18n({
 
 const locales = [
     {
-        value: 'zh-CN',
+        value: 'zh-CN' as Locale,
         label: '中文',
     },
     {
-        value: 'en-US',
+        value: 'en-US' as Locale,
         label: 'English',
     },
 ]

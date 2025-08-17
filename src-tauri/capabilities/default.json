@@ -43,6 +43,11 @@
       "deny": []
     },
     "fs:default",
+    "fs:allow-appdata-read-recursive",
+    "fs:allow-appdata-write-recursive",
+    "fs:allow-appdata-meta-recursive",
+    "fs:scope-appdata-recursive",
+    "fs:scope-appdata-index",
     "log:default",
     "dialog:default"
   ]

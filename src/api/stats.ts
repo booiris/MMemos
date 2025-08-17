@@ -2,7 +2,7 @@ import client from './client'
 import { getError } from './error'
 import { V1UserStats } from './schema/api'
 
-// TODO: 添加 token 失效处理
+// TODO: Add token expiration handling
 export async function getUserStats(userName: string): Promise<V1UserStats> {
     try {
         const response = await client.api.userServiceGetUserStats(

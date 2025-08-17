@@ -1,11 +1,31 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import { useUiStore } from '@/stores/ui'
 
 const route = useRoute()
+const { locale } = useI18n()
+const uiStore = useUiStore()
 
 const transitionName = computed(() => {
     return (route.meta.transition as string) || 'fade'
+})
+
+watch(
+    () => uiStore.locale,
+    (newLocale) => {
+        if (locale.value !== newLocale) {
+            locale.value = newLocale
+        }
+    },
+    { immediate: true }
+)
+
+onMounted(() => {
+    if (uiStore.locale !== locale.value) {
+        locale.value = uiStore.locale
+    }
 })
 </script>
 

@@ -5,6 +5,7 @@ import EditView from '@/views/EditView.vue'
 import { V1Resource, V1Visibility } from '@/api/schema/api'
 import { createMemo, Memo, updateMemo } from '@/api/memos'
 import { getError } from '@/api/error'
+import { useDraftStore } from '@/stores/draft'
 
 interface Emits {
     success: []
@@ -13,17 +14,15 @@ interface Emits {
 const emit = defineEmits<Emits>()
 
 const { editModalState, closeEdit, setSaveCallback } = useEditModal()
+const draftStore = useDraftStore()
 const isLoading = ref<boolean>(false)
 const currentEditText = ref<string>('')
 const currentEditVisibility = ref<V1Visibility>(V1Visibility.PRIVATE)
 
-const handleCloseEdit = (text: string, visibility: V1Visibility) => {
+const handleCloseEdit = async (text: string, visibility: V1Visibility) => {
     closeEdit()
     if (!editModalState.value.isEditMode) {
-        localStorage.setItem('lastEditText', text)
-    }
-    if (!editModalState.value.isEditMode && visibility) {
-        localStorage.setItem('lastEditVisibility', visibility)
+        await draftStore.saveDraft(text, visibility)
     }
 }
 
@@ -50,9 +49,7 @@ const handleSendMemo = async (
         closeEdit()
 
         if (!editModalState.value.isEditMode) {
-            localStorage.removeItem('lastEditText')
-        } else {
-            localStorage.removeItem('lastEditVisibility')
+            await draftStore.clearDraft()
         }
 
         emit('success')
@@ -73,13 +70,10 @@ const handleVisibilityChange = (visibility: V1Visibility) => {
 }
 
 const createSaveCallback = () => {
-    return () => {
+    return async () => {
         if (!editModalState.value.isEditMode) {
-            localStorage.setItem('lastEditText', currentEditText.value)
-        }
-        if (!editModalState.value.isEditMode && currentEditVisibility.value) {
-            localStorage.setItem(
-                'lastEditVisibility',
+            await draftStore.saveDraft(
+                currentEditText.value,
                 currentEditVisibility.value
             )
         }
@@ -96,9 +90,9 @@ watchEffect(() => {
                 (editModalState.value.memo?.visibility as V1Visibility) ||
                 V1Visibility.PRIVATE
         } else {
-            const savedVisibility = localStorage.getItem('lastEditVisibility')
-            if (savedVisibility) {
-                currentEditVisibility.value = savedVisibility as V1Visibility
+            if (draftStore.lastEditVisibility) {
+                currentEditVisibility.value =
+                    draftStore.lastEditVisibility as V1Visibility
             }
         }
     }
