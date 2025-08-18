@@ -1,9 +1,11 @@
 import { ref } from 'vue'
 import { V1Resource } from '@/api/schema/api'
 import { useAuthStore } from '@/stores/auth'
+import { useDataCacheStore } from '@/stores/data_cache'
 import { api as viewerApi } from 'v-viewer'
 
 const authStore = useAuthStore()
+const dataCacheStore = useDataCacheStore()
 
 export const getImageResources = (resources: V1Resource[]): V1Resource[] => {
     return resources.filter(
@@ -47,13 +49,23 @@ export const useImageViewer = () => {
         if (url.startsWith('blob:')) {
             imageUrl = url
         } else {
-            const response = await fetch(url, {
-                headers: {
-                    Authorization: `Bearer ${authStore.accessToken}`,
-                },
-            })
-            const blob = await response.blob()
-            imageUrl = URL.createObjectURL(blob)
+            const data = await dataCacheStore.getImageCache(url)
+            if (data) {
+                console.log('hit image cache, url: ' + url)
+                imageUrl = URL.createObjectURL(new Blob([data]))
+            } else {
+                const response = await fetch(url, {
+                    headers: {
+                        Authorization: `Bearer ${authStore.accessToken}`,
+                    },
+                })
+                const blob = await response.blob()
+                imageUrl = URL.createObjectURL(blob)
+                await dataCacheStore.setImageCache(
+                    url,
+                    new Uint8Array(await blob.arrayBuffer())
+                )
+            }
         }
 
         await new Promise((resolve) => setTimeout(resolve, 200))

@@ -5,6 +5,8 @@ import { login as Login, logout as Logout } from '@/api/auth'
 import { TauriStore } from '@/utils/tauriStore'
 import { updateClientConfig } from '@/api/client'
 import { V1User } from '@/api/schema/api'
+import { sanitizeFileName } from '@/utils/fileUtils'
+import { useDataCacheStore } from './data_cache'
 
 export const useAuthStore = defineStore('auth', () => {
     const authState = ref<AuthState>({
@@ -115,20 +117,38 @@ export const useAuthStore = defineStore('auth', () => {
             console.error('Failed to persist auth state:', error)
             throw error
         }
-    }
+    } 
 
     const clearPersistedAuthState = async () => {
         try {
-            await Promise.all([
-                TauriStore.remove('isAuthenticated'),
-                TauriStore.remove('user'),
-                TauriStore.remove('serverUrl'),
-                TauriStore.remove('accessToken'),
+            await TauriStore.remove([
+                'isAuthenticated',
+                'user',
+                'serverUrl',
+                'accessToken',
+                'lastEditText',
+                'lastEditVisibility',
             ])
+            const dataCacheStore = useDataCacheStore()
+            dataCacheStore.cleanImageCache()
         } catch (error) {
             console.error('Failed to clear persisted auth state:', error)
             throw error
         }
+    }
+
+    const getUniqueId = () => {
+        return (
+            sanitizeFileName(serverUrl.value!) +
+            '_' +
+            sanitizeFileName(
+                user.value?.name ||
+                    user.value?.username ||
+                    user.value?.displayName ||
+                    user.value?.uid ||
+                    ''
+            )
+        )
     }
 
     return {
@@ -146,5 +166,6 @@ export const useAuthStore = defineStore('auth', () => {
         login,
         logout,
         checkAuth,
+        getUniqueId,
     }
 })

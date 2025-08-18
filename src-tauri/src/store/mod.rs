@@ -84,26 +84,28 @@ pub fn store_data(
 
 #[tauri::command]
 pub fn get_data(state: State<'_, AppState>, key: String) -> Result<Option<String>, String> {
+    log::trace!("[store_data] key: {}", key);
     let store_data = state.data.read().map_err(|e| {
         log::error!("[get_data] Failed to read store data: {}", e);
         "[get_data]".to_string() + &e.to_string()
     })?;
-    log::trace!(
-        "[get_data] key: {} value: {}",
-        key,
-        store_data.data.get(&key).cloned().unwrap_or_default()
-    );
     Ok(store_data.data.get(&key).cloned())
 }
 
 #[tauri::command]
-pub fn remove_data(app: AppHandle, state: State<'_, AppState>, key: String) -> Result<(), String> {
-    log::info!("[remove_data] key: {}", key);
+pub fn remove_data(
+    app: AppHandle,
+    state: State<'_, AppState>,
+    keys: Vec<String>,
+) -> Result<(), String> {
+    log::info!("[remove_data] keys: {:?}", keys);
     let mut store_data = state.data.write().map_err(|e| {
         log::error!("[remove_data] Failed to write store data: {}", e);
         "[remove_data] ".to_string() + &e.to_string()
     })?;
-    store_data.data.remove(&key);
+    for key in keys {
+        store_data.data.remove(&key);
+    }
 
     save_store_data(&app, &store_data)?;
 

@@ -64,8 +64,7 @@ export const useDraftStore = defineStore('draft', () => {
 
         try {
             await Promise.all([
-                TauriStore.remove('lastEditText'),
-                TauriStore.remove('lastEditVisibility'),
+                TauriStore.remove(['lastEditText', 'lastEditVisibility']),
             ])
         } catch (error) {
             console.error('Failed to clear draft:', error)

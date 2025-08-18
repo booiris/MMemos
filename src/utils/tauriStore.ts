@@ -52,9 +52,9 @@ export class TauriStore {
      * Remove data
      * @param key Storage key
      */
-    static async remove(key: TauriStoreKey): Promise<void> {
+    static async remove(keys: TauriStoreKey[]): Promise<void> {
         try {
-            await invoke('remove_data', { key })
+            await invoke('remove_data', { keys })
         } catch (error) {
             console.error('Failed to remove data:', error)
             throw error

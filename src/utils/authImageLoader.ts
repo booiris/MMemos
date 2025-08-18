@@ -1,4 +1,5 @@
 import { App, DirectiveBinding } from 'vue'
+import { useDataCacheStore } from '@/stores/data_cache'
 
 // origin source: https://github.com/chenchenwuai/v-auth-image/blob/master/packages/v-auth-image.js
 const authImage = {
@@ -20,10 +21,10 @@ const authImage = {
                     getHeaders,
                 })
             },
-            mounted(el: HTMLElement) {
+            async mounted(el: HTMLElement) {
                 authImage.load(el)
             },
-            updated(el: HTMLElement, binding: DirectiveBinding) {
+            async updated(el: HTMLElement, binding: DirectiveBinding) {
                 if (binding.value !== binding.oldValue) {
                     el.setAttribute('data-src', binding.value)
                     authImage.load(el)
@@ -43,19 +44,28 @@ const authImage = {
     },
     // initialization
     init(el: HTMLElement, binding: DirectiveBinding, defaults: any) {
-        if (binding.arg === 'success') {
-            ;(el as any)._v_auth_image_success = binding.value
-        } else if (binding.arg === 'error') {
-            ;(el as any)._v_auth_image_error = binding.value
-        } else {
-            ;(el as any)._v_auth_image_defaults = defaults
-            el.setAttribute('data-src', binding.value)
-            el.setAttribute('src', '')
-        }
+        ;(el as any)._v_auth_image_defaults = defaults
+        el.setAttribute('data-src', binding.value)
+        el.setAttribute('src', '')
     },
     // Processing before image loading
-    load(el: HTMLElement) {
+    async load(el: HTMLElement) {
         const realSrc = el.dataset.src
+        if (realSrc && typeof realSrc === 'string') {
+            const dataCacheStore = useDataCacheStore()
+            const data = await dataCacheStore.getImageCache(realSrc)
+            if (data) {
+                console.log('hit image cache, url: ' + realSrc)
+                const elImage = el as HTMLImageElement
+                elImage.src = URL.createObjectURL(new Blob([data]))
+                elImage.onload = () => {
+                    URL.revokeObjectURL(elImage.src)
+                }
+                el.removeAttribute('data-src')
+                return
+            }
+        }
+
         const defaults = (el as any)._v_auth_image_defaults
         let headers: Record<string, string> = {}
         if (defaults.getHeaders) {
@@ -63,52 +73,43 @@ const authImage = {
             Object.assign(headers, headers2)
         }
         if (realSrc && typeof realSrc === 'string') {
-            authImage.requestImage(realSrc, el as HTMLImageElement, headers)
+            await authImage.requestImage(
+                realSrc,
+                el as HTMLImageElement,
+                headers
+            )
             el.removeAttribute('data-src')
         }
     },
     // Get actual image data
-    requestImage(
+    async requestImage(
         url: string,
         el: HTMLImageElement,
         headers: Record<string, string>
     ) {
-        const request = new XMLHttpRequest()
-        request.responseType = 'blob'
-        request.open('get', url, true)
-        Object.keys(headers).forEach((key) => {
-            request.setRequestHeader(key, headers[key]!)
+        const response = await fetch(url, {
+            headers: headers,
+        }).catch((e) => {
+            console.error(e)
         })
-        request.onreadystatechange = (e: Event) => {
-            if (request.readyState === XMLHttpRequest.DONE) {
-                if (request.status === 200) {
-                    el.src = URL.createObjectURL(request.response)
-                    const isBuffer =
-                        request.response.type.indexOf('application/json') === -1
-                    if (isBuffer) {
-                        el.onload = () => {
-                            URL.revokeObjectURL(el.src)
-                            const callback = (el as any)._v_auth_image_success
-                            callback && callback(e) // eslint-disable-line
-                        }
-                        el.onerror = () => {
-                            el.alt = 'loading image failed'
-                            const callback = (el as any)._v_auth_image_error
-                            callback && callback(e) // eslint-disable-line
-                        }
-                    } else {
-                        el.alt = 'loading image failed'
-                        const callback = (el as any)._v_auth_image_error
-                        callback && callback(e) // eslint-disable-line
-                    }
-                } else {
-                    el.alt = 'loading image failed'
-                    const callback = (el as any)._v_auth_image_error
-                    callback && callback(e) // eslint-disable-line
-                }
-            }
+        if (!response) {
+            return
         }
-        request.send(null)
+        const blob = await response.blob()
+        el.src = URL.createObjectURL(blob)
+        const dataCacheStore = useDataCacheStore()
+        dataCacheStore.setImageCache(
+            url,
+            new Uint8Array(await blob.arrayBuffer())
+        )
+        el.removeAttribute('data-src')
+        el.onload = () => {
+            URL.revokeObjectURL(el.src)
+        }
+        el.onerror = () => {
+            el.alt = 'loading image failed'
+        }
     },
 }
+
 export default authImage
