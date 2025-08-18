@@ -6,7 +6,7 @@ import { TauriStore } from '@/utils/tauriStore'
 import { updateClientConfig } from '@/api/client'
 import { V1User } from '@/api/schema/api'
 import { sanitizeFileName } from '@/utils/fileUtils'
-import { useDataCacheStore } from './data_cache'
+import { useDataCacheStore } from './dataCache'
 
 export const useAuthStore = defineStore('auth', () => {
     const authState = ref<AuthState>({

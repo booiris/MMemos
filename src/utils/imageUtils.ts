@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import { V1Resource } from '@/api/schema/api'
 import { useAuthStore } from '@/stores/auth'
-import { useDataCacheStore } from '@/stores/data_cache'
+import { useDataCacheStore } from '@/stores/dataCache'
 import { api as viewerApi } from 'v-viewer'
 
 const authStore = useAuthStore()

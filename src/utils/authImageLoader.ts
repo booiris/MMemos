@@ -1,5 +1,5 @@
 import { App, DirectiveBinding } from 'vue'
-import { useDataCacheStore } from '@/stores/data_cache'
+import { useDataCacheStore } from '@/stores/dataCache'
 
 // origin source: https://github.com/chenchenwuai/v-auth-image/blob/master/packages/v-auth-image.js
 const authImage = {
