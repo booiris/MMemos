@@ -61,8 +61,8 @@ export default {
             close: 'Close',
             selectAll: 'SelectAll',
             visibility: {
-                private: 'Only Me',
-                protected: 'Local Users Only',
+                private: 'Private',
+                protected: 'Protected',
                 public: 'Public',
                 unspecified: 'Unspecified',
             },
