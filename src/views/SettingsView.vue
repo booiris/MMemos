@@ -112,7 +112,7 @@ const aboutItems = computed(() => [
         type: 'arrow' as const,
         onClick: () => {
             openUrl(
-                'https://gist.github.com/booiris/24c677a37284763fd7790c28cf30735c'
+                'https://privacy-page-memos.vercel.app/'
             )
         },
     },
