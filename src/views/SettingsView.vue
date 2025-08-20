@@ -111,9 +111,7 @@ const aboutItems = computed(() => [
         title: t('settings.about.privacy'),
         type: 'arrow' as const,
         onClick: () => {
-            openUrl(
-                'https://privacy-page-memos.vercel.app/'
-            )
+            openUrl('https://privacy-page-memos.vercel.app/')
         },
     },
     {
