@@ -44,7 +44,7 @@ const authStore = useAuthStore()
 const settingsStore = useSettingsStore()
 const { t } = useI18n()
 const { currentLocale, locales, setLocale } = useLocale()
-var selectedLocale = ref(currentLocale)
+var selectedLocale = ref(currentLocale.value)
 
 onMounted(async () => {
     await settingsStore.initSettings()
