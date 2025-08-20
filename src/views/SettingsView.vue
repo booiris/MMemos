@@ -9,8 +9,8 @@ import {
     Languages,
     Link,
     ThumbsUp,
-    RefreshCw,
-    ClockArrowUp,
+    // RefreshCw,
+    // ClockArrowUp,
 } from 'lucide-vue-next'
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -89,20 +89,20 @@ const functionItems = computed(() => [
         modelValue: settingsStore.enableAutoTitle,
         onChange: (value: boolean) => settingsStore.setAutoTitle(value),
     },
-    {
-        icon: RefreshCw,
-        title: t('settings.function.refresh'),
-        type: 'switch' as const,
-        modelValue: settingsStore.enableAutoRefresh,
-        onChange: (value: boolean) => settingsStore.setAutoRefresh(value),
-    },
-    {
-        icon: ClockArrowUp,
-        title: t('settings.function.randomHistory'),
-        type: 'switch' as const,
-        modelValue: settingsStore.enableRandomHistory,
-        onChange: (value: boolean) => settingsStore.setRandomHistory(value),
-    },
+    // {
+    //     icon: RefreshCw,
+    //     title: t('settings.function.refresh'),
+    //     type: 'switch' as const,
+    //     modelValue: settingsStore.enableAutoRefresh,
+    //     onChange: (value: boolean) => settingsStore.setAutoRefresh(value),
+    // },
+    // {
+    //     icon: ClockArrowUp,
+    //     title: t('settings.function.randomHistory'),
+    //     type: 'switch' as const,
+    //     modelValue: settingsStore.enableRandomHistory,
+    //     onChange: (value: boolean) => settingsStore.setRandomHistory(value),
+    // },
 ])
 
 const aboutItems = computed(() => [
@@ -117,6 +117,7 @@ const aboutItems = computed(() => [
         title: t('settings.about.bugReport'),
         type: 'arrow' as const,
         onClick: () => {
+            console.log('bug report')
             openUrl('https://github.com/booiris/mmm-memos/issues')
         },
     },

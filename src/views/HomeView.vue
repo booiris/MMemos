@@ -5,7 +5,7 @@ import SettingsList from '@/components/ui/list-item/settings-list.vue'
 import { useI18n } from 'vue-i18n'
 import TouchAnimation from '@/components/ui/touch-animation/index.vue'
 import { Button } from '@/components/ui/button'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onActivated, ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { getUserStats } from '@/api/stats'
 
@@ -54,7 +54,7 @@ const memosCount = computed(() => stats.value?.totalMemoCount || 0)
 const tagCount = computed(() => Object.keys(stats.value?.tagCount || {}).length)
 const pinCount = computed(() => stats.value?.pinnedMemos.length || 0)
 
-onMounted(async () => {
+onActivated(async () => {
     try {
         const s = await getUserStats(authStore.user?.name || '')
         stats.value = s
