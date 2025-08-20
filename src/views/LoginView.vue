@@ -105,7 +105,7 @@ const handleLogin = async () => {
         <img
             :src="logo"
             alt="logo"
-            class="w-40 h-40 mb-8 -mt-46 select-none pointer-events-none"
+            class="w-40 h-40 mb-8 -mt-40 select-none pointer-events-none"
             style="
                 user-select: none;
                 -webkit-user-select: none;

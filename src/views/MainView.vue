@@ -6,7 +6,6 @@ import { useDraftStore } from '@/stores/draft'
 import { Button } from '@/components/ui/button'
 import { useSwipeBack } from '@/composables/useSwipeBack'
 import { useEditModal } from '@/composables/useEditModal'
-import { useDebounceFn } from '@vueuse/core'
 import {
     Bolt,
     MoreHorizontal,
@@ -324,7 +323,9 @@ const handleModalSuccess = async () => {
     await Promise.all([loadMemos(), loadPinnedContent()])
 }
 
-const handleSearchInternal = async (query: string) => {
+const handleSearch = async (query: string) => {
+    searchQuery.value = query
+
     if (!query.trim()) {
         isSearching.value = false
         searchResults.value = []
@@ -354,20 +355,6 @@ const handleSearchInternal = async (query: string) => {
     } finally {
         isLoading.value = false
     }
-}
-
-const debouncedSearch = useDebounceFn(handleSearchInternal, 300)
-
-const handleSearch = (query: string) => {
-    searchQuery.value = query
-
-    if (!query.trim()) {
-        isSearching.value = false
-        searchResults.value = []
-        return
-    }
-
-    debouncedSearch(query)
 }
 
 const handleScrollToTop = () => {

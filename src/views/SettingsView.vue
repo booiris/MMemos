@@ -110,14 +110,17 @@ const aboutItems = computed(() => [
         icon: ExternalLink,
         title: t('settings.about.privacy'),
         type: 'arrow' as const,
-        onClick: () => console.log('privacy'),
+        onClick: () => {
+            openUrl(
+                'https://gist.github.com/booiris/24c677a37284763fd7790c28cf30735c'
+            )
+        },
     },
     {
         icon: Bug,
         title: t('settings.about.bugReport'),
         type: 'arrow' as const,
         onClick: () => {
-            console.log('bug report')
             openUrl('https://github.com/booiris/mmm-memos/issues')
         },
     },
