@@ -61,7 +61,7 @@ export const useImageViewer = () => {
                 })
                 const blob = await response.blob()
                 imageUrl = URL.createObjectURL(blob)
-                await dataCacheStore.setImageCache(
+                dataCacheStore.setImageCache(
                     url,
                     new Uint8Array(await blob.arrayBuffer())
                 )
