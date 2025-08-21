@@ -9,7 +9,7 @@ import {
     Languages,
     Link,
     ThumbsUp,
-    // RefreshCw,
+    RefreshCw,
     // ClockArrowUp,
 } from 'lucide-vue-next'
 import { ref, computed, onMounted } from 'vue'
@@ -89,13 +89,13 @@ const functionItems = computed(() => [
         modelValue: settingsStore.enableAutoTitle,
         onChange: (value: boolean) => settingsStore.setAutoTitle(value),
     },
-    // {
-    //     icon: RefreshCw,
-    //     title: t('settings.function.refresh'),
-    //     type: 'switch' as const,
-    //     modelValue: settingsStore.enableAutoRefresh,
-    //     onChange: (value: boolean) => settingsStore.setAutoRefresh(value),
-    // },
+    {
+        icon: RefreshCw,
+        title: t('settings.function.refresh'),
+        type: 'switch' as const,
+        modelValue: settingsStore.enableAutoRefresh,
+        onChange: (value: boolean) => settingsStore.setAutoRefresh(value),
+    },
     // {
     //     icon: ClockArrowUp,
     //     title: t('settings.function.randomHistory'),
