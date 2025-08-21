@@ -6,6 +6,7 @@ import { useDraftStore } from '@/stores/draft'
 import { Button } from '@/components/ui/button'
 import { useSwipeBack } from '@/composables/useSwipeBack'
 import { useEditModal } from '@/composables/useEditModal'
+import { usePullToRefresh } from '@/composables/usePullToRefresh'
 import {
     Bolt,
     MoreHorizontal,
@@ -18,6 +19,7 @@ import {
     Plus,
     ArrowUp,
     Home,
+    Loader,
 } from 'lucide-vue-next'
 import TouchAnimation from '@/components/ui/touch-animation/index.vue'
 import EditModal from '@/components/EditModal.vue'
@@ -179,6 +181,8 @@ const loadPinnedContent = async () => {
 const loadMemos = async (reset: boolean = true) => {
     try {
         isLoading.value = true
+
+        await new Promise((resolve) => setTimeout(resolve, 1000))
 
         if (reset) {
             paginationState.value = {
@@ -384,6 +388,23 @@ const handleScroll = (event: Event) => {
     }
 }
 
+// Pull to refresh
+const pullToRefreshCallback = async () => {
+    await Promise.all([loadMemos(), loadPinnedContent()])
+}
+
+const {
+    isPullRefreshing,
+    pullDistance,
+    isPulling,
+    loaderProgress,
+    handleTouchStart,
+    handleTouchMove,
+    handleTouchEnd,
+} = usePullToRefresh({
+    onRefresh: pullToRefreshCallback,
+})
+
 onActivated(() => {
     Promise.all([loadMemos(), loadPinnedContent()])
 })
@@ -400,6 +421,14 @@ useSwipeBack({ onSwipe: handleHome }, '#main-view')
             class="flex justify-center items-center absolute top-0 left-0 right-0 bottom-0 bg-background/70 z-50">
             <img :src="loading_image" alt="loading" class="w-12 h-12" />
         </div>
+
+        <div
+            v-if="isPullRefreshing"
+            class="absolute top-0 left-0 right-0 bottom-0 z-40 bg-transparent pointer-events-auto"
+            @touchstart.prevent
+            @touchmove.prevent
+            @touchend.prevent
+            @click.prevent></div>
 
         <div
             class="flex justify-between items-center sticky top-0 z-10 mb-0.5 pr-4 pl-5.5">
@@ -433,10 +462,32 @@ useSwipeBack({ onSwipe: handleHome }, '#main-view')
             class="flex-1 overflow-y-auto"
             id="memo-list"
             style="margin-bottom: calc(env(safe-area-inset-bottom) + 0.5rem)"
-            @scroll="handleScroll">
-            <div class="px-5">
+            @scroll="handleScroll"
+            @touchstart="handleTouchStart"
+            @touchmove="handleTouchMove"
+            @touchend="handleTouchEnd">
+            <!-- Pull refresh indicator - Fixed position -->
+            <div
+                v-if="isPulling || isPullRefreshing"
+                class="fixed left-1/2 -translate-x-1/2 z-20"
+                style="top: calc(env(safe-area-inset-bottom) + 3.5rem)">
+                <Loader
+                    class="w-6.5 h-6.5 text-primary pull-refresh-loader"
+                    :class="{
+                        'animate-spin': isPullRefreshing,
+                    }"
+                    :style="{
+                        '--progress': loaderProgress,
+                    }" />
+            </div>
+
+            <div
+                class="px-5 transition-transform duration-300 ease-out"
+                :style="{
+                    transform: `translateY(${pullDistance}px)`,
+                }">
                 <div
-                    v-if="isLoading"
+                    v-if="isLoading && !isPullRefreshing"
                     class="my-4 p-6 rounded-lg border-1 border-primary">
                     <div class="text-gray-500 text-center">
                         {{
@@ -716,5 +767,30 @@ useSwipeBack({ onSwipe: handleHome }, '#main-view')
 
 #memo-list::-webkit-scrollbar {
     display: block !important;
+}
+
+/* Pull refresh loader progressive reveal - clockwise */
+.pull-refresh-loader {
+    transition: all 0.1s ease-out;
+}
+
+.pull-refresh-loader:not(.animate-spin) {
+    mask: conic-gradient(
+        from 0deg,
+        black 0deg,
+        black calc(360deg * var(--progress) / 100),
+        transparent calc(360deg * var(--progress) / 100)
+    );
+    -webkit-mask: conic-gradient(
+        from 0deg,
+        black 0deg,
+        black calc(360deg * var(--progress) / 100),
+        transparent calc(360deg * var(--progress) / 100)
+    );
+}
+
+.pull-refresh-loader.animate-spin {
+    mask: none;
+    -webkit-mask: none;
 }
 </style>
