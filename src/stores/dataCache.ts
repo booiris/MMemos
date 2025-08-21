@@ -11,6 +11,7 @@ import { defineStore } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { LRUCache } from 'lru-cache'
 import { sanitizeFileName } from '@/utils/fileUtils'
+import { Memo } from '@/api/memos'
 
 export interface HomeDataCache {
     tags: string[]
@@ -24,9 +25,22 @@ export const useDataCacheStore = defineStore('dataCache', () => {
 
     const imageCache = new LRUCache<string, Uint8Array>({
         max: 50,
-        maxSize: 20 * 1024 * 1024,
+        maxSize: 100 * 1024 * 1024,
         sizeCalculation: (value: Uint8Array) => value.byteLength,
     })
+
+    const createCacheDirectory = async () => {
+        if (
+            authStore.serverUrl &&
+            !(await exists(authStore.getUniqueId(), {
+                baseDir: BaseDirectory.AppCache,
+            }))
+        ) {
+            await mkdir(authStore.getUniqueId(), {
+                baseDir: BaseDirectory.AppCache,
+            })
+        }
+    }
 
     const setImageCache = async (imageUrl: string, data: Uint8Array) => {
         if (!authStore.serverUrl || !imageUrl.startsWith(authStore.serverUrl)) {
@@ -35,9 +49,9 @@ export const useDataCacheStore = defineStore('dataCache', () => {
 
         await createCacheDirectory()
 
-        console.log('set image cache, url: ' + imageCacheFileUrl(imageUrl))
-        imageCache.set(imageCacheFileUrl(imageUrl), new Uint8Array(data))
-        await writeFile(imageCacheFileUrl(imageUrl), data, {
+        console.log('set image cache, url: ' + cacheFileUrl(imageUrl))
+        imageCache.set(cacheFileUrl(imageUrl), new Uint8Array(data))
+        await writeFile(cacheFileUrl(imageUrl), data, {
             baseDir: BaseDirectory.AppCache,
         }).catch((e) => {
             console.error(e)
@@ -53,32 +67,29 @@ export const useDataCacheStore = defineStore('dataCache', () => {
 
         await createCacheDirectory()
 
-        if (imageCache.has(imageCacheFileUrl(imageUrl))) {
+        if (imageCache.has(cacheFileUrl(imageUrl))) {
             console.log(
-                'get image cache from cache, url: ' +
-                    imageCacheFileUrl(imageUrl)
+                'get image cache from cache, url: ' + cacheFileUrl(imageUrl)
             )
-            return imageCache.get(imageCacheFileUrl(imageUrl))!
+            return imageCache.get(cacheFileUrl(imageUrl))!
         }
         if (
-            !(await exists(imageCacheFileUrl(imageUrl), {
+            !(await exists(cacheFileUrl(imageUrl), {
                 baseDir: BaseDirectory.AppCache,
             }))
         ) {
-            console.log('no image cache, url: ' + imageCacheFileUrl(imageUrl))
+            console.log('no image cache, url: ' + cacheFileUrl(imageUrl))
             return null
         }
-        console.log(
-            'get image cache from file, url: ' + imageCacheFileUrl(imageUrl)
-        )
-        const imageData = await readFile(imageCacheFileUrl(imageUrl), {
+        console.log('get image cache from file, url: ' + cacheFileUrl(imageUrl))
+        const imageData = await readFile(cacheFileUrl(imageUrl), {
             baseDir: BaseDirectory.AppCache,
         })
-        imageCache.set(imageCacheFileUrl(imageUrl), imageData)
+        imageCache.set(cacheFileUrl(imageUrl), imageData)
         return imageData
     }
 
-    const imageCacheFileUrl = (imageResource: string) => {
+    const cacheFileUrl = (imageResource: string) => {
         const sanitizedResource = sanitizeFileName(imageResource)
         return authStore.getUniqueId() + '/' + sanitizedResource
     }
@@ -127,17 +138,52 @@ export const useDataCacheStore = defineStore('dataCache', () => {
         )
     }
 
-    const createCacheDirectory = async () => {
+    const memoCache = new LRUCache<string, Memo>({
+        max: 400,
+        maxSize: 100 * 1024 * 1024,
+    })
+
+    const getMemoCache = async (memoName: string): Promise<Memo | null> => {
+        if (!authStore.serverUrl) {
+            return null
+        }
+
+        await createCacheDirectory()
+
+        if (imageCache.has(cacheFileUrl(memoName))) {
+            console.log(
+                'get memo cache from cache, url: ' + cacheFileUrl(memoName)
+            )
+            return memoCache.get(cacheFileUrl(memoName))!
+        }
         if (
-            authStore.serverUrl &&
-            !(await exists(authStore.getUniqueId(), {
+            !(await exists(cacheFileUrl(memoName), {
                 baseDir: BaseDirectory.AppCache,
             }))
         ) {
-            await mkdir(authStore.getUniqueId(), {
+            return null
+        }
+        return JSON.parse(
+            await readTextFile(cacheFileUrl(memoName), {
                 baseDir: BaseDirectory.AppCache,
             })
+        ) as Memo
+    }
+
+    const setMemoCache = async (memoName: string, memo: Memo) => {
+        if (!authStore.serverUrl) {
+            return
         }
+
+        await createCacheDirectory()
+
+        console.log('set memo cache, name: ' + cacheFileUrl(memoName))
+        memoCache.set(cacheFileUrl(memoName), memo)
+        await writeTextFile(cacheFileUrl(memoName), JSON.stringify(memo), {
+            baseDir: BaseDirectory.AppCache,
+        }).catch((e) => {
+            console.error(e)
+        })
     }
 
     return {
@@ -147,5 +193,7 @@ export const useDataCacheStore = defineStore('dataCache', () => {
         cleanImageCache,
         getHomeDataCache,
         setHomeDataCache,
+        getMemoCache,
+        setMemoCache,
     }
 })
