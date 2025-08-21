@@ -5,13 +5,16 @@ import SettingsList from '@/components/ui/list-item/settings-list.vue'
 import { useI18n } from 'vue-i18n'
 import TouchAnimation from '@/components/ui/touch-animation/index.vue'
 import { Button } from '@/components/ui/button'
-import { computed, onActivated, ref } from 'vue'
+import { computed, onActivated, onMounted, ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useDataCacheStore } from '@/stores/dataCache'
 import { getUserStats } from '@/api/stats'
+import { V1UserStats } from '@/api/schema/api'
 
 const router = useRouter()
 const { t } = useI18n()
 const authStore = useAuthStore()
+const dataCacheStore = useDataCacheStore()
 
 const handleSettings = () => {
     router.push({ name: 'Settings' })
@@ -49,16 +52,46 @@ const tags = computed(() => {
     })
 })
 
-const stats = ref<any>(null)
-const memosCount = computed(() => stats.value?.totalMemoCount || 0)
-const tagCount = computed(() => Object.keys(stats.value?.tagCount || {}).length)
-const pinCount = computed(() => stats.value?.pinnedMemos.length || 0)
+const memosCount = ref(0)
+const tagCount = ref(0)
+const pinCount = ref(0)
+
+const convertUserStats = (statsData: V1UserStats) => {
+    memosCount.value = statsData?.totalMemoCount || 0
+    tagCount.value = Object.keys(statsData?.tagCount || {}).length
+    pinCount.value = statsData?.pinnedMemos?.length || 0
+    tagValues.value = Object.keys(statsData?.tagCount || {})
+}
+
+const loadCachedData = async () => {
+    try {
+        const cachedData = await dataCacheStore.getHomeDataCache()
+        if (cachedData) {
+            tagValues.value = cachedData.tags || []
+            memosCount.value = cachedData.memosCount || 0
+            tagCount.value = cachedData.tagsCount || 0
+            pinCount.value = cachedData.pinnedMemosCount || 0
+        }
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+onMounted(async () => {
+    await loadCachedData()
+})
 
 onActivated(async () => {
     try {
         const s = await getUserStats(authStore.user?.name || '')
-        stats.value = s
-        tagValues.value = Object.keys(s.tagCount || {})
+        convertUserStats(s)
+
+        await dataCacheStore.setHomeDataCache({
+            tags: tagValues.value,
+            memosCount: memosCount.value,
+            tagsCount: tagCount.value,
+            pinnedMemosCount: pinCount.value,
+        })
     } catch (error) {
         console.error(error)
     }

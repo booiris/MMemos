@@ -10,7 +10,7 @@ configs:
 settingGroups:
   app:
     base:
-      PRODUCT_NAME: Memos
+      PRODUCT_NAME: MMemos
       PRODUCT_BUNDLE_IDENTIFIER: com.irisboo.mmm-memos
 targetTemplates:
   app:
