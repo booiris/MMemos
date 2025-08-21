@@ -49,9 +49,11 @@ export const useDataCacheStore = defineStore('dataCache', () => {
 
         await createCacheDirectory()
 
-        console.log('set image cache, url: ' + cacheFileUrl(imageUrl))
-        imageCache.set(cacheFileUrl(imageUrl), new Uint8Array(data))
-        await writeFile(cacheFileUrl(imageUrl), data, {
+        const filePath = cacheFileUrl(imageUrl)
+
+        console.log('set image cache, url: ' + filePath)
+        imageCache.set(filePath, new Uint8Array(data))
+        await writeFile(filePath, data, {
             baseDir: BaseDirectory.AppCache,
         }).catch((e) => {
             console.error(e)
@@ -67,25 +69,25 @@ export const useDataCacheStore = defineStore('dataCache', () => {
 
         await createCacheDirectory()
 
-        if (imageCache.has(cacheFileUrl(imageUrl))) {
-            console.log(
-                'get image cache from cache, url: ' + cacheFileUrl(imageUrl)
-            )
-            return imageCache.get(cacheFileUrl(imageUrl))!
+        const filePath = cacheFileUrl(imageUrl)
+
+        if (imageCache.has(filePath)) {
+            console.log('get image cache from cache, url: ' + filePath)
+            return imageCache.get(filePath)!
         }
         if (
-            !(await exists(cacheFileUrl(imageUrl), {
+            !(await exists(filePath, {
                 baseDir: BaseDirectory.AppCache,
             }))
         ) {
-            console.log('no image cache, url: ' + cacheFileUrl(imageUrl))
+            console.log('no image cache, url: ' + filePath)
             return null
         }
-        console.log('get image cache from file, url: ' + cacheFileUrl(imageUrl))
-        const imageData = await readFile(cacheFileUrl(imageUrl), {
+        console.log('get image cache from file, url: ' + filePath)
+        const imageData = await readFile(filePath, {
             baseDir: BaseDirectory.AppCache,
         })
-        imageCache.set(cacheFileUrl(imageUrl), imageData)
+        imageCache.set(filePath, imageData)
         return imageData
     }
 
@@ -94,8 +96,9 @@ export const useDataCacheStore = defineStore('dataCache', () => {
         return authStore.getUniqueId() + '/' + sanitizedResource
     }
 
-    const cleanImageCache = async () => {
+    const cleanCache = async () => {
         imageCache.clear()
+        memoCache.clear()
     }
 
     const getHomeDataCache = async (): Promise<HomeDataCache | null> => {
@@ -138,10 +141,7 @@ export const useDataCacheStore = defineStore('dataCache', () => {
         )
     }
 
-    const memoCache = new LRUCache<string, Memo>({
-        max: 400,
-        maxSize: 100 * 1024 * 1024,
-    })
+    const memoCache = new Map<string, Memo>()
 
     const getMemoCache = async (memoName: string): Promise<Memo | null> => {
         if (!authStore.serverUrl) {
@@ -150,11 +150,11 @@ export const useDataCacheStore = defineStore('dataCache', () => {
 
         await createCacheDirectory()
 
-        if (imageCache.has(cacheFileUrl(memoName))) {
-            console.log(
-                'get memo cache from cache, url: ' + cacheFileUrl(memoName)
-            )
-            return memoCache.get(cacheFileUrl(memoName))!
+        const filePath = cacheFileUrl(memoName)
+
+        if (memoCache.has(filePath)) {
+            console.log('get memo cache from cache, url: ' + filePath)
+            return memoCache.get(filePath)!
         }
         if (
             !(await exists(cacheFileUrl(memoName), {
@@ -177,9 +177,11 @@ export const useDataCacheStore = defineStore('dataCache', () => {
 
         await createCacheDirectory()
 
-        console.log('set memo cache, name: ' + cacheFileUrl(memoName))
-        memoCache.set(cacheFileUrl(memoName), memo)
-        await writeTextFile(cacheFileUrl(memoName), JSON.stringify(memo), {
+        const filePath = cacheFileUrl(memoName)
+
+        console.log('set memo cache, name: ' + filePath)
+        memoCache.set(filePath, memo)
+        await writeTextFile(filePath, JSON.stringify(memo), {
             baseDir: BaseDirectory.AppCache,
         }).catch((e) => {
             console.error(e)
@@ -190,7 +192,7 @@ export const useDataCacheStore = defineStore('dataCache', () => {
         // Actions
         setImageCache,
         getImageCache,
-        cleanImageCache,
+        cleanImageCache: cleanCache,
         getHomeDataCache,
         setHomeDataCache,
         getMemoCache,

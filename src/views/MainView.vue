@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onActivated, ref } from 'vue'
+import { computed, onActivated, onMounted, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useDraftStore } from '@/stores/draft'
@@ -192,11 +192,11 @@ const loadMemos = async (reset: boolean = true) => {
 
         let result
         if (currentTag) {
-            result = await loadMoreMemosByTag(currentTag, '', 15)
+            result = await loadMoreMemosByTag(currentTag, '', 30)
         } else if (pageName == 'Archive') {
-            result = await loadMoreArchivedMemos('', 15)
+            result = await loadMoreArchivedMemos('', 30)
         } else {
-            result = await loadMoreMemos('', 15)
+            result = await loadMoreMemos('', 30)
         }
 
         memos.value = result.memos
@@ -402,6 +402,8 @@ const {
 } = usePullToRefresh({
     onRefresh: pullToRefreshCallback,
 })
+
+onMounted(async () => {})
 
 onActivated(() => {
     Promise.all([loadMemos(), loadPinnedContent()])
