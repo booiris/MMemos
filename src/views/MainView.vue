@@ -182,8 +182,6 @@ const loadMemos = async (reset: boolean = true) => {
     try {
         isLoading.value = true
 
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-
         if (reset) {
             paginationState.value = {
                 pageToken: '',
