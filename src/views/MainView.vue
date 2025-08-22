@@ -68,6 +68,7 @@ import { Input } from '@/components/ui/input'
 
 import loading_image from '@/assets/loading_image.svg'
 import { getError } from '@/api/error'
+import { useDataCacheStore } from '@/stores/dataCache'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -141,7 +142,7 @@ const confirmDialogOpen = ref(false)
 const confirmAction = ref<ConfirmAction>('delete')
 const memoToOperate = ref<Memo | null>(null)
 
-const currentTag = route.params.tag as string
+const currentTag = (route.params.tag as string) || ''
 const pageName = route.name as string
 
 const displayMemos = computed(() => {
@@ -350,6 +351,7 @@ const handleSearch = async (query: string) => {
                 resources: memo.resources || [],
                 relations: memo.relations || [],
                 reactions: memo.reactions || [],
+                tags: memo.tags || [],
             })) || []
     } catch (error) {
         console.error('search memo failed: ' + getError(error))
@@ -403,7 +405,53 @@ const {
     onRefresh: pullToRefreshCallback,
 })
 
-onMounted(async () => {})
+const dataCache = useDataCacheStore()
+onMounted(async () => {
+    const archive = pageName === 'Archive'
+
+    await Promise.all([
+        (async () => {
+            if (archive) {
+                return
+            }
+
+            let offset = 0
+            while (true) {
+                const res = await dataCache.getMemoList(
+                    offset,
+                    30,
+                    currentTag,
+                    true,
+                    archive
+                )
+                if (res) {
+                    pinnedContent.value.push(...res)
+                } else {
+                    break
+                }
+                offset += 30
+            }
+        })(),
+        (async () => {
+            let offset = 0
+            while (true) {
+                const res = await dataCache.getMemoList(
+                    offset,
+                    30,
+                    currentTag,
+                    false,
+                    archive
+                )
+                if (res) {
+                    memos.value.push(...res)
+                } else {
+                    break
+                }
+                offset += 30
+            }
+        })(),
+    ])
+})
 
 onActivated(() => {
     Promise.all([loadMemos(), loadPinnedContent()])
@@ -483,7 +531,11 @@ useSwipeBack({ onSwipe: handleHome }, '#main-view')
                     transform: `translateY(${pullDistance}px)`,
                 }">
                 <div
-                    v-if="isLoading && !isPullRefreshing"
+                    v-if="
+                        isLoading &&
+                        !isPullRefreshing &&
+                        displayMemos.length == 0
+                    "
                     class="my-4 p-6 rounded-lg border-1 border-primary">
                     <div class="text-gray-500 text-center">
                         {{

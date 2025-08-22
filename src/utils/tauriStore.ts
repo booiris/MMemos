@@ -3,6 +3,7 @@ import { invoke } from '@tauri-apps/api/core'
 export type TauriStoreKey =
     | 'isAuthenticated'
     | 'user'
+    | 'userName'
     | 'serverUrl'
     | 'accessToken'
     | 'locale'

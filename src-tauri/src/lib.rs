@@ -1,10 +1,19 @@
+use dashmap::DashMap;
 use serde::{Deserialize, Serialize};
-use std::sync::RwLock;
-use std::time::Duration;
+use std::{
+    sync::{Arc, atomic::Ordering},
+    time::Duration,
+};
 use store::model::{AppState, StoreData};
-use tauri::Manager;
+use tauri::{AppHandle, Manager, State};
+
+use crate::store::{
+    memo::{self, persist_memo_cache},
+    model::CacheData,
+};
 mod api;
 mod store;
+mod utils;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LinkInfo {
@@ -108,20 +117,64 @@ async fn fetch_link_info(url: String) -> Result<LinkInfo, String> {
     })
 }
 
+#[tauri::command]
+async fn logout(app: AppHandle, state: State<'_, AppState>) -> Result<(), ()> {
+    *state.store.server_url.write() = "".to_string();
+    *state.store.user_name.write() = "".to_string();
+    state.store.data.clear();
+    if let Err(e) = store::save_store_data(&app, &state.store).await {
+        log::error!("Failed to clean store data: {}", e);
+    }
+
+    // not clear logout user cache data
+    state
+        .cache
+        .is_all_memo_meta_updated
+        .store(false, Ordering::Relaxed);
+    state.cache.all_memo_meta.clear();
+    state.cache.memos.clear();
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
-            let store_data = store::load_store_data(app.handle()).unwrap_or_else(|e| {
+            let store = store::load_store_data(app.handle()).unwrap_or_else(|e| {
                 log::error!("Failed to load store data: {}, using default", e);
                 StoreData::default()
             });
 
+            let server_url = store.server_url.clone();
+            let user_name = store.user_name.clone();
+
+            let memo_meta =
+                memo::load_memo_meta_data(app.handle(), &server_url.read(), &user_name.read())
+                    .unwrap_or_else(|e| {
+                        log::error!("Failed to load memo data: {}, using default", e);
+                        DashMap::new()
+                    });
+            let cache = CacheData {
+                all_memo_meta: memo_meta,
+                ..Default::default()
+            };
+
+            let cache = Arc::new(cache);
             let app_state = AppState {
-                data: RwLock::new(store_data),
+                store,
+                cache: cache.clone(),
             };
 
             app.manage(app_state);
+
+            persist_memo_cache(
+                app.path()
+                    .app_cache_dir()
+                    .expect("Failed to get app cache dir"),
+                cache.clone(),
+                server_url,
+                user_name,
+            );
 
             Ok(())
         })
@@ -148,9 +201,14 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             fetch_link_info,
+            logout,
             store::store_data,
             store::get_data,
-            store::remove_data
+            store::remove_data,
+            store::memo::store_memo,
+            store::memo::get_memo,
+            store::memo::delete_memo,
+            store::memo::get_memo_list,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

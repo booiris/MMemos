@@ -12,6 +12,7 @@ import { useAuthStore } from '@/stores/auth'
 import { LRUCache } from 'lru-cache'
 import { sanitizeFileName } from '@/utils/fileUtils'
 import { Memo } from '@/api/memos'
+import { invoke } from '@tauri-apps/api/core'
 
 export interface HomeDataCache {
     tags: string[]
@@ -112,12 +113,6 @@ export const useDataCacheStore = defineStore('dataCache', () => {
         imageCache.clear()
         isHomeCacheUpdated = false
         homeDataCache = null
-        memoCache = {
-            memos: new Map<string, Memo>(),
-            memosUpdated: new Map<string, boolean>(),
-            memoNameList: null,
-            memoNameListUpdated: false,
-        }
     }
 
     const getData = async <T>(
@@ -163,57 +158,23 @@ export const useDataCacheStore = defineStore('dataCache', () => {
         homeDataCache = data
     }
 
-    let memoCache: MemoDataCache = {
-        memos: new Map<string, Memo>(),
-        memosUpdated: new Map<string, boolean>(),
-        memoNameList: null,
-        memoNameListUpdated: false,
-    }
-
     const getMemoCache = async (memoName: string): Promise<Memo | null> => {
-        if (memoCache?.memos.has(memoName)) {
-            console.log('get memo cache from cache, memoName: ' + memoName)
-            return memoCache.memos.get(memoName)!
-        }
-
-        const memo = await getData<Memo>(memoName, 'memos')
-        if (memo) {
-            memoCache.memos.set(memoName, memo)
-        }
-
-        return memo
+        return invoke('get_memo', {
+            memoName,
+        })
     }
 
     const setMemoCache = async (memoName: string, memo: Memo) => {
-        memoCache.memos.set(memoName, memo)
-        memoCache.memosUpdated.set(memoName, true)
+        await invoke('store_memo', {
+            memoName,
+            memo,
+        })
     }
 
-    const getMemoNameList = async (): Promise<string[]> => {
-        if (!memoCache.memoNameList) {
-            memoCache.memoNameList = await getData<string[]>(
-                'memoNameList.json',
-                'memos'
-            )
-            if (!memoCache.memoNameList) {
-                memoCache.memoNameList = []
-            }
-        }
-        return memoCache.memoNameList
-    }
-
-    const pushMemoNameList = async (memoNames: string[]) => {
-        if (!memoCache.memoNameList) {
-            memoCache.memoNameList = await getData<string[]>(
-                'memoNameList.json',
-                'memos'
-            )
-            if (!memoCache.memoNameList) {
-                memoCache.memoNameList = []
-            }
-        }
-        memoCache.memoNameList.push(...memoNames)
-        memoCache.memoNameListUpdated = true
+    const deleteMemoCache = async (memoName: string) => {
+        await invoke('delete_memo', {
+            memoName,
+        })
     }
 
     const persistDataCache = async () => {
@@ -230,26 +191,23 @@ export const useDataCacheStore = defineStore('dataCache', () => {
                     )
                 }
             }
-            for (const [memoName, memo] of memoCache.memos) {
-                if (memoCache.memosUpdated.get(memoName) === true) {
-                    memoCache.memosUpdated.set(memoName, false)
-                    await writeTextFile(
-                        cacheFileUrl(memoName, 'memos'),
-                        JSON.stringify(memo),
-                        {
-                            baseDir: BaseDirectory.AppCache,
-                        }
-                    )
-                }
-            }
-            if (memoCache.memoNameListUpdated) {
-                memoCache.memoNameListUpdated = false
-                await writeTextFile(
-                    cacheFileUrl('memoNameList.json', 'memos'),
-                    JSON.stringify(memoCache.memoNameList)
-                )
-            }
         }, 5000)
+    }
+
+    const getMemoList = async (
+        offset: number,
+        limit: number,
+        tag: string,
+        pinned: boolean,
+        archived: boolean
+    ): Promise<Memo[] | null> => {
+        return invoke('get_memo_list', {
+            offset,
+            limit,
+            tag,
+            pinned,
+            archived,
+        })
     }
 
     persistDataCache()
@@ -263,7 +221,7 @@ export const useDataCacheStore = defineStore('dataCache', () => {
         setHomeDataCache,
         getMemoCache,
         setMemoCache,
-        getMemoNameList,
-        pushMemoNameList,
+        getMemoList,
+        deleteMemoCache,
     }
 })

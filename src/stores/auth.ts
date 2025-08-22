@@ -7,6 +7,7 @@ import { updateClientConfig } from '@/api/client'
 import { V1User } from '@/api/schema/api'
 import { sanitizeFileName } from '@/utils/fileUtils'
 import { useDataCacheStore } from './dataCache'
+import { invoke } from '@tauri-apps/api/core'
 
 export const useAuthStore = defineStore('auth', () => {
     const authState = ref<AuthState>({
@@ -110,6 +111,7 @@ export const useAuthStore = defineStore('auth', () => {
             await Promise.all([
                 TauriStore.set('isAuthenticated', true),
                 TauriStore.set('user', user),
+                TauriStore.setItem('userName', user.name),
                 TauriStore.setItem('serverUrl', serverUrl),
                 TauriStore.setItem('accessToken', accessToken),
             ])
@@ -121,14 +123,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     const clearPersistedAuthState = async () => {
         try {
-            await TauriStore.remove([
-                'isAuthenticated',
-                'user',
-                'serverUrl',
-                'accessToken',
-                'lastEditText',
-                'lastEditVisibility',
-            ])
+            await invoke('logout')
             const dataCacheStore = useDataCacheStore()
             dataCacheStore.cleanImageCache()
         } catch (error) {
@@ -138,10 +133,14 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     const getUniqueId = () => {
+        const userName = user.value?.name || user.value?.username
+        if (!userName) {
+            throw new Error('user name not found')
+        }
         return (
             sanitizeFileName(serverUrl.value!) +
             '_' +
-            sanitizeFileName(user.value?.name || user.value?.username || '')
+            sanitizeFileName(userName)
         )
     }
 

@@ -1,3 +1,4 @@
+import { useDataCacheStore } from '@/stores/dataCache'
 import client from './client'
 import { getError } from './error'
 import {
@@ -15,21 +16,62 @@ export enum MemosState {
     ARCHIVED = 'ARCHIVED',
 }
 
+export type Memo = {
+    name?: string
+    createTime: string
+    updateTime: string
+    displayTime: string
+    visibility: string
+    content: string
+    pinned: boolean
+    resources: V1Resource[]
+    relations: V1MemoRelation[]
+    reactions: V1Reaction[]
+    tags: string[]
+}
+
+function memoToMemo(memo: Apiv1Memo): Memo {
+    return {
+        name: memo.name,
+        createTime: memo.createTime || '',
+        updateTime: memo.updateTime || '',
+        displayTime: memo.displayTime || '',
+        visibility: memo.visibility || 'PRIVATE',
+        content: memo.content || '',
+        pinned: memo.pinned || false,
+        resources: memo.resources || [],
+        relations: memo.relations || [],
+        reactions: memo.reactions || [],
+        tags: memo.tags || [],
+    }
+}
+
 // TODO: Add token expiration handling
 export async function getMemos(
     pageSize?: number,
     pageToken?: string,
-    state?: MemosState
+    state?: MemosState,
+    filter?: string
 ): Promise<V1ListMemosResponse> {
     try {
-        const response = await client.api.memoServiceListMemos(
-            {
-                pageSize: pageSize || 15,
-                pageToken: pageToken || '',
-                state: state || MemosState.NORMAL,
-            },
-            { secure: true, signal: AbortSignal.timeout(10000) }
-        )
+        const params: any = {
+            pageSize: pageSize || 15,
+            pageToken: pageToken || '',
+            state: state || MemosState.NORMAL,
+        }
+
+        if (filter) {
+            params.filter = filter
+        }
+
+        const response = await client.api.memoServiceListMemos(params, {
+            secure: true,
+            signal: AbortSignal.timeout(10000),
+        })
+        const dataCache = useDataCacheStore()
+        for (const memo of response.memos || []) {
+            dataCache.setMemoCache(memo.name!, memoToMemo(memo))
+        }
         return response
     } catch (error) {
         throw `[getMemos] ${getError(error)}`
@@ -43,16 +85,7 @@ export async function getMemosByTag(
     state?: MemosState
 ): Promise<V1ListMemosResponse> {
     try {
-        const response = await client.api.memoServiceListMemos(
-            {
-                pageSize: pageSize || 15,
-                pageToken: pageToken || '',
-                state: state || MemosState.NORMAL,
-                filter: `tag in ["${tag}"]`,
-            },
-            { secure: true, signal: AbortSignal.timeout(10000) }
-        )
-        return response
+        return await getMemos(pageSize, pageToken, state, `tag in ["${tag}"]`)
     } catch (error) {
         throw `[getMemosByTag] ${getError(error)}`
     }
@@ -63,27 +96,6 @@ export async function getArchivedMemos(
     pageToken?: string
 ): Promise<V1ListMemosResponse> {
     return await getMemos(pageSize, pageToken, MemosState.ARCHIVED)
-}
-
-export async function loadAllMemos(
-    pageToken?: string,
-    state?: MemosState
-): Promise<Apiv1Memo[]> {
-    let memos: Apiv1Memo[] = []
-    try {
-        while (true) {
-            const response = await getMemos(15, pageToken, state)
-            memos.push(...(response.memos || []))
-            if (response.nextPageToken) {
-                pageToken = response.nextPageToken
-            } else {
-                break
-            }
-        }
-        return memos
-    } catch (error) {
-        throw `[loadAllMemos] ${getError(error)}`
-    }
 }
 
 export async function createMemo(
@@ -101,6 +113,8 @@ export async function createMemo(
             secure: true,
             signal: AbortSignal.timeout(10000),
         })
+        const dataCache = useDataCacheStore()
+        dataCache.setMemoCache(response.name!, memoToMemo(response))
         return response
     } catch (error) {
         throw `[createMemo] ${getError(error)}`
@@ -116,6 +130,8 @@ export async function updateMemo(
             secure: true,
             signal: AbortSignal.timeout(10000),
         })
+        const dataCache = useDataCacheStore()
+        dataCache.setMemoCache(name, memoToMemo(response))
         return response
     } catch (error) {
         throw `[updateMemo] ${getError(error)}`
@@ -128,6 +144,8 @@ export async function deleteMemo(name: string): Promise<void> {
             secure: true,
             signal: AbortSignal.timeout(10000),
         })
+        const dataCache = useDataCacheStore()
+        dataCache.deleteMemoCache(name)
     } catch (error) {
         throw `[deleteMemo] ${getError(error)}`
     }
@@ -154,32 +172,15 @@ export async function searchMemos(
     pageToken?: string
 ): Promise<V1ListMemosResponse> {
     try {
-        const response = await client.api.memoServiceListMemos(
-            {
-                pageSize: pageSize || 15,
-                pageToken: pageToken || '',
-                filter: `content.contains("${query}")`,
-                state: MemosState.NORMAL,
-            },
-            { secure: true, signal: AbortSignal.timeout(10000) }
+        return await getMemos(
+            pageSize,
+            pageToken,
+            MemosState.NORMAL,
+            `content.contains("${query}")`
         )
-        return response
     } catch (error) {
         throw `[searchMemos] ${getError(error)}`
     }
-}
-
-export type Memo = {
-    name?: string
-    createTime: string
-    updateTime: string
-    displayTime: string
-    visibility: string
-    content: string
-    pinned: boolean
-    resources: V1Resource[]
-    relations: V1MemoRelation[]
-    reactions: V1Reaction[]
 }
 
 export interface PaginationState {
@@ -188,39 +189,25 @@ export interface PaginationState {
     isLoading: boolean
 }
 
-// TODO: Add token expiration handling
 export async function loadMoreMemos(
     currentPageToken?: string,
     pageSize?: number,
-    state?: MemosState
+    state?: MemosState,
+    pinned?: boolean
 ): Promise<{
     memos: Memo[]
     nextPageToken?: string
     hasMore: boolean
 }> {
     try {
-        const response = await client.api.memoServiceListMemos(
-            {
-                pageSize: pageSize || 15,
-                pageToken: currentPageToken || '',
-                state: state || MemosState.NORMAL,
-            },
-            { secure: true, signal: AbortSignal.timeout(10000) }
+        const response = await getMemos(
+            pageSize,
+            currentPageToken,
+            state,
+            pinned ? 'pinned' : ''
         )
 
-        const memos =
-            response.memos?.map((memo) => ({
-                name: memo.name,
-                createTime: memo.createTime || '',
-                updateTime: memo.updateTime || '',
-                displayTime: memo.displayTime || '',
-                visibility: memo.visibility || 'PRIVATE',
-                content: memo.content || '',
-                pinned: memo.pinned || false,
-                resources: memo.resources || [],
-                relations: memo.relations || [],
-                reactions: memo.reactions || [],
-            })) || []
+        const memos = response.memos?.map((memo) => memoToMemo(memo)) || []
 
         return {
             memos,
@@ -243,29 +230,14 @@ export async function loadMoreMemosByTag(
     hasMore: boolean
 }> {
     try {
-        const response = await client.api.memoServiceListMemos(
-            {
-                pageSize: pageSize || 15,
-                pageToken: currentPageToken || '',
-                state: state || MemosState.NORMAL,
-                filter: `tag in ["${tag}"]`,
-            },
-            { secure: true, signal: AbortSignal.timeout(10000) }
+        const response = await getMemos(
+            pageSize,
+            currentPageToken,
+            state,
+            `tag in ["${tag}"]`
         )
 
-        const memos =
-            response.memos?.map((memo) => ({
-                name: memo.name,
-                createTime: memo.createTime || '',
-                updateTime: memo.updateTime || '',
-                displayTime: memo.displayTime || '',
-                visibility: memo.visibility || 'PRIVATE',
-                content: memo.content || '',
-                pinned: memo.pinned || false,
-                resources: memo.resources || [],
-                relations: memo.relations || [],
-                reactions: memo.reactions || [],
-            })) || []
+        const memos = response.memos?.map((memo) => memoToMemo(memo)) || []
 
         return {
             memos,
@@ -290,29 +262,21 @@ export async function loadMoreArchivedMemos(
 
 export async function getPinnedContent(): Promise<Memo[]> {
     try {
-        const response = await client.api.memoServiceListMemos(
-            {
-                pageSize: 50,
-                pageToken: '',
-                filter: 'pinned',
-                state: MemosState.NORMAL,
-            },
-            { secure: true, signal: AbortSignal.timeout(10000) }
-        )
+        let pinnedMemos: Memo[] = []
+        while (true) {
+            const response = await loadMoreMemos(
+                '',
+                30,
+                MemosState.NORMAL,
+                true
+            )
 
-        const pinnedMemos =
-            response.memos?.map((memo) => ({
-                name: memo.name,
-                createTime: memo.createTime || '',
-                updateTime: memo.updateTime || '',
-                displayTime: memo.displayTime || '',
-                visibility: memo.visibility || 'PRIVATE',
-                content: memo.content || '',
-                pinned: memo.pinned || false,
-                resources: memo.resources || [],
-                relations: memo.relations || [],
-                reactions: memo.reactions || [],
-            })) || []
+            pinnedMemos.push(...response.memos)
+
+            if (!response.hasMore) {
+                break
+            }
+        }
 
         return pinnedMemos
     } catch (error) {
