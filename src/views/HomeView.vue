@@ -106,11 +106,7 @@ onActivated(async () => {
             class="flex justify-between items-center sticky top-0 z-10 mb-0.5 bg-background">
             <div class="flex items-center gap-2">
                 <div class="text-4xl text-primary font-style">
-                    {{
-                        authStore.user?.displayName ||
-                        authStore.user?.username ||
-                        ''
-                    }}
+                    {{ authStore.user?.username || '' }}
                 </div>
             </div>
             <div class="flex items-center gap-2">

@@ -440,11 +440,7 @@ useSwipeBack({ onSwipe: handleHome }, '#main-view')
                 /></TouchAnimation>
                 <TouchAnimation :scale="0.95">
                     <div class="text-3xl text-primary font-style -mt-1">
-                        {{
-                            authStore.user?.displayName ||
-                            authStore.user?.username ||
-                            ''
-                        }}
+                        {{ authStore.user?.username || '' }}
                     </div>
                 </TouchAnimation>
             </div>

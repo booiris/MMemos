@@ -3,6 +3,7 @@ use std::sync::RwLock;
 use std::time::Duration;
 use store::model::{AppState, StoreData};
 use tauri::Manager;
+mod api;
 mod store;
 
 #[derive(Debug, Serialize, Deserialize)]

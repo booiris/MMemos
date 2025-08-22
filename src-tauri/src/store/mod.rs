@@ -2,6 +2,7 @@ use crate::store::model::{AppState, StoreData};
 use std::path::PathBuf;
 use tauri::{AppHandle, Manager, State};
 
+mod memo;
 pub mod model;
 
 pub fn load_store_data(app: &AppHandle) -> Result<StoreData, String> {

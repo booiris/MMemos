@@ -112,15 +112,7 @@ export enum Apiv1IdentityProviderType {
   OAUTH2 = "OAUTH2",
 }
 
-/**
- * User role enumeration.
- *
- *  - ROLE_UNSPECIFIED: Unspecified role.
- *  - HOST: Host role with full system access.
- *  - ADMIN: Admin role with administrative privileges.
- *  - USER: Regular user role.
- * @default "ROLE_UNSPECIFIED"
- */
+/** @default "ROLE_UNSPECIFIED" */
 export enum UserRole {
   ROLE_UNSPECIFIED = "ROLE_UNSPECIFIED",
   HOST = "HOST",
@@ -157,7 +149,12 @@ export interface TableNodeRow {
   cells?: V1Node[];
 }
 
-/** Memo type statistics. */
+export interface UserServiceCreateUserAccessTokenBody {
+  description?: string;
+  /** @format date-time */
+  expiresAt?: string;
+}
+
 export interface UserStatsMemoTypeStats {
   /** @format int32 */
   linkCount?: number;
@@ -340,12 +337,8 @@ export interface Apiv1Shortcut {
   filter?: string;
 }
 
-/** User settings message */
 export interface Apiv1UserSetting {
-  /**
-   * The resource name of the user whose setting this is.
-   * Format: users/{user}
-   */
+  /** The name of the user. */
   name?: string;
   /** The preferred locale of the user. */
   locale?: string;
@@ -622,6 +615,11 @@ export interface V1CodeNode {
   content?: string;
 }
 
+export interface V1CreateWebhookRequest {
+  name?: string;
+  url?: string;
+}
+
 export interface V1EmbeddedContentNode {
   resourceName?: string;
   params?: string;
@@ -692,15 +690,7 @@ export interface V1LinkNode {
 }
 
 export interface V1ListAllUserStatsResponse {
-  /** The list of user statistics. */
   userStats?: V1UserStats[];
-  /** A token for the next page of results. */
-  nextPageToken?: string;
-  /**
-   * The total count of user statistics.
-   * @format int32
-   */
-  totalSize?: number;
 }
 
 export interface V1ListIdentityProvidersResponse {
@@ -757,45 +747,15 @@ export interface V1ListShortcutsResponse {
 }
 
 export interface V1ListUserAccessTokensResponse {
-  /** The list of access tokens. */
   accessTokens?: V1UserAccessToken[];
-  /** A token for the next page of results. */
-  nextPageToken?: string;
-  /**
-   * The total count of access tokens.
-   * @format int32
-   */
-  totalSize?: number;
 }
 
 export interface V1ListUsersResponse {
-  /** The list of users. */
   users?: V1User[];
-  /**
-   * A token that can be sent as `page_token` to retrieve the next page.
-   * If this field is omitted, there are no subsequent pages.
-   */
-  nextPageToken?: string;
-  /**
-   * The total count of users (may be approximate).
-   * @format int32
-   */
-  totalSize?: number;
 }
 
 export interface V1ListWebhooksResponse {
-  /** The list of webhooks. */
   webhooks?: V1Webhook[];
-  /**
-   * A token that can be sent as `page_token` to retrieve the next page.
-   * If this field is omitted, there are no subsequent pages.
-   */
-  nextPageToken?: string;
-  /**
-   * The total count of webhooks (may be approximate).
-   * @format int32
-   */
-  totalSize?: number;
 }
 
 export interface V1MathBlockNode {
@@ -957,18 +917,6 @@ export interface V1SSOCredentials {
   redirectUri?: string;
 }
 
-export interface V1SearchUsersResponse {
-  /** The list of users matching the search query. */
-  users?: V1User[];
-  /** A token for the next page of results. */
-  nextPageToken?: string;
-  /**
-   * The total count of matching users.
-   * @format int32
-   */
-  totalSize?: number;
-}
-
 export interface V1SpoilerNode {
   content?: string;
 }
@@ -1024,132 +972,78 @@ export interface V1UnorderedListItemNode {
 
 export interface V1User {
   /**
-   * The resource name of the user.
-   * Format: users/{user}
+   * The name of the user.
+   * Format: users/{id}, id is the system generated auto-incremented id.
    */
-  name?: string;
-  /** Output only. The system generated unique identifier. */
-  readonly uid?: string;
-  /** The role of the user. */
-  role: UserRole;
-  /** Required. The unique username for login. */
-  username: string;
-  /** Optional. The email address of the user. */
+  readonly name?: string;
+  role?: UserRole;
+  username?: string;
   email?: string;
-  /** Optional. The display name of the user. */
-  displayName?: string;
-  /** Optional. The avatar URL of the user. */
+  nickname?: string;
   avatarUrl?: string;
-  /** Optional. The description of the user. */
   description?: string;
-  /** Input only. The password for the user. */
   password?: string;
-  /** The state of the user. */
-  state: V1State;
-  /**
-   * Output only. The creation timestamp.
-   * @format date-time
-   */
+  state?: V1State;
+  /** @format date-time */
   readonly createTime?: string;
-  /**
-   * Output only. The last update timestamp.
-   * @format date-time
-   */
+  /** @format date-time */
   readonly updateTime?: string;
-  /** Output only. The etag for this resource. */
-  readonly etag?: string;
 }
 
-/** User access token message */
 export interface V1UserAccessToken {
-  /**
-   * The resource name of the access token.
-   * Format: users/{user}/accessTokens/{access_token}
-   */
-  name?: string;
-  /** Output only. The access token value. */
-  readonly accessToken?: string;
-  /** The description of the access token. */
+  accessToken?: string;
   description?: string;
-  /**
-   * Output only. The issued timestamp.
-   * @format date-time
-   */
-  readonly issuedAt?: string;
-  /**
-   * Optional. The expiration timestamp.
-   * @format date-time
-   */
+  /** @format date-time */
+  issuedAt?: string;
+  /** @format date-time */
   expiresAt?: string;
 }
 
-/** User statistics messages */
 export interface V1UserStats {
-  /**
-   * The resource name of the user whose stats these are.
-   * Format: users/{user}
-   */
+  /** The name of the user. */
   name?: string;
-  /** The timestamps when the memos were displayed. */
+  /**
+   * The timestamps when the memos were displayed.
+   * We should return raw data to the client, and let the client format the data with the user's timezone.
+   */
   memoDisplayTimestamps?: string[];
   /** The stats of memo types. */
   memoTypeStats?: UserStatsMemoTypeStats;
-  /** The count of tags. */
+  /**
+   * The count of tags.
+   * Format: "tag1": 1, "tag2": 2
+   */
   tagCount?: Record<string, number>;
   /** The pinned memos of the user. */
   pinnedMemos?: string[];
-  /**
-   * Total memo count.
-   * @format int32
-   */
+  /** @format int32 */
   totalMemoCount?: number;
 }
 
 export interface V1Webhook {
-  /**
-   * The resource name of the webhook.
-   * Format: webhooks/{webhook}
-   */
+  /** @format int32 */
+  id?: number;
+  /** The name of the creator. */
+  creator?: string;
+  /** @format date-time */
+  createTime?: string;
+  /** @format date-time */
+  updateTime?: string;
   name?: string;
-  /** Output only. The system generated unique identifier. */
-  readonly uid?: string;
-  /** Required. The display name of the webhook. */
-  displayName: string;
-  /** Required. The target URL for the webhook. */
-  url: string;
-  /**
-   * Output only. The resource name of the creator.
-   * Format: users/{user}
-   */
-  readonly creator?: string;
-  /** The state of the webhook. */
-  state: V1State;
-  /**
-   * Output only. The creation timestamp.
-   * @format date-time
-   */
-  readonly createTime?: string;
-  /**
-   * Output only. The last update timestamp.
-   * @format date-time
-   */
-  readonly updateTime?: string;
-  /** Output only. The etag for this resource. */
-  readonly etag?: string;
+  url?: string;
 }
 
-/** Workspace profile message containing basic workspace information. */
 export interface V1WorkspaceProfile {
   /**
    * The name of instance owner.
    * Format: users/{user}
    */
   owner?: string;
-  /** Version is the current version of instance. */
+  /** version is the current version of instance */
   version?: string;
-  /** Mode is the instance mode (e.g. "prod", "dev" or "demo"). */
+  /** mode is the instance mode (e.g. "prod", "dev" or "demo"). */
   mode?: string;
-  /** Instance URL is the URL of the instance. */
+  /** instance_url is the URL of the instance. */
   instanceUrl?: string;
 }
 
@@ -1812,42 +1706,10 @@ export class Api<SecurityDataType extends unknown> {
      * @summary ListUsers returns a list of users.
      * @request GET:/api/v1/users
      */
-    userServiceListUsers: (
-      query?: {
-        /**
-         * Optional. The maximum number of users to return.
-         * The service may return fewer than this value.
-         * If unspecified, at most 50 users will be returned.
-         * The maximum value is 1000; values above 1000 will be coerced to 1000.
-         * @format int32
-         */
-        pageSize?: number;
-        /**
-         * Optional. A page token, received from a previous `ListUsers` call.
-         * Provide this to retrieve the subsequent page.
-         */
-        pageToken?: string;
-        /**
-         * Optional. Filter to apply to the list results.
-         * Example: "state=ACTIVE" or "role=USER" or "email:@example.com"
-         * Supported operators: =, !=, <, <=, >, >=, :
-         * Supported fields: username, email, role, state, create_time, update_time
-         */
-        filter?: string;
-        /**
-         * Optional. The order to sort results by.
-         * Example: "create_time desc" or "username asc"
-         */
-        orderBy?: string;
-        /** Optional. If true, show deleted users in the response. */
-        showDeleted?: boolean;
-      },
-      params: RequestParams = {},
-    ) =>
+    userServiceListUsers: (params: RequestParams = {}) =>
       this.http.request<V1ListUsersResponse, GooglerpcStatus>({
         path: `/api/v1/users`,
         method: "GET",
-        query: query,
         format: "json",
         ...params,
       }),
@@ -1860,29 +1722,10 @@ export class Api<SecurityDataType extends unknown> {
      * @summary CreateUser creates a new user.
      * @request POST:/api/v1/users
      */
-    userServiceCreateUser: (
-      user: V1User,
-      query?: {
-        /**
-         * Optional. The user ID to use for this user.
-         * If empty, a unique ID will be generated.
-         * Must match the pattern [a-z0-9-]+
-         */
-        userId?: string;
-        /** Optional. If set, validate the request but don't actually create the user. */
-        validateOnly?: boolean;
-        /**
-         * Optional. An idempotency token that can be used to ensure that multiple
-         * requests to create a user have the same result.
-         */
-        requestId?: string;
-      },
-      params: RequestParams = {},
-    ) =>
+    userServiceCreateUser: (user: V1User, params: RequestParams = {}) =>
       this.http.request<V1User, GooglerpcStatus>({
         path: `/api/v1/users`,
         method: "POST",
-        query: query,
         body: user,
         type: ContentType.Json,
         format: "json",
@@ -1893,29 +1736,14 @@ export class Api<SecurityDataType extends unknown> {
      * No description
      *
      * @tags UserService
-     * @name UserServiceSearchUsers
-     * @summary SearchUsers searches for users based on query.
-     * @request GET:/api/v1/users:search
+     * @name UserServiceListAllUserStats
+     * @summary ListAllUserStats returns all user stats.
+     * @request POST:/api/v1/users/-/stats
      */
-    userServiceSearchUsers: (
-      search: string,
-      query: {
-        /** Required. The search query. */
-        query: string;
-        /**
-         * Optional. The maximum number of users to return.
-         * @format int32
-         */
-        pageSize?: number;
-        /** Optional. A page token for pagination. */
-        pageToken?: string;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.http.request<V1SearchUsersResponse, GooglerpcStatus>({
-        path: `/api/v1/users${search}`,
-        method: "GET",
-        query: query,
+    userServiceListAllUserStats: (params: RequestParams = {}) =>
+      this.http.request<V1ListAllUserStatsResponse, GooglerpcStatus>({
+        path: `/api/v1/users/-/stats`,
+        method: "POST",
         format: "json",
         ...params,
       }),
@@ -1924,25 +1752,20 @@ export class Api<SecurityDataType extends unknown> {
      * No description
      *
      * @tags UserService
-     * @name UserServiceListAllUserStats
-     * @summary ListAllUserStats returns statistics for all users.
-     * @request GET:/api/v1/users:stats
+     * @name UserServiceGetUserByUsername
+     * @summary GetUserByUsername gets a user by username.
+     * @request GET:/api/v1/users:username
      */
-    userServiceListAllUserStats: (
-      stats: string,
+    userServiceGetUserByUsername: (
+      username: string,
       query?: {
-        /**
-         * Optional. The maximum number of user stats to return.
-         * @format int32
-         */
-        pageSize?: number;
-        /** Optional. A page token for pagination. */
-        pageToken?: string;
+        /** The username of the user. */
+        username?: string;
       },
       params: RequestParams = {},
     ) =>
-      this.http.request<V1ListAllUserStatsResponse, GooglerpcStatus>({
-        path: `/api/v1/users${stats}`,
+      this.http.request<V1User, GooglerpcStatus>({
+        path: `/api/v1/users${username}`,
         method: "GET",
         query: query,
         format: "json",
@@ -1959,33 +1782,8 @@ export class Api<SecurityDataType extends unknown> {
      */
     webhookServiceListWebhooks: (
       query?: {
-        /**
-         * Optional. The maximum number of webhooks to return.
-         * The service may return fewer than this value.
-         * If unspecified, at most 50 webhooks will be returned.
-         * The maximum value is 1000; values above 1000 will be coerced to 1000.
-         * @format int32
-         */
-        pageSize?: number;
-        /**
-         * Optional. A page token, received from a previous `ListWebhooks` call.
-         * Provide this to retrieve the subsequent page.
-         */
-        pageToken?: string;
-        /**
-         * Optional. Filter to apply to the list results.
-         * Example: "state=ACTIVE" or "creator=users/123"
-         * Supported operators: =, !=, <, <=, >, >=, :
-         * Supported fields: display_name, url, creator, state, create_time, update_time
-         */
-        filter?: string;
-        /**
-         * Optional. The order to sort results by.
-         * Example: "create_time desc" or "display_name asc"
-         */
-        orderBy?: string;
-        /** Optional. If true, show deleted webhooks in the response. */
-        showDeleted?: boolean;
+        /** The name of the creator. */
+        creator?: string;
       },
       params: RequestParams = {},
     ) =>
@@ -2006,28 +1804,75 @@ export class Api<SecurityDataType extends unknown> {
      * @request POST:/api/v1/webhooks
      */
     webhookServiceCreateWebhook: (
-      webhook: V1Webhook,
-      query?: {
-        /**
-         * Optional. The webhook ID to use for this webhook.
-         * If empty, a unique ID will be generated.
-         * Must match the pattern [a-z0-9-]+
-         */
-        webhookId?: string;
-        /** Optional. If set, validate the request but don't actually create the webhook. */
-        validateOnly?: boolean;
-        /**
-         * Optional. An idempotency token that can be used to ensure that multiple
-         * requests to create a webhook have the same result.
-         */
-        requestId?: string;
-      },
+      body: V1CreateWebhookRequest,
       params: RequestParams = {},
     ) =>
       this.http.request<V1Webhook, GooglerpcStatus>({
         path: `/api/v1/webhooks`,
         method: "POST",
-        query: query,
+        body: body,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags WebhookService
+     * @name WebhookServiceGetWebhook
+     * @summary GetWebhook returns a webhook by id.
+     * @request GET:/api/v1/webhooks/{id}
+     */
+    webhookServiceGetWebhook: (id: number, params: RequestParams = {}) =>
+      this.http.request<V1Webhook, GooglerpcStatus>({
+        path: `/api/v1/webhooks/${id}`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags WebhookService
+     * @name WebhookServiceDeleteWebhook
+     * @summary DeleteWebhook deletes a webhook by id.
+     * @request DELETE:/api/v1/webhooks/{id}
+     */
+    webhookServiceDeleteWebhook: (id: number, params: RequestParams = {}) =>
+      this.http.request<V1LineBreakNode, GooglerpcStatus>({
+        path: `/api/v1/webhooks/${id}`,
+        method: "DELETE",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags WebhookService
+     * @name WebhookServiceUpdateWebhook
+     * @summary UpdateWebhook updates a webhook.
+     * @request PATCH:/api/v1/webhooks/{webhook.id}
+     */
+    webhookServiceUpdateWebhook: (
+      webhookId: number,
+      webhook: {
+        /** The name of the creator. */
+        creator?: string;
+        /** @format date-time */
+        createTime?: string;
+        /** @format date-time */
+        updateTime?: string;
+        name?: string;
+        url?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.http.request<V1Webhook, GooglerpcStatus>({
+        path: `/api/v1/webhooks/${webhookId}`,
+        method: "PATCH",
         body: webhook,
         type: ContentType.Json,
         format: "json",
@@ -2039,7 +1884,7 @@ export class Api<SecurityDataType extends unknown> {
      *
      * @tags WorkspaceService
      * @name WorkspaceServiceGetWorkspaceProfile
-     * @summary Gets the workspace profile.
+     * @summary GetWorkspaceProfile returns the workspace profile.
      * @request GET:/api/v1/workspace/profile
      */
     workspaceServiceGetWorkspaceProfile: (params: RequestParams = {}) =>
@@ -2216,21 +2061,10 @@ export class Api<SecurityDataType extends unknown> {
      * @summary GetUser gets a user by name.
      * @request GET:/api/v1/{name_1}
      */
-    userServiceGetUser: (
-      name1: string,
-      query?: {
-        /**
-         * Optional. The fields to return in the response.
-         * If not specified, all fields are returned.
-         */
-        readMask?: string;
-      },
-      params: RequestParams = {},
-    ) =>
+    userServiceGetUser: (name1: string, params: RequestParams = {}) =>
       this.http.request<V1User, GooglerpcStatus>({
         path: `/api/v1/${name1}`,
         method: "GET",
-        query: query,
         format: "json",
         ...params,
       }),
@@ -2238,12 +2072,12 @@ export class Api<SecurityDataType extends unknown> {
     /**
      * No description
      *
-     * @tags UserService
-     * @name UserServiceDeleteUserAccessToken
-     * @summary DeleteUserAccessToken deletes an access token.
+     * @tags IdentityProviderService
+     * @name IdentityProviderServiceDeleteIdentityProvider
+     * @summary DeleteIdentityProvider deletes an identity provider.
      * @request DELETE:/api/v1/{name_1}
      */
-    userServiceDeleteUserAccessToken: (
+    identityProviderServiceDeleteIdentityProvider: (
       name1: string,
       params: RequestParams = {},
     ) =>
@@ -2276,15 +2110,12 @@ export class Api<SecurityDataType extends unknown> {
     /**
      * No description
      *
-     * @tags IdentityProviderService
-     * @name IdentityProviderServiceDeleteIdentityProvider
-     * @summary DeleteIdentityProvider deletes an identity provider.
+     * @tags InboxService
+     * @name InboxServiceDeleteInbox
+     * @summary DeleteInbox deletes an inbox.
      * @request DELETE:/api/v1/{name_2}
      */
-    identityProviderServiceDeleteIdentityProvider: (
-      name2: string,
-      params: RequestParams = {},
-    ) =>
+    inboxServiceDeleteInbox: (name2: string, params: RequestParams = {}) =>
       this.http.request<V1LineBreakNode, GooglerpcStatus>({
         path: `/api/v1/${name2}`,
         method: "DELETE",
@@ -2311,12 +2142,15 @@ export class Api<SecurityDataType extends unknown> {
     /**
      * No description
      *
-     * @tags InboxService
-     * @name InboxServiceDeleteInbox
-     * @summary DeleteInbox deletes an inbox.
+     * @tags ResourceService
+     * @name ResourceServiceDeleteResource
+     * @summary DeleteResource deletes a resource by name.
      * @request DELETE:/api/v1/{name_3}
      */
-    inboxServiceDeleteInbox: (name3: string, params: RequestParams = {}) =>
+    resourceServiceDeleteResource: (
+      name3: string,
+      params: RequestParams = {},
+    ) =>
       this.http.request<V1LineBreakNode, GooglerpcStatus>({
         path: `/api/v1/${name3}`,
         method: "DELETE",
@@ -2343,85 +2177,15 @@ export class Api<SecurityDataType extends unknown> {
     /**
      * No description
      *
-     * @tags ResourceService
-     * @name ResourceServiceDeleteResource
-     * @summary DeleteResource deletes a resource by name.
-     * @request DELETE:/api/v1/{name_4}
-     */
-    resourceServiceDeleteResource: (
-      name4: string,
-      params: RequestParams = {},
-    ) =>
-      this.http.request<V1LineBreakNode, GooglerpcStatus>({
-        path: `/api/v1/${name4}`,
-        method: "DELETE",
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags WebhookService
-     * @name WebhookServiceGetWebhook
-     * @summary GetWebhook gets a webhook by name.
-     * @request GET:/api/v1/{name_5}
-     */
-    webhookServiceGetWebhook: (
-      name5: string,
-      query?: {
-        /**
-         * Optional. The fields to return in the response.
-         * If not specified, all fields are returned.
-         */
-        readMask?: string;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.http.request<V1Webhook, GooglerpcStatus>({
-        path: `/api/v1/${name5}`,
-        method: "GET",
-        query: query,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
      * @tags MemoService
      * @name MemoServiceDeleteMemo
      * @summary DeleteMemo deletes a memo.
-     * @request DELETE:/api/v1/{name_5}
+     * @request DELETE:/api/v1/{name_4}
      */
-    memoServiceDeleteMemo: (name5: string, params: RequestParams = {}) =>
+    memoServiceDeleteMemo: (name4: string, params: RequestParams = {}) =>
       this.http.request<V1LineBreakNode, GooglerpcStatus>({
-        path: `/api/v1/${name5}`,
+        path: `/api/v1/${name4}`,
         method: "DELETE",
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags WebhookService
-     * @name WebhookServiceDeleteWebhook
-     * @summary DeleteWebhook deletes a webhook.
-     * @request DELETE:/api/v1/{name_6}
-     */
-    webhookServiceDeleteWebhook: (
-      name6: string,
-      query?: {
-        /** Optional. If set to true, the webhook will be deleted even if it has associated data. */
-        force?: boolean;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.http.request<V1LineBreakNode, GooglerpcStatus>({
-        path: `/api/v1/${name6}`,
-        method: "DELETE",
-        query: query,
         format: "json",
         ...params,
       }),
@@ -2450,18 +2214,10 @@ export class Api<SecurityDataType extends unknown> {
      * @summary DeleteUser deletes a user.
      * @request DELETE:/api/v1/{name}
      */
-    userServiceDeleteUser: (
-      name: string,
-      query?: {
-        /** Optional. If set to true, the user will be deleted even if they have associated data. */
-        force?: boolean;
-      },
-      params: RequestParams = {},
-    ) =>
+    userServiceDeleteUser: (name: string, params: RequestParams = {}) =>
       this.http.request<V1LineBreakNode, GooglerpcStatus>({
         path: `/api/v1/${name}`,
         method: "DELETE",
-        query: query,
         format: "json",
         ...params,
       }),
@@ -2470,14 +2226,59 @@ export class Api<SecurityDataType extends unknown> {
      * No description
      *
      * @tags UserService
-     * @name UserServiceGetUserAvatar
-     * @summary GetUserAvatar gets the avatar of a user.
-     * @request GET:/api/v1/{name}/avatar
+     * @name UserServiceListUserAccessTokens
+     * @summary ListUserAccessTokens returns a list of access tokens for a user.
+     * @request GET:/api/v1/{name}/access_tokens
      */
-    userServiceGetUserAvatar: (name: string, params: RequestParams = {}) =>
-      this.http.request<ApiHttpBody, GooglerpcStatus>({
-        path: `/api/v1/${name}/avatar`,
+    userServiceListUserAccessTokens: (
+      name: string,
+      params: RequestParams = {},
+    ) =>
+      this.http.request<V1ListUserAccessTokensResponse, GooglerpcStatus>({
+        path: `/api/v1/${name}/access_tokens`,
         method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags UserService
+     * @name UserServiceCreateUserAccessToken
+     * @summary CreateUserAccessToken creates a new access token for a user.
+     * @request POST:/api/v1/{name}/access_tokens
+     */
+    userServiceCreateUserAccessToken: (
+      name: string,
+      body: UserServiceCreateUserAccessTokenBody,
+      params: RequestParams = {},
+    ) =>
+      this.http.request<V1UserAccessToken, GooglerpcStatus>({
+        path: `/api/v1/${name}/access_tokens`,
+        method: "POST",
+        body: body,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags UserService
+     * @name UserServiceDeleteUserAccessToken
+     * @summary DeleteUserAccessToken deletes an access token for a user.
+     * @request DELETE:/api/v1/{name}/access_tokens/{accessToken}
+     */
+    userServiceDeleteUserAccessToken: (
+      name: string,
+      accessToken: string,
+      params: RequestParams = {},
+    ) =>
+      this.http.request<V1LineBreakNode, GooglerpcStatus>({
+        path: `/api/v1/${name}/access_tokens/${accessToken}`,
+        method: "DELETE",
         format: "json",
         ...params,
       }),
@@ -2639,16 +2440,12 @@ export class Api<SecurityDataType extends unknown> {
      *
      * @tags UserService
      * @name UserServiceGetUserSetting
-     * @summary GetUserSetting returns the user setting.
-     * @request GET:/api/v1/{name}:getSetting
+     * @summary GetUserSetting gets the setting of a user.
+     * @request GET:/api/v1/{name}/setting
      */
-    userServiceGetUserSetting: (
-      name: string,
-      getSetting: string,
-      params: RequestParams = {},
-    ) =>
+    userServiceGetUserSetting: (name: string, params: RequestParams = {}) =>
       this.http.request<Apiv1UserSetting, GooglerpcStatus>({
-        path: `/api/v1/${name}${getSetting}`,
+        path: `/api/v1/${name}/setting`,
         method: "GET",
         format: "json",
         ...params,
@@ -2659,73 +2456,13 @@ export class Api<SecurityDataType extends unknown> {
      *
      * @tags UserService
      * @name UserServiceGetUserStats
-     * @summary GetUserStats returns statistics for a specific user.
-     * @request GET:/api/v1/{name}:getStats
+     * @summary GetUserStats returns the stats of a user.
+     * @request GET:/api/v1/{name}/stats
      */
-    userServiceGetUserStats: (
-      name: string,
-      getStats: string,
-      params: RequestParams = {},
-    ) =>
+    userServiceGetUserStats: (name: string, params: RequestParams = {}) =>
       this.http.request<V1UserStats, GooglerpcStatus>({
-        path: `/api/v1/${name}${getStats}`,
+        path: `/api/v1/${name}/stats`,
         method: "GET",
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags UserService
-     * @name UserServiceListUserAccessTokens
-     * @summary ListUserAccessTokens returns a list of access tokens for a user.
-     * @request GET:/api/v1/{parent}/accessTokens
-     */
-    userServiceListUserAccessTokens: (
-      parent: string,
-      query?: {
-        /**
-         * Optional. The maximum number of access tokens to return.
-         * @format int32
-         */
-        pageSize?: number;
-        /** Optional. A page token for pagination. */
-        pageToken?: string;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.http.request<V1ListUserAccessTokensResponse, GooglerpcStatus>({
-        path: `/api/v1/${parent}/accessTokens`,
-        method: "GET",
-        query: query,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags UserService
-     * @name UserServiceCreateUserAccessToken
-     * @summary CreateUserAccessToken creates a new access token for a user.
-     * @request POST:/api/v1/{parent}/accessTokens
-     */
-    userServiceCreateUserAccessToken: (
-      parent: string,
-      accessToken: V1UserAccessToken,
-      query?: {
-        /** Optional. The access token ID to use. */
-        accessTokenId?: string;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.http.request<V1UserAccessToken, GooglerpcStatus>({
-        path: `/api/v1/${parent}/accessTokens`,
-        method: "POST",
-        query: query,
-        body: accessToken,
-        type: ContentType.Json,
         format: "json",
         ...params,
       }),
@@ -2966,12 +2703,11 @@ export class Api<SecurityDataType extends unknown> {
      *
      * @tags UserService
      * @name UserServiceUpdateUserSetting
-     * @summary UpdateUserSetting updates the user setting.
-     * @request PATCH:/api/v1/{setting.name}:updateSetting
+     * @summary UpdateUserSetting updates the setting of a user.
+     * @request PATCH:/api/v1/{setting.name}
      */
     userServiceUpdateUserSetting: (
       settingName: string,
-      updateSetting: string,
       setting: {
         /** The preferred locale of the user. */
         locale?: string;
@@ -2983,7 +2719,7 @@ export class Api<SecurityDataType extends unknown> {
       params: RequestParams = {},
     ) =>
       this.http.request<Apiv1UserSetting, GooglerpcStatus>({
-        path: `/api/v1/${settingName}${updateSetting}`,
+        path: `/api/v1/${settingName}`,
         method: "PATCH",
         body: setting,
         type: ContentType.Json,
@@ -3002,107 +2738,60 @@ export class Api<SecurityDataType extends unknown> {
     userServiceUpdateUser: (
       userName: string,
       user: {
-        /** Output only. The system generated unique identifier. */
-        readonly uid?: string;
-        /** The role of the user. */
-        role: UserRole;
-        /** Required. The unique username for login. */
-        username: string;
-        /** Optional. The email address of the user. */
+        role?: UserRole;
+        username?: string;
         email?: string;
-        /** Optional. The display name of the user. */
-        displayName?: string;
-        /** Optional. The avatar URL of the user. */
+        nickname?: string;
         avatarUrl?: string;
-        /** Optional. The description of the user. */
         description?: string;
-        /** Input only. The password for the user. */
         password?: string;
-        /** The state of the user. */
-        state: V1State;
-        /**
-         * Output only. The creation timestamp.
-         * @format date-time
-         */
+        state?: V1State;
+        /** @format date-time */
         readonly createTime?: string;
-        /**
-         * Output only. The last update timestamp.
-         * @format date-time
-         */
+        /** @format date-time */
         readonly updateTime?: string;
-        /** Output only. The etag for this resource. */
-        readonly etag?: string;
-      },
-      query?: {
-        /** Optional. If set to true, allows updating sensitive fields. */
-        allowMissing?: boolean;
       },
       params: RequestParams = {},
     ) =>
       this.http.request<V1User, GooglerpcStatus>({
         path: `/api/v1/${userName}`,
         method: "PATCH",
-        query: query,
         body: user,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags WebhookService
-     * @name WebhookServiceUpdateWebhook
-     * @summary UpdateWebhook updates a webhook.
-     * @request PATCH:/api/v1/{webhook.name}
-     */
-    webhookServiceUpdateWebhook: (
-      webhookName: string,
-      webhook: {
-        /** Output only. The system generated unique identifier. */
-        readonly uid?: string;
-        /** Required. The display name of the webhook. */
-        displayName: string;
-        /** Required. The target URL for the webhook. */
-        url: string;
-        /**
-         * Output only. The resource name of the creator.
-         * Format: users/{user}
-         */
-        readonly creator?: string;
-        /** The state of the webhook. */
-        state: V1State;
-        /**
-         * Output only. The creation timestamp.
-         * @format date-time
-         */
-        readonly createTime?: string;
-        /**
-         * Output only. The last update timestamp.
-         * @format date-time
-         */
-        readonly updateTime?: string;
-        /** Output only. The etag for this resource. */
-        readonly etag?: string;
-      },
-      query?: {
-        /** Optional. If set to true, allows updating sensitive fields. */
-        allowMissing?: boolean;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.http.request<V1Webhook, GooglerpcStatus>({
-        path: `/api/v1/${webhookName}`,
-        method: "PATCH",
-        query: query,
-        body: webhook,
         type: ContentType.Json,
         format: "json",
         ...params,
       }),
   };
   file = {
+    /**
+     * No description
+     *
+     * @tags UserService
+     * @name UserServiceGetUserAvatarBinary
+     * @summary GetUserAvatarBinary gets the avatar of a user.
+     * @request GET:/file/{name}/avatar
+     */
+    userServiceGetUserAvatarBinary: (
+      name: string,
+      query?: {
+        /** The HTTP Content-Type header value specifying the content type of the body. */
+        "httpBody.contentType"?: string;
+        /**
+         * The HTTP request/response body as raw binary.
+         * @format byte
+         */
+        "httpBody.data"?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.http.request<ApiHttpBody, GooglerpcStatus>({
+        path: `/file/${name}/avatar`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
     /**
      * No description
      *

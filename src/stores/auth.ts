@@ -117,7 +117,7 @@ export const useAuthStore = defineStore('auth', () => {
             console.error('Failed to persist auth state:', error)
             throw error
         }
-    } 
+    }
 
     const clearPersistedAuthState = async () => {
         try {
@@ -141,13 +141,7 @@ export const useAuthStore = defineStore('auth', () => {
         return (
             sanitizeFileName(serverUrl.value!) +
             '_' +
-            sanitizeFileName(
-                user.value?.name ||
-                    user.value?.username ||
-                    user.value?.displayName ||
-                    user.value?.uid ||
-                    ''
-            )
+            sanitizeFileName(user.value?.name || user.value?.username || '')
         )
     }
 
