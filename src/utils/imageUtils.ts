@@ -51,7 +51,7 @@ export const useImageViewer = () => {
         } else {
             const data = await dataCacheStore.getImageCache(url)
             if (data) {
-                console.log('hit image cache, url: ' + url)
+                console.log('[show image viewer] hit image cache, url: ' + url)
                 imageUrl = URL.createObjectURL(new Blob([data]))
             } else {
                 const response = await fetch(url, {

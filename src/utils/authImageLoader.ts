@@ -2,6 +2,9 @@ import { App, DirectiveBinding } from 'vue'
 import { useDataCacheStore } from '@/stores/dataCache'
 
 // origin source: https://github.com/chenchenwuai/v-auth-image/blob/master/packages/v-auth-image.js
+// Intersection Observer for lazy loading
+let intersectionObserver: IntersectionObserver | null = null
+
 const authImage = {
     // install method
     install(
@@ -22,15 +25,45 @@ const authImage = {
                 })
             },
             async mounted(el: HTMLElement) {
-                authImage.load(el)
+                // Check if the element has loading="lazy" attribute
+                const isLazy = el.getAttribute('loading') === 'lazy'
+
+                if (isLazy) {
+                    // Use intersection observer for lazy loading
+                    authImage.observeElement(el)
+                } else {
+                    // Load immediately for non-lazy images
+                    authImage.load(el)
+                }
             },
             async updated(el: HTMLElement, binding: DirectiveBinding) {
                 if (binding.value !== binding.oldValue) {
                     el.setAttribute('data-src', binding.value)
-                    authImage.load(el)
+
+                    // Check if this is a lazy loading element
+                    const isLazy = el.getAttribute('loading') === 'lazy'
+                    const isObserved = el.hasAttribute('data-lazy-observed')
+
+                    if (isLazy && !isObserved) {
+                        // Re-observe the element if it's lazy but not currently observed
+                        authImage.observeElement(el)
+                    } else if (!isLazy) {
+                        // Load immediately for non-lazy images
+                        authImage.load(el)
+                    }
+                    // If it's lazy and already observed, the observer will handle it
                 }
             },
             unmounted(el: HTMLElement, binding: DirectiveBinding) {
+                // Clean up intersection observer
+                if (
+                    intersectionObserver &&
+                    el.hasAttribute('data-lazy-observed')
+                ) {
+                    intersectionObserver.unobserve(el)
+                    el.removeAttribute('data-lazy-observed')
+                }
+
                 if (binding.arg === 'success') {
                     delete (el as any)._v_auth_image_success
                 } else if (binding.arg === 'error') {
@@ -80,6 +113,35 @@ const authImage = {
             )
             el.removeAttribute('data-src')
         }
+    },
+    // Setup lazy loading with intersection observer
+    observeElement(el: HTMLElement) {
+        // Initialize intersection observer if not exists
+        if (!intersectionObserver) {
+            intersectionObserver = new IntersectionObserver(
+                (entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            const target = entry.target as HTMLElement
+                            // Load the image when it enters the viewport
+                            authImage.load(target)
+                            // Stop observing this element
+                            intersectionObserver!.unobserve(target)
+                            target.removeAttribute('data-lazy-observed')
+                        }
+                    })
+                },
+                {
+                    // Load images when they are 100px away from entering the viewport
+                    rootMargin: '100px',
+                    threshold: 0.01,
+                }
+            )
+        }
+
+        // Mark element as being observed and start observing
+        el.setAttribute('data-lazy-observed', 'true')
+        intersectionObserver.observe(el)
     },
     // Get actual image data
     async requestImage(

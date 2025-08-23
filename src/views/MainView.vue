@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onActivated, onMounted, ref } from 'vue'
+import { computed, onActivated, ref, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useDraftStore } from '@/stores/draft'
@@ -29,18 +29,9 @@ import {
     restoreMemo,
     togglePinMemo,
     searchMemos,
-    loadMoreMemos,
-    loadMoreMemosByTag,
-    loadMoreArchivedMemos,
-    getPinnedContent,
     Memo,
-    PaginationState,
 } from '@/api/memos'
 
-import dayjs from 'dayjs'
-import utc from 'dayjs/plugin/utc'
-import timezone from 'dayjs/plugin/timezone'
-import localeData from 'dayjs/plugin/localeData'
 import { useI18n } from 'vue-i18n'
 import {
     getImageResources,
@@ -48,6 +39,7 @@ import {
     useImageViewer,
 } from '@/utils/imageUtils'
 import { markdownRenderer } from '@/utils/markdownUtils'
+import { formatLocalTime } from '@/utils/timeUtils'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -70,10 +62,6 @@ import loading_image from '@/assets/loading_image.svg'
 import { getError } from '@/api/error'
 import { useDataCacheStore } from '@/stores/dataCache'
 
-dayjs.extend(utc)
-dayjs.extend(timezone)
-dayjs.extend(localeData)
-
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
@@ -95,47 +83,15 @@ const handleHome = () => {
     router.push({ name: 'Home' })
 }
 
-const formatLocalTime = computed(() => (utcTime: string): string => {
-    if (!utcTime) return ''
-
-    try {
-        const localTime = dayjs.utc(utcTime).local()
-        const now = dayjs()
-
-        if (localTime.isSame(now, 'day')) {
-            return localTime.format('HH:mm')
-        }
-
-        if (localTime.isSame(now.subtract(1, 'day'), 'day')) {
-            return `${t('time.yesterday')} ${localTime.format('HH:mm')}`
-        }
-
-        if (localTime.isSame(now, 'year')) {
-            return localTime.format(`${t('time.format.date')}`)
-        }
-
-        return localTime.format(`${t('time.format.fullDate')}`)
-    } catch (error) {
-        console.error('Time format error:', error)
-        return utcTime
-    }
-})
-
 const markdownRender = markdownRenderer
 
 const memos = ref<Memo[]>([])
-const pinnedContent = ref<Memo[]>([])
+const pinnedMemos = ref<Memo[]>([])
 const isLoading = ref(false)
 const searchQuery = ref('')
 const showScrollToTop = ref(false)
 const isSearching = ref(false)
 const searchResults = ref<Memo[]>([])
-
-const paginationState = ref<PaginationState>({
-    pageToken: '',
-    hasMore: true,
-    isLoading: false,
-})
 
 type ConfirmAction = 'archive' | 'delete'
 const confirmDialogOpen = ref(false)
@@ -151,98 +107,16 @@ const displayMemos = computed(() => {
     if (
         !isSearching.value &&
         pageName !== 'Archive' &&
-        pinnedContent.value.length > 0
+        pinnedMemos.value.length > 0
     ) {
-        const pinnedNames = new Set(
-            pinnedContent.value.map((memo) => memo.name)
-        )
+        const pinnedNames = new Set(pinnedMemos.value.map((memo) => memo.name))
         const unpinnedMemos = allMemos.filter(
             (memo) => !pinnedNames.has(memo.name)
         )
-        return [...pinnedContent.value, ...unpinnedMemos]
+        return [...pinnedMemos.value, ...unpinnedMemos]
     }
-
     return allMemos
 })
-
-const loadPinnedContent = async () => {
-    if (pageName !== 'Main') {
-        pinnedContent.value = []
-        return
-    }
-
-    try {
-        pinnedContent.value = await getPinnedContent()
-    } catch (error) {
-        console.error('load pinned content failed: ' + getError(error))
-        pinnedContent.value = []
-    }
-}
-
-const loadMemos = async (reset: boolean = true) => {
-    try {
-        isLoading.value = true
-
-        if (reset) {
-            paginationState.value = {
-                pageToken: '',
-                hasMore: true,
-                isLoading: false,
-            }
-        }
-
-        let result
-        if (currentTag) {
-            result = await loadMoreMemosByTag(currentTag, '', 30)
-        } else if (pageName == 'Archive') {
-            result = await loadMoreArchivedMemos('', 30)
-        } else {
-            result = await loadMoreMemos('', 30)
-        }
-
-        memos.value = result.memos
-        paginationState.value.pageToken = result.nextPageToken || ''
-        paginationState.value.hasMore = result.hasMore
-    } catch (error) {
-        console.error(error)
-    } finally {
-        isLoading.value = false
-    }
-}
-
-const loadMoreMemosData = async () => {
-    if (paginationState.value.isLoading || !paginationState.value.hasMore) {
-        return
-    }
-
-    try {
-        paginationState.value.isLoading = true
-
-        let result
-        if (currentTag) {
-            result = await loadMoreMemosByTag(
-                currentTag,
-                paginationState.value.pageToken,
-                15
-            )
-        } else if (pageName == 'Archive') {
-            result = await loadMoreArchivedMemos(
-                paginationState.value.pageToken,
-                15
-            )
-        } else {
-            result = await loadMoreMemos(paginationState.value.pageToken, 15)
-        }
-
-        memos.value.push(...result.memos)
-        paginationState.value.pageToken = result.nextPageToken || ''
-        paginationState.value.hasMore = result.hasMore
-    } catch (error) {
-        console.error('load more memos failed:', error)
-    } finally {
-        paginationState.value.isLoading = false
-    }
-}
 
 const handleEditMemo = (memo: Memo) => {
     openEditMemo(memo)
@@ -255,6 +129,11 @@ const handleDeleteMemo = (memo: Memo) => {
 }
 
 const confirmOperation = async () => {
+    if (!memoToOperate.value) {
+        console.error('[confirmOperation] missing memo!')
+        return
+    }
+
     if (!memoToOperate.value?.name) {
         console.error('[confirmOperation] missing memo name!')
         return
@@ -269,7 +148,16 @@ const confirmOperation = async () => {
             console.info('delete memo success: ' + memoToOperate.value.name)
         }
 
-        await Promise.all([loadMemos(), loadPinnedContent()])
+        if (memoToOperate.value!.pinned) {
+            pinnedMemos.value = pinnedMemos.value.filter(
+                (m) => m.name !== memoToOperate.value!.name
+            )
+        } else {
+            memos.value = memos.value.filter(
+                (m) => m.name !== memoToOperate.value!.name
+            )
+        }
+
         confirmDialogOpen.value = false
         memoToOperate.value = null
     } catch (error) {
@@ -295,8 +183,7 @@ const handleRecoverMemo = async (memo: Memo) => {
 
     try {
         await restoreMemo(memo.name)
-        console.info('restore memo success: ' + memo.name)
-        await Promise.all([loadMemos(), loadPinnedContent()])
+        memos.value = memos.value.filter((m) => m.name !== memo.name)
     } catch (error) {
         console.error('restore memo failed: ' + getError(error))
     }
@@ -308,10 +195,30 @@ const handlePinMemo = async (memo: Memo) => {
         return
     }
 
+    const insertMemo = (memo: Memo, memos: Memo[]) => {
+        const index = memos.findIndex((m) => m.displayTime < memo.displayTime)
+
+        if (index === -1) {
+            memos.push(memo)
+        } else {
+            memos.splice(index, 0, memo)
+        }
+        return memos
+    }
+
     try {
-        await togglePinMemo(memo.name, !memo.pinned)
-        console.info('toggle pin memo success: ' + memo.name)
-        await Promise.all([loadMemos(), loadPinnedContent()])
+        memo.pinned = !memo.pinned
+        await togglePinMemo(memo.name, memo.pinned)
+        if (memo.pinned) {
+            pinnedMemos.value = insertMemo(memo, pinnedMemos.value)
+            memos.value = memos.value.filter((m) => m.name !== memo.name)
+        } else {
+            pinnedMemos.value = pinnedMemos.value.filter(
+                (m) => m.name !== memo.name
+            )
+            memos.value = insertMemo(memo, memos.value)
+        }
+        // scrollToMemo(memo)
     } catch (error) {
         console.error('toggle pin memo failed: ' + getError(error))
     }
@@ -322,8 +229,54 @@ const handleAddMemo = () => {
     openNewMemo(lastEditText)
 }
 
-const handleModalSuccess = async () => {
-    await Promise.all([loadMemos(), loadPinnedContent()])
+const handleEditSendOrUpdateSuccess = async (memo: Memo, isEdit: boolean) => {
+    if (isEdit) {
+        const updateMemo = (memo: Memo, memos: Memo[]) => {
+            const index = memos.findIndex((m) => m.name === memo.name)
+            if (index !== -1) {
+                memos[index] = memo
+            }
+            return memos
+        }
+
+        if (memo.pinned) {
+            pinnedMemos.value = updateMemo(memo, pinnedMemos.value)
+        } else {
+            memos.value = updateMemo(memo, memos.value)
+        }
+    } else {
+        memos.value.unshift(memo)
+    }
+
+    await nextTick()
+    scrollToMemo(memo)
+}
+
+const scrollToMemo = (memo: Memo) => {
+    const container = document.getElementById('memo-list')
+    if (!container) return
+
+    const memoElement = container.querySelector(
+        `[data-memo-name="${memo.name}"]`
+    )
+    if (!memoElement) {
+        container.scrollTo({
+            top: 0,
+            behavior: 'smooth',
+        })
+        return
+    }
+
+    const containerRect = container.getBoundingClientRect()
+    const elementRect = memoElement.getBoundingClientRect()
+
+    const scrollTop =
+        container.scrollTop + (elementRect.top - containerRect.top)
+
+    container.scrollTo({
+        top: scrollTop,
+        behavior: 'smooth',
+    })
 }
 
 const handleSearch = async (query: string) => {
@@ -357,27 +310,8 @@ const handleScrollToTop = () => {
     }
 }
 
-const handleScroll = (event: Event) => {
-    const target = event.target as HTMLElement
-    if (target) {
-        const scrollTop = target.scrollTop
-        const scrollHeight = target.scrollHeight
-        const clientHeight = target.clientHeight
-
-        showScrollToTop.value = scrollTop > 200
-
-        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 150
-
-        if (isNearBottom && !isSearching.value) {
-            loadMoreMemosData()
-        }
-    }
-}
-
 // Pull to refresh
-const pullToRefreshCallback = async () => {
-    await Promise.all([loadMemos(), loadPinnedContent()])
-}
+const pullToRefreshCallback = async () => {}
 
 const {
     isPullRefreshing,
@@ -392,55 +326,68 @@ const {
 })
 
 const dataCache = useDataCacheStore()
-onMounted(async () => {
-    const archive = pageName === 'Archive'
+onActivated(async () => {
+    pinnedMemos.value = []
+    memos.value = []
 
+    const archive = pageName === 'Archive'
     await Promise.all([
         (async () => {
-            if (archive) {
+            if (pageName !== 'Main') {
                 return
             }
-
+            const limit = 50
             let offset = 0
             while (true) {
                 const res = await dataCache.getMemoList(
                     offset,
-                    30,
+                    limit,
                     currentTag,
                     true,
-                    archive
+                    false
                 )
                 if (res) {
-                    pinnedContent.value.push(...res)
+                    pinnedMemos.value.push(...res)
                 } else {
                     break
                 }
-                offset += 30
+                offset += limit
             }
         })(),
         (async () => {
-            let offset = 0
-            while (true) {
-                const res = await dataCache.getMemoList(
-                    offset,
-                    30,
-                    currentTag,
-                    false,
-                    archive
-                )
-                if (res) {
-                    memos.value.push(...res)
-                } else {
-                    break
-                }
-                offset += 30
+            const res = await dataCache.getMemoList(
+                0,
+                6,
+                currentTag,
+                false,
+                archive
+            )
+            if (res) {
+                memos.value.push(...res)
             }
         })(),
     ])
-})
 
-onActivated(() => {
-    // Promise.all([loadMemos(), loadPinnedContent()])
+    // async load remaining memos for performance
+    ;(async () => {
+        const limit = 80
+        let offset = limit
+        while (true) {
+            const res = await dataCache.getMemoList(
+                offset,
+                limit,
+                currentTag,
+                false,
+                archive
+            )
+            if (res && res.length > 0) {
+                memos.value.push(...res)
+            } else {
+                break
+            }
+            offset += limit
+        }
+    })()
 })
 useSwipeBack({ onSwipe: handleHome }, '#main-view')
 </script>
@@ -492,7 +439,6 @@ useSwipeBack({ onSwipe: handleHome }, '#main-view')
             class="flex-1 overflow-y-auto"
             id="memo-list"
             style="margin-bottom: calc(env(safe-area-inset-bottom) + 0.5rem)"
-            @scroll="handleScroll"
             @touchstart="handleTouchStart"
             @touchmove="handleTouchMove"
             @touchend="handleTouchEnd">
@@ -551,12 +497,13 @@ useSwipeBack({ onSwipe: handleHome }, '#main-view')
                         <div
                             v-for="memo in displayMemos"
                             :key="memo.createTime"
+                            :data-memo-name="memo.name"
                             class="px-5 pt-3 pb-1 rounded-lg border-1 border-primary">
                             <div
                                 class="flex justify-between items-center -mr-1.5">
                                 <div
                                     class="text-gray-500 text-sm flex items-center gap-1.5">
-                                    {{ formatLocalTime(memo.displayTime) }}
+                                    {{ formatLocalTime(memo.displayTime, t) }}
                                     <Pin
                                         v-if="memo.pinned"
                                         class="!h-4.5 !w-4.5 text-gray-800" />
@@ -678,18 +625,6 @@ useSwipeBack({ onSwipe: handleHome }, '#main-view')
                                 );
                             "></div>
                     </div>
-
-                    <div
-                        v-if="
-                            paginationState.isLoading &&
-                            !isLoading &&
-                            !isSearching
-                        "
-                        class="-mt-3 mb-14 p-4 rounded-lg border-1 border-primary">
-                        <div class="text-gray-500 text-center">
-                            {{ t('main.loading.loadingMore') }}
-                        </div>
-                    </div>
                 </div>
 
                 <div v-else class="my-4 p-6 rounded-lg border-1 border-primary">
@@ -750,7 +685,7 @@ useSwipeBack({ onSwipe: handleHome }, '#main-view')
             </div>
         </div>
 
-        <EditModal @success="handleModalSuccess" />
+        <EditModal @success="handleEditSendOrUpdateSuccess" />
 
         <AlertDialog v-model:open="confirmDialogOpen">
             <AlertDialogContent class="px-8 gap-4 pt-4">

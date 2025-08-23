@@ -202,93 +202,26 @@ export interface PaginationState {
     isLoading: boolean
 }
 
-export async function loadMoreMemos(
-    currentPageToken?: string,
-    pageSize?: number,
-    state?: MemosState,
-    pinned?: boolean
-): Promise<{
-    memos: Memo[]
-    nextPageToken?: string
-    hasMore: boolean
-}> {
-    try {
-        const response = await getMemos(
-            pageSize,
-            currentPageToken,
-            state,
-            pinned ? 'pinned' : ''
-        )
-
-        const memos = response.memos?.map((memo) => memoToMemo(memo)) || []
-
-        return {
-            memos,
-            nextPageToken: response.nextPageToken,
-            hasMore: Boolean(response.nextPageToken),
-        }
-    } catch (error) {
-        throw `[loadMoreMemos] ${getError(error)}`
-    }
-}
-
-export async function loadMoreMemosByTag(
-    tag: string,
-    currentPageToken?: string,
-    pageSize?: number,
-    state?: MemosState
-): Promise<{
-    memos: Memo[]
-    nextPageToken?: string
-    hasMore: boolean
-}> {
-    try {
-        const response = await getMemos(
-            pageSize,
-            currentPageToken,
-            state,
-            `tag in ["${tag}"]`
-        )
-
-        const memos = response.memos?.map((memo) => memoToMemo(memo)) || []
-
-        return {
-            memos,
-            nextPageToken: response.nextPageToken,
-            hasMore: Boolean(response.nextPageToken),
-        }
-    } catch (error) {
-        throw `[loadMoreMemosByTag] ${getError(error)}`
-    }
-}
-
-export async function loadMoreArchivedMemos(
-    currentPageToken?: string,
-    pageSize?: number
-): Promise<{
-    memos: Memo[]
-    nextPageToken?: string
-    hasMore: boolean
-}> {
-    return await loadMoreMemos(currentPageToken, pageSize, MemosState.ARCHIVED)
-}
-
 export async function getPinnedContent(): Promise<Memo[]> {
     try {
         let pinnedMemos: Memo[] = []
+        let token = ''
         while (true) {
-            const response = await loadMoreMemos(
-                '',
+            const response = await getMemos(
                 30,
+                token,
                 MemosState.NORMAL,
-                true
+                `pinned`
             )
 
-            pinnedMemos.push(...response.memos)
+            pinnedMemos.push(
+                ...(response.memos?.map((memo) => memoToMemo(memo)) || [])
+            )
 
-            if (!response.hasMore) {
+            if (!response.nextPageToken) {
                 break
             }
+            token = response.nextPageToken || ''
         }
 
         return pinnedMemos

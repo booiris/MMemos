@@ -3,12 +3,12 @@ import { ref, watchEffect } from 'vue'
 import { useEditModal } from '@/composables/useEditModal'
 import EditView from '@/views/EditView.vue'
 import { V1Resource, V1Visibility } from '@/api/schema/api'
-import { createMemo, Memo, updateMemo } from '@/api/memos'
+import { createMemo, Memo, memoToMemo, updateMemo } from '@/api/memos'
 import { getError } from '@/api/error'
 import { useDraftStore } from '@/stores/draft'
 
 interface Emits {
-    success: []
+    success: [Memo, boolean]
 }
 
 const emit = defineEmits<Emits>()
@@ -42,7 +42,8 @@ const handleSendMemo = async (
                 resources: resource,
             })
         } else {
-            await createMemo(text, visibility, resource)
+            const new_memo = await createMemo(text, visibility, resource)
+            memo = memoToMemo(new_memo)
         }
 
         console.info('memo operation success')
@@ -52,7 +53,7 @@ const handleSendMemo = async (
             await draftStore.clearDraft()
         }
 
-        emit('success')
+        emit('success', memo, editModalState.value.isEditMode)
     } catch (error) {
         console.error('memo operation failed: ' + getError(error))
     } finally {
