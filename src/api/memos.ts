@@ -128,7 +128,7 @@ export async function createMemo(
 export async function updateMemo(
     name: string,
     updates: Partial<Apiv1Memo>
-): Promise<Apiv1Memo> {
+): Promise<Memo> {
     try {
         const response = await client.api.memoServiceUpdateMemo(name, updates, {
             secure: true,
@@ -136,7 +136,7 @@ export async function updateMemo(
         })
         const dataCache = useDataCacheStore()
         dataCache.setMemoCache(name, memoToMemo(response))
-        return response
+        return memoToMemo(response)
     } catch (error) {
         throw `[updateMemo] ${getError(error)}`
     }
@@ -155,18 +155,18 @@ export async function deleteMemo(name: string): Promise<void> {
     }
 }
 
-export async function archiveMemo(name: string): Promise<Apiv1Memo> {
+export async function archiveMemo(name: string): Promise<Memo> {
     return updateMemo(name, { state: V1State.ARCHIVED })
 }
 
-export async function restoreMemo(name: string): Promise<Apiv1Memo> {
+export async function restoreMemo(name: string): Promise<Memo> {
     return updateMemo(name, { state: V1State.NORMAL })
 }
 
 export async function togglePinMemo(
     name: string,
     pinned: boolean
-): Promise<Apiv1Memo> {
+): Promise<Memo> {
     return updateMemo(name, { pinned })
 }
 

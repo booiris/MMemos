@@ -36,7 +36,7 @@ const handleSendMemo = async (
 
     try {
         if (editModalState.value.isEditMode && memo?.name) {
-            await updateMemo(memo.name, {
+            memo = await updateMemo(memo.name, {
                 content: text,
                 visibility: visibility,
                 resources: resource,

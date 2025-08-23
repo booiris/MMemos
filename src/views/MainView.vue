@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onActivated, ref, nextTick, onMounted } from 'vue'
+import { computed, onActivated, ref, nextTick, onMounted, Ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useDraftStore } from '@/stores/draft'
@@ -249,27 +249,25 @@ const handleAddMemo = () => {
 
 const handleEditSendOrUpdateSuccess = async (memo: Memo, isEdit: boolean) => {
     if (isEdit) {
-        const updateMemo = (memo: Memo, memos: Memo[]) => {
-            const index = memos.findIndex((m) => m.name === memo.name)
+        const updateMemo = (memo: Memo, memos: Ref<Memo[]>) => {
+            const index = memos.value.findIndex((m) => m.name === memo.name)
             if (index !== -1) {
-                memos[index] = memo
+                memos.value[index] = memo
             }
-            return memos
         }
 
         if (memo.pinned) {
-            pinnedMemos.value = updateMemo(memo, pinnedMemos.value)
+            updateMemo(memo, pinnedMemos)
         } else {
-            memos.value = updateMemo(memo, memos.value)
+            updateMemo(memo, memos)
         }
     } else {
         memos.value.unshift(memo)
+        await scrollToMemo(memo, true)
     }
-
-    await scrollToMemo(memo)
 }
 
-const scrollToMemo = async (memo: Memo) => {
+const scrollToMemo = async (memo: Memo, isSmooth: boolean = false) => {
     await nextTick()
     const container = document.getElementById('memo-list')
     if (!container) return
@@ -294,7 +292,7 @@ const scrollToMemo = async (memo: Memo) => {
     await nextTick()
     container.scrollTo({
         top: scrollTop,
-        behavior: 'instant',
+        behavior: isSmooth ? 'smooth' : 'instant',
     })
 }
 
