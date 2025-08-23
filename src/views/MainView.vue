@@ -221,17 +221,22 @@ const handlePinMemo = async (memo: Memo) => {
     try {
         memo.pinned = !memo.pinned
         await togglePinMemo(memo.name, memo.pinned)
-        if (memo.pinned) {
-            pinnedMemos.value = insertMemo(memo, pinnedMemos.value)
-            memos.value = memos.value.filter((m) => m.name !== memo.name)
-        } else {
-            pinnedMemos.value = pinnedMemos.value.filter(
-                (m) => m.name !== memo.name
-            )
-            memos.value = insertMemo(memo, memos.value)
-        }
 
-        await scrollToMemo(memo)
+        if (pageName === 'Main') {
+            if (memo.pinned) {
+                pinnedMemos.value = insertMemo(memo, pinnedMemos.value)
+                memos.value = memos.value.filter((m) => m.name !== memo.name)
+            } else {
+                pinnedMemos.value = pinnedMemos.value.filter(
+                    (m) => m.name !== memo.name
+                )
+                memos.value = insertMemo(memo, memos.value)
+            }
+            await scrollToMemo(memo)
+        } else {
+            const index = memos.value.findIndex((m) => m.name === memo.name)
+            memos.value[index] = memo
+        }
     } catch (error) {
         console.error('toggle pin memo failed: ' + getError(error))
     }
@@ -426,6 +431,25 @@ const refreshPage = async () => {
     ])
 
     // async load remaining memos for performance
+    // setTimeout(async () => {
+    //     let offset = memoLimit
+    //     const limit = 80
+    //     while (true) {
+    //         const res = await dataCache.getMemoList(
+    //             offset,
+    //             limit,
+    //             currentTag,
+    //             false,
+    //             archive
+    //         )
+    //         if (res && res.length > 0) {
+    //             memos.value.push(...res)
+    //         } else {
+    //             break
+    //         }
+    //         offset += limit
+    //     }
+    // }, 1000)
     ;(async () => {
         let offset = memoLimit
         const limit = 80
@@ -485,6 +509,28 @@ onActivated(async () => {
         return
     }
     refreshPage()
+    if (displayMemos.value.length === 0) {
+        onlineRefreshing = true
+        ;(async () => {
+            let state = MemosState.NORMAL
+            if (pageName === 'Archive') {
+                state = MemosState.ARCHIVED
+            }
+            try {
+                let runner = [mergeOnline(memos, false, state, currentTag)]
+                if (pageName === 'Main') {
+                    runner.push(
+                        mergeOnline(pinnedMemos, true, MemosState.NORMAL)
+                    )
+                }
+                await Promise.all(runner)
+            } catch (error) {
+                console.error('fetch data error: ' + getError(error))
+            } finally {
+                onlineRefreshing = false
+            }
+        })()
+    }
 })
 useSwipeBack({ onSwipe: handleHome }, '#main-view')
 </script>

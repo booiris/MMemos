@@ -34,7 +34,7 @@ export function usePullToRefresh(options: PullToRefreshOptions = {}) {
         if (isPullRefreshing.value || !event.touches[0]) return
 
         const container = document.getElementById(containerId)
-        if (container && container.scrollTop === 0) {
+        if (container && container.scrollTop < 3) {
             startY = event.touches[0].clientY
         }
     }
