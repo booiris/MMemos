@@ -11,7 +11,7 @@ export interface PullToRefreshOptions {
 export function usePullToRefresh(options: PullToRefreshOptions = {}) {
     const { threshold = 65, onRefresh, containerId = 'memo-list' } = options
 
-    const startThreshold = 30
+    const startThreshold = 20
     const loadingTop = 40
 
     const isPullRefreshing = ref(false)
