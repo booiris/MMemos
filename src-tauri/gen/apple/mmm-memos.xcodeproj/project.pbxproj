@@ -25,7 +25,7 @@
 		00279A754AA9EC8F27105699 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		0794D519D6E7345538752BAA /* mmm-memos_iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "mmm-memos_iOS.entitlements"; sourceTree = "<group>"; };
 		1B57EBD7ADB801A9B5F9351B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		4F41F6314E3E671534AEBA4E /* Memos.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Memos.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4F41F6314E3E671534AEBA4E /* MMemos.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MMemos.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		51E70BED4E98B2F72624ECE9 /* bindings.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bindings.h; sourceTree = "<group>"; };
 		5A8AC783238A38191C41B7B9 /* lib.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = lib.rs; sourceTree = "<group>"; };
 		5BED538C342012A05181FB41 /* main.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
@@ -145,7 +145,7 @@
 		FC0E5BF5C01317DCFE46F04D /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				4F41F6314E3E671534AEBA4E /* Memos.app */,
+				4F41F6314E3E671534AEBA4E /* MMemos.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -170,7 +170,7 @@
 			packageProductDependencies = (
 			);
 			productName = "mmm-memos_iOS";
-			productReference = 4F41F6314E3E671534AEBA4E /* Memos.app */;
+			productReference = 4F41F6314E3E671534AEBA4E /* MMemos.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */

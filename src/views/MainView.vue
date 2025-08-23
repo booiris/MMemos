@@ -338,21 +338,7 @@ const handleSearch = async (query: string) => {
     try {
         isLoading.value = true
         isSearching.value = true
-        const response = await searchMemos(query.trim())
-        searchResults.value =
-            response.memos?.map((memo) => ({
-                name: memo.name,
-                createTime: memo.createTime || '',
-                updateTime: memo.updateTime || '',
-                displayTime: memo.displayTime || '',
-                visibility: memo.visibility || 'PRIVATE',
-                content: memo.content || '',
-                pinned: memo.pinned || false,
-                resources: memo.resources || [],
-                relations: memo.relations || [],
-                reactions: memo.reactions || [],
-                tags: memo.tags || [],
-            })) || []
+        searchResults.value = await searchMemos(query.trim())
     } catch (error) {
         console.error('search memo failed: ' + getError(error))
         searchResults.value = []
@@ -454,7 +440,7 @@ onMounted(async () => {
 })
 
 onActivated(() => {
-    Promise.all([loadMemos(), loadPinnedContent()])
+    // Promise.all([loadMemos(), loadPinnedContent()])
 })
 useSwipeBack({ onSwipe: handleHome }, '#main-view')
 </script>

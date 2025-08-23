@@ -6,6 +6,7 @@ pub mod memo;
 pub mod model;
 
 pub fn load_store_data(app: &AppHandle) -> Result<StoreData, String> {
+    log::debug!("load_store_data");
     let store_path = get_store_path(app)?;
 
     if !store_path.exists() {
@@ -93,7 +94,7 @@ pub async fn store_data(
 
 #[tauri::command]
 pub async fn get_data(state: State<'_, AppState>, key: String) -> Result<Option<String>, String> {
-    log::trace!("[store_data] key: {}", key);
+    log::trace!("[get_data] key: {}", key);
     Ok(state.store.data.get(&key).map(|v| v.clone()))
 }
 

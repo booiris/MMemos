@@ -140,6 +140,8 @@ async fn logout(app: AppHandle, state: State<'_, AppState>) -> Result<(), ()> {
 pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
+            // TODO: logs is not recorded in setup function
+
             let store = store::load_store_data(app.handle()).unwrap_or_else(|e| {
                 log::error!("Failed to load store data: {}, using default", e);
                 StoreData::default()
@@ -166,6 +168,8 @@ pub fn run() {
             };
 
             app.manage(app_state);
+
+            memo::warm_up_memo_cache(app.handle(), app.state());
 
             persist_memo_cache(
                 app.path()

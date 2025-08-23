@@ -28,9 +28,10 @@ export type Memo = {
     relations: V1MemoRelation[]
     reactions: V1Reaction[]
     tags: string[]
+    state: V1State
 }
 
-function memoToMemo(memo: Apiv1Memo): Memo {
+export function memoToMemo(memo: Apiv1Memo): Memo {
     return {
         name: memo.name,
         createTime: memo.createTime || '',
@@ -43,6 +44,7 @@ function memoToMemo(memo: Apiv1Memo): Memo {
         relations: memo.relations || [],
         reactions: memo.reactions || [],
         tags: memo.tags || [],
+        state: memo.state || V1State.NORMAL,
     }
 }
 
@@ -166,18 +168,29 @@ export async function togglePinMemo(
     return updateMemo(name, { pinned })
 }
 
-export async function searchMemos(
-    query: string,
-    pageSize?: number,
-    pageToken?: string
-): Promise<V1ListMemosResponse> {
+export async function searchMemos(query: string): Promise<Memo[]> {
     try {
-        return await getMemos(
-            pageSize,
-            pageToken,
-            MemosState.NORMAL,
-            `content.contains("${query}")`
-        )
+        let searchResults: Memo[] = []
+        let token = ''
+        while (true) {
+            const response = await getMemos(
+                30,
+                token,
+                MemosState.NORMAL,
+                `content.contains("${query}")`
+            )
+
+            searchResults.push(
+                ...(response.memos?.map((memo) => memoToMemo(memo)) || [])
+            )
+
+            if (!response.nextPageToken) {
+                break
+            }
+            token = response.nextPageToken || ''
+        }
+
+        return searchResults
     } catch (error) {
         throw `[searchMemos] ${getError(error)}`
     }

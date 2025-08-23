@@ -4,7 +4,7 @@ use dashmap::DashMap;
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 
-use crate::api::models::{V1MemoRelation, V1Reaction, V1Resource};
+use crate::api::models::{V1MemoRelation, V1Reaction, V1Resource, V1State};
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct StoreData {
@@ -16,22 +16,20 @@ pub struct StoreData {
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
 pub struct Memo {
     pub name: String,
-    #[serde(default)]
+    #[serde(rename = "createTime")]
     pub create_time: String,
-    #[serde(default)]
+    #[serde(rename = "updateTime")]
     pub update_time: String,
-    #[serde(default)]
+    #[serde(rename = "displayTime")]
     pub display_time: String,
-    #[serde(default)]
     pub visibility: String,
-    #[serde(default)]
     pub content: String,
-    #[serde(default)]
     pub pinned: bool,
     pub resources: Vec<V1Resource>,
     pub relations: Vec<V1MemoRelation>,
     pub reactions: Vec<V1Reaction>,
     pub tags: Vec<String>,
+    pub state: V1State,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -50,6 +48,7 @@ pub struct MemoMeta {
     pub visibility: String,
     pub pinned: bool,
     pub tags: Vec<String>,
+    pub state: V1State,
 }
 
 #[derive(Debug, Default)]

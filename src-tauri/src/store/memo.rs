@@ -7,6 +7,7 @@ use std::{
 };
 
 use crate::{
+    api::models::V1State,
     store::model::{AppState, CacheData, Memo, MemoDataCache, MemoMeta},
     utils::path::sanitize_file_name,
 };
@@ -30,6 +31,7 @@ pub async fn store_memo(
         visibility: memo.visibility.clone(),
         pinned: memo.pinned,
         tags: memo.tags.clone(),
+        state: memo.state,
     };
 
     let should_update = match state.cache.all_memo_meta.get(&memo_name) {
@@ -163,13 +165,14 @@ pub async fn get_memo_list(
     archived: bool,
 ) -> Result<Option<Vec<Memo>>, String> {
     log::trace!(
-        "[get_memo_list] offset: {}, limit: {}, tag: {:?}, pinned: {}",
+        "[get_memo_list] offset: {}, limit: {}, tag: {:?}, pinned: {}, archived: {}",
         offset,
         limit,
         tag,
-        pinned
+        pinned,
+        archived
     );
-    let memo_list = state
+    let mut memo_list = state
         .cache
         .all_memo_meta
         .iter()
@@ -183,13 +186,14 @@ pub async fn get_memo_list(
         })
         .filter(|x| {
             if archived {
-                x.visibility == "ARCHIVED"
+                x.state == V1State::Archived
             } else {
-                x.visibility == "NORMAL"
+                x.state == V1State::Normal
             }
         })
         .collect::<Vec<_>>();
 
+    memo_list.sort_by(|a, b| b.display_time.cmp(&a.display_time));
     let memo_meta_list = memo_list
         .iter()
         .skip(offset)
@@ -225,11 +229,42 @@ fn get_memo_cache_path(
     Ok(cache_path.join(path))
 }
 
+pub fn warm_up_memo_cache(app: &AppHandle, state: State<'_, AppState>) {
+    tauri::async_runtime::block_on(async {
+        let memo = get_memo_list(
+            app.clone(),
+            state.clone(),
+            0,
+            5,
+            "".to_string(),
+            false,
+            false,
+        );
+        let pinned_memo = get_memo_list(
+            app.clone(),
+            state.clone(),
+            0,
+            5,
+            "".to_string(),
+            true,
+            false,
+        );
+        let (memo, pinned_memo) = tokio::join!(memo, pinned_memo);
+        if let Err(e) = memo {
+            log::error!("Failed to warm up memo cache: {}", e);
+        }
+        if let Err(e) = pinned_memo {
+            log::error!("Failed to warm up pinned memo cache: {}", e);
+        }
+    });
+}
+
 pub fn load_memo_meta_data(
     app: &AppHandle,
     server_url: &str,
     user_name: &str,
 ) -> Result<DashMap<String, MemoMeta>, String> {
+    log::debug!("load_memo_meta_data");
     let app_cache_dir = get_memo_cache_path(
         &app.path()
             .app_cache_dir()
@@ -238,7 +273,7 @@ pub fn load_memo_meta_data(
         user_name,
     )
     .map_err(|e| format!("Failed to get memo metadata cache path: {}", e))?;
-    let path = app_cache_dir.join("all_memo_meta.json");
+    let path = app_cache_dir.join("memos").join("all_memo_meta.json");
 
     if !path.exists() {
         return Ok(DashMap::new());
