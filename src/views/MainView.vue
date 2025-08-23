@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onActivated, ref, nextTick } from 'vue'
+import { computed, onActivated, ref, nextTick, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useDraftStore } from '@/stores/draft'
@@ -30,6 +30,7 @@ import {
     togglePinMemo,
     searchMemos,
     Memo,
+    MemosState,
 } from '@/api/memos'
 
 import { useI18n } from 'vue-i18n'
@@ -61,6 +62,8 @@ import { Input } from '@/components/ui/input'
 import loading_image from '@/assets/loading_image.svg'
 import { getError } from '@/api/error'
 import { useDataCacheStore } from '@/stores/dataCache'
+import { useSettingsStore } from '@/stores/settings'
+import { mergeOnline } from '@/utils/mergeOnlineData'
 
 const router = useRouter()
 const route = useRoute()
@@ -126,6 +129,15 @@ const handleDeleteMemo = (memo: Memo) => {
     memoToOperate.value = memo
     confirmAction.value = 'delete'
     confirmDialogOpen.value = true
+}
+
+const handleScroll = (event: Event) => {
+    const target = event.target as HTMLElement
+    if (target) {
+        const scrollTop = target.scrollTop
+
+        showScrollToTop.value = scrollTop > 200
+    }
 }
 
 const confirmOperation = async () => {
@@ -218,7 +230,8 @@ const handlePinMemo = async (memo: Memo) => {
             )
             memos.value = insertMemo(memo, memos.value)
         }
-        // scrollToMemo(memo)
+
+        await scrollToMemo(memo)
     } catch (error) {
         console.error('toggle pin memo failed: ' + getError(error))
     }
@@ -248,11 +261,11 @@ const handleEditSendOrUpdateSuccess = async (memo: Memo, isEdit: boolean) => {
         memos.value.unshift(memo)
     }
 
-    await nextTick()
-    scrollToMemo(memo)
+    await scrollToMemo(memo)
 }
 
-const scrollToMemo = (memo: Memo) => {
+const scrollToMemo = async (memo: Memo) => {
+    await nextTick()
     const container = document.getElementById('memo-list')
     if (!container) return
 
@@ -273,9 +286,10 @@ const scrollToMemo = (memo: Memo) => {
     const scrollTop =
         container.scrollTop + (elementRect.top - containerRect.top)
 
+    await nextTick()
     container.scrollTo({
         top: scrollTop,
-        behavior: 'smooth',
+        behavior: 'instant',
     })
 }
 
@@ -300,7 +314,8 @@ const handleSearch = async (query: string) => {
     }
 }
 
-const handleScrollToTop = () => {
+const handleScrollToTop = async () => {
+    await nextTick()
     const container = document.getElementById('memo-list')
     if (container) {
         container.scrollTo({
@@ -310,8 +325,50 @@ const handleScrollToTop = () => {
     }
 }
 
+let onlineRefreshing = false
 // Pull to refresh
-const pullToRefreshCallback = async () => {}
+const pullToRefreshCallback = async () => {
+    let cnt = 0
+    while (onlineRefreshing) {
+        cnt++
+        console.log('waiting for init refreshing: ' + cnt)
+        await new Promise((resolve) => setTimeout(resolve, 200))
+    }
+
+    try {
+        onlineRefreshing = true
+        let state = MemosState.NORMAL
+        if (pageName === 'Archive') {
+            state = MemosState.ARCHIVED
+        }
+        let runner = [mergeOnline(memos, false, state, currentTag, '', 10)]
+        if (pageName === 'Main') {
+            runner.push(mergeOnline(pinnedMemos, true, MemosState.NORMAL))
+        }
+        const pageTokens = await Promise.all(runner)
+        ;(async () => {
+            let state = MemosState.NORMAL
+            if (pageName === 'Archive') {
+                state = MemosState.ARCHIVED
+            }
+            try {
+                await mergeOnline(
+                    memos,
+                    false,
+                    state,
+                    currentTag,
+                    pageTokens[0]
+                )
+            } catch (error) {
+                console.error('pull refresh error: ' + getError(error))
+            }
+        })()
+    } catch (error) {
+        console.error('pull to refresh error: ' + getError(error))
+    } finally {
+        onlineRefreshing = false
+    }
+}
 
 const {
     isPullRefreshing,
@@ -325,23 +382,23 @@ const {
     onRefresh: pullToRefreshCallback,
 })
 
-const dataCache = useDataCacheStore()
-onActivated(async () => {
+const refreshPage = async () => {
     pinnedMemos.value = []
     memos.value = []
 
+    const pinnedLimit = 50
+    const memoLimit = 6
     const archive = pageName === 'Archive'
     await Promise.all([
         (async () => {
             if (pageName !== 'Main') {
                 return
             }
-            const limit = 50
             let offset = 0
             while (true) {
                 const res = await dataCache.getMemoList(
                     offset,
-                    limit,
+                    pinnedLimit,
                     currentTag,
                     true,
                     false
@@ -351,13 +408,13 @@ onActivated(async () => {
                 } else {
                     break
                 }
-                offset += limit
+                offset += pinnedLimit
             }
         })(),
         (async () => {
             const res = await dataCache.getMemoList(
                 0,
-                6,
+                memoLimit,
                 currentTag,
                 false,
                 archive
@@ -370,8 +427,8 @@ onActivated(async () => {
 
     // async load remaining memos for performance
     ;(async () => {
+        let offset = memoLimit
         const limit = 80
-        let offset = limit
         while (true) {
             const res = await dataCache.getMemoList(
                 offset,
@@ -388,6 +445,46 @@ onActivated(async () => {
             offset += limit
         }
     })()
+}
+
+const dataCache = useDataCacheStore()
+const settings = useSettingsStore()
+let firstMount = false
+
+onMounted(async () => {
+    firstMount = true
+    await refreshPage()
+    if (settings.enableAutoRefresh) {
+        onlineRefreshing = true
+        ;(async () => {
+            let state = MemosState.NORMAL
+            if (pageName === 'Archive') {
+                state = MemosState.ARCHIVED
+            }
+            try {
+                let runner = [mergeOnline(memos, false, state, currentTag)]
+                if (pageName === 'Main') {
+                    runner.push(
+                        mergeOnline(pinnedMemos, true, MemosState.NORMAL)
+                    )
+                }
+                await Promise.all(runner)
+            } catch (error) {
+                console.error(
+                    'init refresh online data error: ' + getError(error)
+                )
+            } finally {
+                onlineRefreshing = false
+            }
+        })()
+    }
+})
+onActivated(async () => {
+    if (firstMount) {
+        firstMount = false
+        return
+    }
+    refreshPage()
 })
 useSwipeBack({ onSwipe: handleHome }, '#main-view')
 </script>
@@ -439,6 +536,7 @@ useSwipeBack({ onSwipe: handleHome }, '#main-view')
             class="flex-1 overflow-y-auto"
             id="memo-list"
             style="margin-bottom: calc(env(safe-area-inset-bottom) + 0.5rem)"
+            @scroll="handleScroll"
             @touchstart="handleTouchStart"
             @touchmove="handleTouchMove"
             @touchend="handleTouchEnd">

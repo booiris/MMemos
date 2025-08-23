@@ -17,7 +17,7 @@ export enum MemosState {
 }
 
 export type Memo = {
-    name?: string
+    name: string
     createTime: string
     updateTime: string
     displayTime: string
@@ -33,7 +33,7 @@ export type Memo = {
 
 export function memoToMemo(memo: Apiv1Memo): Memo {
     return {
-        name: memo.name,
+        name: memo.name!,
         createTime: memo.createTime || '',
         updateTime: memo.updateTime || '',
         displayTime: memo.displayTime || '',
@@ -49,7 +49,7 @@ export function memoToMemo(memo: Apiv1Memo): Memo {
 }
 
 // TODO: Add token expiration handling
-export async function getMemos(
+async function getMemosInner(
     pageSize?: number,
     pageToken?: string,
     state?: MemosState,
@@ -70,6 +70,7 @@ export async function getMemos(
             secure: true,
             signal: AbortSignal.timeout(10000),
         })
+        console.log('[getMemosInner] res len:' + response.memos?.length)
         const dataCache = useDataCacheStore()
         for (const memo of response.memos || []) {
             dataCache.setMemoCache(memo.name!, memoToMemo(memo))
@@ -80,31 +81,32 @@ export async function getMemos(
     }
 }
 
-export async function getMemosByTag(
-    tag: string,
+export async function getMemos(
+    tag?: string,
     pageSize?: number,
     pageToken?: string,
     state?: MemosState
-): Promise<V1ListMemosResponse> {
+): Promise<[Memo[], string?]> {
     try {
-        return await getMemos(pageSize, pageToken, state, `tag in ["${tag}"]`)
+        let filter = undefined
+        if (tag && tag !== '') {
+            filter = `tag in ["${tag}"]`
+        }
+        const resp = await getMemosInner(pageSize, pageToken, state, filter)
+        return [
+            resp.memos?.map((memo) => memoToMemo(memo)) || [],
+            resp.nextPageToken,
+        ]
     } catch (error) {
         throw `[getMemosByTag] ${getError(error)}`
     }
-}
-
-export async function getArchivedMemos(
-    pageSize?: number,
-    pageToken?: string
-): Promise<V1ListMemosResponse> {
-    return await getMemos(pageSize, pageToken, MemosState.ARCHIVED)
 }
 
 export async function createMemo(
     content: string,
     visibility: V1Visibility,
     resource?: V1Resource[]
-): Promise<Apiv1Memo> {
+): Promise<Memo> {
     try {
         const memo: Apiv1Memo = {
             content: content,
@@ -117,7 +119,7 @@ export async function createMemo(
         })
         const dataCache = useDataCacheStore()
         dataCache.setMemoCache(response.name!, memoToMemo(response))
-        return response
+        return memoToMemo(response)
     } catch (error) {
         throw `[createMemo] ${getError(error)}`
     }
@@ -173,7 +175,7 @@ export async function searchMemos(query: string): Promise<Memo[]> {
         let searchResults: Memo[] = []
         let token = ''
         while (true) {
-            const response = await getMemos(
+            const response = await getMemosInner(
                 30,
                 token,
                 MemosState.NORMAL,
@@ -187,7 +189,7 @@ export async function searchMemos(query: string): Promise<Memo[]> {
             if (!response.nextPageToken) {
                 break
             }
-            token = response.nextPageToken || ''
+            token = response.nextPageToken
         }
 
         return searchResults
@@ -196,18 +198,12 @@ export async function searchMemos(query: string): Promise<Memo[]> {
     }
 }
 
-export interface PaginationState {
-    pageToken: string
-    hasMore: boolean
-    isLoading: boolean
-}
-
 export async function getPinnedContent(): Promise<Memo[]> {
     try {
         let pinnedMemos: Memo[] = []
         let token = ''
         while (true) {
-            const response = await getMemos(
+            const response = await getMemosInner(
                 30,
                 token,
                 MemosState.NORMAL,
@@ -221,7 +217,7 @@ export async function getPinnedContent(): Promise<Memo[]> {
             if (!response.nextPageToken) {
                 break
             }
-            token = response.nextPageToken || ''
+            token = response.nextPageToken
         }
 
         return pinnedMemos

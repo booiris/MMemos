@@ -3,7 +3,7 @@ import { ref, watchEffect } from 'vue'
 import { useEditModal } from '@/composables/useEditModal'
 import EditView from '@/views/EditView.vue'
 import { V1Resource, V1Visibility } from '@/api/schema/api'
-import { createMemo, Memo, memoToMemo, updateMemo } from '@/api/memos'
+import { createMemo, Memo, updateMemo } from '@/api/memos'
 import { getError } from '@/api/error'
 import { useDraftStore } from '@/stores/draft'
 
@@ -42,8 +42,7 @@ const handleSendMemo = async (
                 resources: resource,
             })
         } else {
-            const new_memo = await createMemo(text, visibility, resource)
-            memo = memoToMemo(new_memo)
+            memo = await createMemo(text, visibility, resource)
         }
 
         console.info('memo operation success')
