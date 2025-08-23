@@ -295,6 +295,7 @@ pub fn persist_memo_cache(
     user_name: Arc<RwLock<String>>,
 ) {
     tauri::async_runtime::spawn(async move {
+        let mut created_dir = false;
         loop {
             tokio::time::sleep(std::time::Duration::from_secs(1)).await;
 
@@ -304,16 +305,20 @@ pub fn persist_memo_cache(
             match get_memo_cache_path(&cache_path, &server_url_clone, &user_name_clone) {
                 Ok(memo_cache_dir) => {
                     let memo_cache_dir = memo_cache_dir.join("memos");
-                    if let Err(e) = tokio::fs::create_dir_all(&memo_cache_dir)
-                        .await
-                        .map_err(|e| format!("Failed to create memo cache dir: {}", e))
-                    {
-                        log::error!(
-                            "Failed to create memo cache dir, path: {}, error: {}",
-                            memo_cache_dir.display(),
-                            e
-                        );
-                        continue;
+
+                    if !created_dir {
+                        created_dir = true;
+                        if let Err(e) = tokio::fs::create_dir_all(&memo_cache_dir)
+                            .await
+                            .map_err(|e| format!("Failed to create memo cache dir: {}", e))
+                        {
+                            log::error!(
+                                "Failed to create memo cache dir, path: {}, error: {}",
+                                memo_cache_dir.display(),
+                                e
+                            );
+                            continue;
+                        }
                     }
 
                     if cache.is_all_memo_meta_updated.load(Ordering::Relaxed) {
