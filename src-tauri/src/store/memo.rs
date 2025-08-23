@@ -302,87 +302,82 @@ pub fn persist_memo_cache(
             let server_url_clone = server_url.read().clone();
             let user_name_clone = user_name.read().clone();
 
-            match get_memo_cache_path(&cache_path, &server_url_clone, &user_name_clone) {
-                Ok(memo_cache_dir) => {
-                    let memo_cache_dir = memo_cache_dir.join("memos");
+            if let Ok(memo_cache_dir) =
+                get_memo_cache_path(&cache_path, &server_url_clone, &user_name_clone)
+            {
+                let memo_cache_dir = memo_cache_dir.join("memos");
 
-                    if !created_dir {
-                        created_dir = true;
-                        if let Err(e) = tokio::fs::create_dir_all(&memo_cache_dir)
-                            .await
-                            .map_err(|e| format!("Failed to create memo cache dir: {}", e))
-                        {
-                            log::error!(
-                                "Failed to create memo cache dir, path: {}, error: {}",
-                                memo_cache_dir.display(),
-                                e
-                            );
-                            continue;
-                        }
+                if !created_dir {
+                    created_dir = true;
+                    if let Err(e) = tokio::fs::create_dir_all(&memo_cache_dir)
+                        .await
+                        .map_err(|e| format!("Failed to create memo cache dir: {}", e))
+                    {
+                        log::error!(
+                            "Failed to create memo cache dir, path: {}, error: {}",
+                            memo_cache_dir.display(),
+                            e
+                        );
+                        continue;
                     }
+                }
 
-                    if cache.is_all_memo_meta_updated.load(Ordering::Relaxed) {
-                        cache
-                            .is_all_memo_meta_updated
-                            .store(false, Ordering::Relaxed);
+                if cache.is_all_memo_meta_updated.load(Ordering::Relaxed) {
+                    cache
+                        .is_all_memo_meta_updated
+                        .store(false, Ordering::Relaxed);
 
-                        let path = memo_cache_dir.join("all_memo_meta.json");
+                    let path = memo_cache_dir.join("all_memo_meta.json");
+
+                    let run = async {
+                        let cache = serde_json::to_string(&cache.all_memo_meta).map_err(|e| {
+                            format!("Failed to serialize all_memo_meta cache: {}", e)
+                        })?;
+
+                        tokio::fs::write(&path, cache)
+                            .await
+                            .map_err(|e| format!("Failed to write all_memo_meta cache: {}", e))?;
+
+                        Ok::<(), String>(())
+                    };
+
+                    if let Err(e) = run.await {
+                        log::error!(
+                            "Failed to persist all_memo_meta, path: {}, error: {}",
+                            path.display(),
+                            e
+                        );
+                    }
+                }
+
+                for v in cache.memos.iter() {
+                    if v.is_updated.load(Ordering::Relaxed) {
+                        v.is_updated.store(false, Ordering::Relaxed);
+
+                        let path = memo_cache_dir.join(
+                            "memo_".to_string() + &sanitize_file_name(&v.memo.name) + ".json",
+                        );
 
                         let run = async {
-                            let cache =
-                                serde_json::to_string(&cache.all_memo_meta).map_err(|e| {
-                                    format!("Failed to serialize all_memo_meta cache: {}", e)
-                                })?;
+                            let cache = serde_json::to_string(&v.memo)
+                                .map_err(|e| format!("Failed to serialize memo cache: {}", e))?;
 
-                            tokio::fs::write(&path, cache).await.map_err(|e| {
-                                format!("Failed to write all_memo_meta cache: {}", e)
-                            })?;
+                            tokio::fs::write(&path, cache)
+                                .await
+                                .map_err(|e| format!("Failed to write memo cache: {}", e))?;
 
                             Ok::<(), String>(())
                         };
 
                         if let Err(e) = run.await {
                             log::error!(
-                                "Failed to persist all_memo_meta, path: {}, error: {}",
+                                "Failed to persist memo cache, memo: {}, path: {}, error: {}",
+                                v.memo.name,
                                 path.display(),
                                 e
-                            );
+                            )
                         }
                     }
-
-                    for v in cache.memos.iter() {
-                        if v.is_updated.load(Ordering::Relaxed) {
-                            v.is_updated.store(false, Ordering::Relaxed);
-
-                            let path = memo_cache_dir.join(
-                                "memo_".to_string() + &sanitize_file_name(&v.memo.name) + ".json",
-                            );
-
-                            let run = async {
-                                let cache = serde_json::to_string(&v.memo).map_err(|e| {
-                                    format!("Failed to serialize memo cache: {}", e)
-                                })?;
-
-                                tokio::fs::write(&path, cache)
-                                    .await
-                                    .map_err(|e| format!("Failed to write memo cache: {}", e))?;
-
-                                Ok::<(), String>(())
-                            };
-
-                            if let Err(e) = run.await {
-                                log::error!(
-                                    "Failed to persist memo cache, memo: {}, path: {}, error: {}",
-                                    v.memo.name,
-                                    path.display(),
-                                    e
-                                )
-                            }
-                        }
-                    }
-                }
-                Err(e) => {
-                    log::error!("Failed to get memo cache path: {}", e);
                 }
             }
         }
