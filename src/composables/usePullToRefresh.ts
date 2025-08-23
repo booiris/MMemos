@@ -16,7 +16,7 @@ export function usePullToRefresh(options: PullToRefreshOptions = {}) {
     const isPullRefreshing = ref(false)
     const pullDistance = ref(0)
     const isPulling = ref(false)
-    let startY = 0
+    let startY: number | null = null
     let isPullingInner = false
 
     const loaderProgress = computed(() => {
@@ -40,6 +40,8 @@ export function usePullToRefresh(options: PullToRefreshOptions = {}) {
 
     const handleTouchMove = (event: TouchEvent) => {
         if (isPullRefreshing.value || !event.touches[0]) return
+
+        if (!startY) return
 
         const currentY = event.touches[0].clientY
         const distance = currentY - startY
@@ -66,6 +68,7 @@ export function usePullToRefresh(options: PullToRefreshOptions = {}) {
 
         isPulling.value = false
         isPullingInner = false
+        startY = null
 
         if (pullDistance.value - startThreshold >= threshold) {
             // Trigger refresh
