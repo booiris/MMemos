@@ -235,7 +235,7 @@ pub fn warm_up_memo_cache(app: &AppHandle, state: State<'_, AppState>) {
             app.clone(),
             state.clone(),
             0,
-            5,
+            10,
             "".to_string(),
             false,
             false,
@@ -244,7 +244,7 @@ pub fn warm_up_memo_cache(app: &AppHandle, state: State<'_, AppState>) {
             app.clone(),
             state.clone(),
             0,
-            5,
+            10,
             "".to_string(),
             true,
             false,
@@ -296,7 +296,7 @@ pub fn persist_memo_cache(
 ) {
     tauri::async_runtime::spawn(async move {
         loop {
-            tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+            tokio::time::sleep(std::time::Duration::from_secs(1)).await;
 
             let server_url_clone = server_url.read().clone();
             let user_name_clone = user_name.read().clone();
