@@ -1,5 +1,6 @@
 import { getError } from '@/api/error'
 import { ref, computed } from 'vue'
+import { impactFeedback } from '@tauri-apps/plugin-haptics'
 
 export interface PullToRefreshOptions {
     threshold?: number
@@ -8,7 +9,7 @@ export interface PullToRefreshOptions {
 }
 
 export function usePullToRefresh(options: PullToRefreshOptions = {}) {
-    const { threshold = 40, onRefresh, containerId = 'memo-list' } = options
+    const { threshold = 65, onRefresh, containerId = 'memo-list' } = options
 
     const startThreshold = 30
     const loadingTop = 40
@@ -82,6 +83,7 @@ export function usePullToRefresh(options: PullToRefreshOptions = {}) {
     const handlePullRefresh = async () => {
         if (isPullRefreshing.value) return
 
+        await impactFeedback('medium')
         pullDistance.value = loadingTop
         try {
             isPullRefreshing.value = true

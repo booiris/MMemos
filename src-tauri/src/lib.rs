@@ -182,6 +182,7 @@ pub fn run() {
 
             Ok(())
         })
+        .plugin(tauri_plugin_haptics::init())
         .plugin(tauri_plugin_persisted_scope::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(
