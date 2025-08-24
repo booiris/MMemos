@@ -373,9 +373,8 @@ const pullToRefreshCallback = async () => {
 
 const {
     isPullRefreshing,
-    pullDistance,
     isPulling,
-    loaderProgress,
+    loadingTop,
     handleTouchStart,
     handleTouchMove,
     handleTouchEnd,
@@ -588,19 +587,18 @@ useSwipeBack({ onSwipe: handleHome }, '#main-view')
                 class="fixed left-1/2 -translate-x-1/2 z-20"
                 style="top: calc(env(safe-area-inset-bottom) + 3.5rem)">
                 <Loader
-                    class="w-6.5 h-6.5 text-primary pull-refresh-loader"
+                    class="w-6.5 h-6.5 text-primary"
                     :class="{
                         'animate-spin': isPullRefreshing,
-                    }"
-                    :style="{
-                        '--progress': loaderProgress,
                     }" />
             </div>
 
             <div
                 class="px-5 transition-transform duration-300 ease-out"
                 :style="{
-                    transform: `translateY(${pullDistance}px)`,
+                    transform: isPullRefreshing
+                        ? `translateY(${loadingTop}px)`
+                        : '',
                 }">
                 <div
                     v-if="
@@ -876,30 +874,5 @@ useSwipeBack({ onSwipe: handleHome }, '#main-view')
 
 #memo-list::-webkit-scrollbar {
     display: block !important;
-}
-
-/* Pull refresh loader progressive reveal - clockwise */
-.pull-refresh-loader {
-    transition: all 0.1s ease-out;
-}
-
-.pull-refresh-loader:not(.animate-spin) {
-    mask: conic-gradient(
-        from 0deg,
-        black 0deg,
-        black calc(360deg * var(--progress) / 100),
-        transparent calc(360deg * var(--progress) / 100)
-    );
-    -webkit-mask: conic-gradient(
-        from 0deg,
-        black 0deg,
-        black calc(360deg * var(--progress) / 100),
-        transparent calc(360deg * var(--progress) / 100)
-    );
-}
-
-.pull-refresh-loader.animate-spin {
-    mask: none;
-    -webkit-mask: none;
 }
 </style>

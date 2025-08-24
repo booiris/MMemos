@@ -1,5 +1,5 @@
 import { getError } from '@/api/error'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { impactFeedback } from '@tauri-apps/plugin-haptics'
 
 export interface PullToRefreshOptions {
@@ -15,19 +15,18 @@ export function usePullToRefresh(options: PullToRefreshOptions = {}) {
     const loadingTop = 40
 
     const isPullRefreshing = ref(false)
-    const pullDistance = ref(0)
     const isPulling = ref(false)
+    let distance = 0
     let startY: number | null = null
-    let isPullingInner = false
 
-    const loaderProgress = computed(() => {
-        if (isPullRefreshing.value) return 100
-        const progress = Math.min(
-            ((pullDistance.value - startThreshold) / threshold) * 100,
-            100
-        )
-        return Math.max(progress, 0)
-    })
+    // const loaderProgress = computed(() => {
+    //     if (isPullRefreshing.value) return 100
+    //     const progress = Math.min(
+    //         ((pullDistance.value - startThreshold) / threshold) * 100,
+    //         100
+    //     )
+    //     return Math.max(progress, 0)
+    // })
 
     // Pull refresh handlers
     const handleTouchStart = (event: TouchEvent) => {
@@ -45,18 +44,14 @@ export function usePullToRefresh(options: PullToRefreshOptions = {}) {
         if (!startY) return
 
         const currentY = event.touches[0].clientY
-        const distance = currentY - startY
+        distance = currentY - startY
 
         if (distance > 0) {
-            if (!isPullingInner && pullDistance.value > startThreshold) {
-                isPullingInner = true
+            if (!isPulling.value) {
                 isPulling.value = true
             }
             // Prevent default scrolling when pulling down
-            event.preventDefault()
-
-            // Apply resistance effect (slower pull as distance increases)
-            pullDistance.value = distance * 0.35
+            // event.preventDefault()
         }
     }
 
@@ -64,19 +59,12 @@ export function usePullToRefresh(options: PullToRefreshOptions = {}) {
         if (isPullRefreshing.value) return
         startY = null
         if (!isPulling.value) {
-            pullDistance.value = 0
             return
         }
 
         isPulling.value = false
-        isPullingInner = false
-
-        if (pullDistance.value - startThreshold >= threshold) {
-            // Trigger refresh
+        if (distance - startThreshold > threshold) {
             handlePullRefresh()
-        } else {
-            // Reset pull distance
-            pullDistance.value = 0
         }
     }
 
@@ -84,7 +72,6 @@ export function usePullToRefresh(options: PullToRefreshOptions = {}) {
         if (isPullRefreshing.value) return
 
         await impactFeedback('medium')
-        pullDistance.value = loadingTop
         try {
             isPullRefreshing.value = true
             if (onRefresh) {
@@ -94,16 +81,15 @@ export function usePullToRefresh(options: PullToRefreshOptions = {}) {
             console.error('Pull refresh failed:' + getError(error))
         } finally {
             isPullRefreshing.value = false
-            pullDistance.value = 0
         }
     }
 
     return {
         // States
         isPullRefreshing,
-        pullDistance,
         isPulling,
-        loaderProgress,
+        loadingTop,
+        // loaderProgress,
 
         // Event handlers
         handleTouchStart,
