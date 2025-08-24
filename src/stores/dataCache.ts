@@ -99,8 +99,8 @@ export const useDataCacheStore = defineStore('dataCache', () => {
         return imageData
     }
 
-    const cacheFileUrl = (imageResource: string, prePath?: string) => {
-        const sanitizedResource = sanitizeFileName(imageResource)
+    const cacheFileUrl = (file: string, prePath?: string) => {
+        const sanitizedResource = sanitizeFileName(file)
         return (
             authStore.getUniqueId() +
             '/' +
@@ -143,7 +143,10 @@ export const useDataCacheStore = defineStore('dataCache', () => {
         }
 
         if (!homeDataCache) {
-            homeDataCache = await getData<HomeDataCache>('homeDataCache.json')
+            homeDataCache = await getData<HomeDataCache>(
+                'homeDataCache.json',
+                'memos'
+            )
         }
 
         return homeDataCache
@@ -182,13 +185,10 @@ export const useDataCacheStore = defineStore('dataCache', () => {
             if (isHomeCacheUpdated) {
                 isHomeCacheUpdated = false
                 if (homeDataCache) {
-                    await writeTextFile(
-                        'homeDataCache.json',
-                        JSON.stringify(homeDataCache),
-                        {
-                            baseDir: BaseDirectory.AppCache,
-                        }
-                    )
+                    const path = cacheFileUrl('homeDataCache.json', 'memos')
+                    await writeTextFile(path, JSON.stringify(homeDataCache), {
+                        baseDir: BaseDirectory.AppCache,
+                    })
                 }
             }
         }, 5000)

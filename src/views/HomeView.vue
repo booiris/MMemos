@@ -82,6 +82,7 @@ onMounted(async () => {
 })
 
 onActivated(async () => {
+    await loadCachedData()
     try {
         const s = await getUserStats(authStore.user?.name || '')
         convertUserStats(s)
