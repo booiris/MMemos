@@ -201,8 +201,8 @@ const handleRecoverMemo = async (memo: Memo) => {
     }
 }
 
-const handlePinMemo = async (memo: Memo) => {
-    if (!memo.name) {
+const handlePinMemo = async (oldMemo: Memo) => {
+    if (!oldMemo.name) {
         console.error('[handlePinMemo] missing memo name!')
         return
     }
@@ -219,8 +219,7 @@ const handlePinMemo = async (memo: Memo) => {
     }
 
     try {
-        memo.pinned = !memo.pinned
-        await togglePinMemo(memo.name, memo.pinned)
+        const memo = await togglePinMemo(oldMemo.name, !oldMemo.pinned)
 
         if (pageName === 'Main') {
             if (memo.pinned) {
@@ -263,11 +262,11 @@ const handleEditSendOrUpdateSuccess = async (memo: Memo, isEdit: boolean) => {
         }
     } else {
         memos.value.unshift(memo)
-        await scrollToMemo(memo, true)
+        await scrollToMemo(memo)
     }
 }
 
-const scrollToMemo = async (memo: Memo, isSmooth: boolean = false) => {
+const scrollToMemo = async (memo: Memo) => {
     await nextTick()
     const container = document.getElementById('memo-list')
     if (!container) return
@@ -289,10 +288,9 @@ const scrollToMemo = async (memo: Memo, isSmooth: boolean = false) => {
     const scrollTop =
         container.scrollTop + (elementRect.top - containerRect.top)
 
-    await nextTick()
     container.scrollTo({
         top: scrollTop,
-        behavior: isSmooth ? 'smooth' : 'instant',
+        behavior: 'smooth',
     })
 }
 
@@ -476,7 +474,7 @@ let firstMount = false
 onMounted(async () => {
     firstMount = true
     await refreshPage()
-    if (settings.enableAutoRefresh) {
+    if (settings.enableAutoRefresh || displayMemos.value.length === 0) {
         onlineRefreshing = true
         ;(async () => {
             let state = MemosState.NORMAL

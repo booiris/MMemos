@@ -19,16 +19,15 @@ export function mergeOnlineData(memos: Ref<Memo[]>, onlineData: Memo[]) {
         return
     }
 
-    const endIndex = memos.value.findIndex(
-        (m) => m.displayTime <= onlineData[onlineData.length - 1]!.displayTime
+    let endIndex = memos.value.findIndex(
+        (m) => m.displayTime < onlineData[onlineData.length - 1]!.displayTime
     )
+    if (endIndex === -1) {
+        endIndex = memos.value.length - 1
+    }
 
     const onlineDataMemoNames = new Map(onlineData.map((m) => [m.name, m]))
-    for (
-        let i = startIndex;
-        i <= Math.min(endIndex, memos.value.length - 1);
-        i++
-    ) {
+    for (let i = startIndex; i < endIndex; i++) {
         const memo = memos.value[i]!
         if (onlineDataMemoNames.has(memo.name)) {
             dataCache.setMemoCache(

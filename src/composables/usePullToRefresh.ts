@@ -62,6 +62,7 @@ export function usePullToRefresh(options: PullToRefreshOptions = {}) {
 
     const handleTouchEnd = () => {
         if (isPullRefreshing.value) return
+        startY = null
         if (!isPulling.value) {
             pullDistance.value = 0
             return
@@ -69,7 +70,6 @@ export function usePullToRefresh(options: PullToRefreshOptions = {}) {
 
         isPulling.value = false
         isPullingInner = false
-        startY = null
 
         if (pullDistance.value - startThreshold >= threshold) {
             // Trigger refresh
