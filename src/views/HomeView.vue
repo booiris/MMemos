@@ -35,21 +35,31 @@ const mainMenus = computed(() => [
     },
 ])
 
-const tagValues = ref<string[]>([])
+const tagValues = ref<Record<string, number>>({})
+
+const truncateText = (text: string, maxLength: number = 20): string => {
+    if (text.length <= maxLength) {
+        return text
+    }
+    return text.slice(0, maxLength) + '...'
+}
 
 const tags = computed(() => {
-    return tagValues.value.map((tag) => {
-        return {
-            icon: Tag,
-            title: tag,
-            type: 'arrow' as const,
-            onClick: () =>
-                router.push({
-                    name: 'MainWithTag',
-                    params: { tag },
-                }),
-        }
-    })
+    return Object.entries(tagValues.value)
+        .sort(([tagA], [tagB]) => tagA.localeCompare(tagB))
+        .map(([tag, count]) => {
+            const displayTitle = `${truncateText(tag)} (${count})`
+            return {
+                icon: Tag,
+                title: displayTitle,
+                type: 'arrow' as const,
+                onClick: () =>
+                    router.push({
+                        name: 'MainWithTag',
+                        params: { tag },
+                    }),
+            }
+        })
 })
 
 const memosCount = ref(0)
@@ -60,7 +70,7 @@ const convertUserStats = (statsData: V1UserStats) => {
     memosCount.value = statsData?.totalMemoCount || 0
     tagCount.value = Object.keys(statsData?.tagCount || {}).length
     pinCount.value = statsData?.pinnedMemos?.length || 0
-    tagValues.value = Object.keys(statsData?.tagCount || {})
+    tagValues.value = statsData?.tagCount || {}
 }
 
 const loadCachedData = async () => {

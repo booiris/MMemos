@@ -15,7 +15,7 @@ import { Memo } from '@/api/memos'
 import { invoke } from '@tauri-apps/api/core'
 
 export interface HomeDataCache {
-    tags: string[]
+    tags: Record<string, number>
     memosCount: number
     tagsCount: number
     pinnedMemosCount: number
