@@ -1,0 +1,25 @@
+{
+  "description": "Suggested test dependencies and scripts to add to package.json",
+  "devDependencies": {
+    "vitest": "^2.1.8",
+    "@vue/test-utils": "^2.4.8",
+    "jsdom": "^26.0.0",
+    "@vitest/coverage-v8": "^2.1.8",
+    "happy-dom": "^15.11.6"
+  },
+  "scripts": {
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest --watch"
+  },
+  "instructions": [
+    "Add the above devDependencies to your package.json",
+    "Add the above scripts to your package.json",
+    "Run 'pnpm install' to install the test dependencies",
+    "Run 'pnpm test' to start testing in watch mode",
+    "Run 'pnpm test:run' to run tests once",
+    "Run 'pnpm test:coverage' to generate coverage reports"
+  ]
+}

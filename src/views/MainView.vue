@@ -373,24 +373,18 @@ const pullToRefreshCallback = async () => {
         if (pageName === 'Archive') {
             state = MemosState.ARCHIVED
         }
-        let runner = [mergeOnline(memos, false, state, currentTag, '', 10)]
+        let runner = [mergeOnline(memos, false, state, currentTag, 10)]
         if (pageName === 'Main') {
             runner.push(mergeOnline(pinnedMemos, true, MemosState.NORMAL))
         }
-        const pageTokens = await Promise.all(runner)
+        Promise.all(runner)
         ;(async () => {
             let state = MemosState.NORMAL
             if (pageName === 'Archive') {
                 state = MemosState.ARCHIVED
             }
             try {
-                await mergeOnline(
-                    memos,
-                    false,
-                    state,
-                    currentTag,
-                    pageTokens[0]
-                )
+                await mergeOnline(memos, false, state, currentTag)
             } catch (error) {
                 console.error('pull refresh error: ' + getError(error))
             }
