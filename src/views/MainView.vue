@@ -455,27 +455,6 @@ const refreshPage = async () => {
             }
         })(),
     ])
-
-    // async load remaining memos for performance
-    // setTimeout(async () => {
-    //     let offset = memoLimit
-    //     const limit = 80
-    //     while (true) {
-    //         const res = await dataCache.getMemoList(
-    //             offset,
-    //             limit,
-    //             currentTag,
-    //             false,
-    //             archive
-    //         )
-    //         if (res && res.length > 0) {
-    //             memos.value.push(...res)
-    //         } else {
-    //             break
-    //         }
-    //         offset += limit
-    //     }
-    // }, 1000)
     ;(async () => {
         let offset = memoLimit
         const limit = 80
