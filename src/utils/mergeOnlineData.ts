@@ -85,7 +85,7 @@ export function mergeOnlineData(
     }
 
     memos.value.splice(startIndex, endIndex - startIndex + 1, ...onlineData)
-    return [startIndex, endIndex]
+    return [startIndex, startIndex + onlineData.length]
 }
 
 export async function mergeOnline(
@@ -122,7 +122,10 @@ export async function mergeOnline(
             for (let i = preAffectedStartIndex; i < affectedStartIndex; i++) {
                 dataCache.deleteMemoCache(memos.value[i]!.name)
             }
-            const subLen = Math.max(affectedStartIndex - preAffectedStartIndex)
+            const subLen = Math.max(
+                affectedStartIndex - preAffectedStartIndex,
+                0
+            )
             if (subLen > 0) {
                 memos.value = memos.value.splice(preAffectedStartIndex, subLen)
             }
