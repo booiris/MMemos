@@ -96,4 +96,8 @@ export default {
         memos: 'Memos',
         archive: '归档',
     },
+    memo: {
+        expand: '展开',
+        collapse: '收起',
+    },
 }

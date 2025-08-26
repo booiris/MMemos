@@ -23,6 +23,7 @@ import {
 } from 'lucide-vue-next'
 import TouchAnimation from '@/components/ui/touch-animation/index.vue'
 import EditModal from '@/components/EditModal.vue'
+import MemoContent from '@/components/MemoContent.vue'
 import {
     deleteMemo,
     archiveMemo,
@@ -39,7 +40,6 @@ import {
     getImageUrl,
     useImageViewer,
 } from '@/utils/imageUtils'
-import { markdownRenderer } from '@/utils/markdownUtils'
 import { formatLocalTime } from '@/utils/timeUtils'
 import {
     DropdownMenu,
@@ -85,8 +85,6 @@ const handleHome = () => {
     }
     router.push({ name: 'Home' })
 }
-
-const markdownRender = markdownRenderer
 
 const memos = ref<Memo[]>([])
 const pinnedMemos = ref<Memo[]>([])
@@ -725,10 +723,10 @@ useSwipeBack({ onSwipe: handleHome }, '#main-view')
                                 </DropdownMenu>
                             </div>
 
-                            <article
-                                v-html="markdownRender.parse(memo.content)"
-                                class="whitespace-pre-wrap break-words prose prose-lg prose-zinc mt-2.5"
-                                style="line-height: 1 !important"></article>
+                            <MemoContent
+                                :content="memo.content"
+                                :compact="!memo.pinned"
+                                class="mt-2.5" />
 
                             <div
                                 v-if="

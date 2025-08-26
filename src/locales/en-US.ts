@@ -97,4 +97,8 @@ export default {
         memos: 'Memos',
         archive: 'Archive',
     },
+    memo: {
+        expand: 'Expand',
+        collapse: 'Collapse',
+    },
 }
