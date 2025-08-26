@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { computed, onActivated, ref, nextTick, onMounted, Ref } from 'vue'
+import {
+    computed,
+    onActivated,
+    ref,
+    nextTick,
+    onMounted,
+    Ref,
+    watch,
+} from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useDraftStore } from '@/stores/draft'
@@ -7,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { useSwipeBack } from '@/composables/useSwipeBack'
 import { useEditModal } from '@/composables/useEditModal'
 import { usePullToRefresh } from '@/composables/usePullToRefresh'
+import { useDebounceFn } from '@vueuse/core'
 import {
     Bolt,
     MoreHorizontal,
@@ -292,10 +301,12 @@ const scrollToMemo = async (memo: Memo) => {
     })
 }
 
-const handleSearch = async (query: string) => {
-    searchQuery.value = query
+// Debounced search function - calls after user stops typing for 500ms
+const performSearch = async () => {
+    // Use current searchQuery value instead of parameter to avoid race condition
+    const currentQuery = searchQuery.value.trim()
 
-    if (!query.trim()) {
+    if (!currentQuery) {
         isSearching.value = false
         searchResults.value = []
         return
@@ -304,13 +315,35 @@ const handleSearch = async (query: string) => {
     try {
         isLoading.value = true
         isSearching.value = true
-        searchResults.value = await searchMemos(query.trim())
+        searchResults.value = await searchMemos(currentQuery)
     } catch (error) {
         console.error('search memo failed: ' + getError(error))
         searchResults.value = []
     } finally {
         isLoading.value = false
     }
+}
+
+const debouncedSearch = useDebounceFn(performSearch, 500)
+
+// Watch searchQuery changes and trigger debounced search
+watch(searchQuery, (newQuery) => {
+    if (!newQuery.trim()) {
+        // Immediately clear results when query is empty
+        isSearching.value = false
+        searchResults.value = []
+        return
+    }
+    debouncedSearch()
+})
+
+// Handle input focus - move cursor to end of text
+const handleInputFocus = (event: Event) => {
+    const input = event.target as HTMLInputElement
+    nextTick(() => {
+        const length = input.value.length
+        input.setSelectionRange(length, length)
+    })
 }
 
 const handleScrollToTop = async () => {
@@ -783,7 +816,7 @@ useSwipeBack({ onSwipe: handleHome }, '#main-view')
                     <div class="w-full h-0.5 bg-background -mx-2"></div>
                     <Input
                         v-model="searchQuery"
-                        @input="handleSearch($event.target.value)"
+                        @click="handleInputFocus"
                         :placeholder="t('main.search')"
                         :class="[
                             'flex-1 h-11 rounded-base border-1 border-primary bg-background/80 backdrop-blur-sm shadow-lg',
