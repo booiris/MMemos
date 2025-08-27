@@ -5,6 +5,7 @@ import {
     ref,
     nextTick,
     onMounted,
+    onUnmounted,
     Ref,
     watch,
 } from 'vue'
@@ -399,12 +400,14 @@ const pullToRefreshCallback = async () => {
 const {
     isPullRefreshing,
     isPulling,
-    loadingTop,
     handleTouchStart,
     handleTouchMove,
     handleTouchEnd,
+    cleanup: cleanupPullToRefresh,
 } = usePullToRefresh({
     onRefresh: pullToRefreshCallback,
+    targetId: 'memo-content',
+    loaderId: 'pull-loader',
 })
 
 const refreshPage = async () => {
@@ -502,6 +505,11 @@ onMounted(async () => {
         })()
     }
 })
+
+onUnmounted(() => {
+    cleanupPullToRefresh()
+})
+
 onActivated(async () => {
     if (firstMount) {
         firstMount = false
@@ -591,19 +599,14 @@ useSwipeBack({ onSwipe: handleHome }, '#main-view')
                 class="fixed left-1/2 -translate-x-1/2 z-20"
                 style="top: calc(env(safe-area-inset-bottom) + 3.5rem)">
                 <Loader
-                    class="w-6.5 h-6.5 text-primary"
+                    id="pull-loader"
+                    class="w-6.5 h-6.5 text-primary pull-refresh-loader"
                     :class="{
                         'animate-spin': isPullRefreshing,
                     }" />
             </div>
 
-            <div
-                class="px-5 transition-transform duration-300 ease-out"
-                :style="{
-                    transform: isPullRefreshing
-                        ? `translateY(${loadingTop}px)`
-                        : '',
-                }">
+            <div id="memo-content" class="px-5">
                 <div
                     v-if="
                         isLoading &&
@@ -878,5 +881,30 @@ useSwipeBack({ onSwipe: handleHome }, '#main-view')
 
 #memo-list::-webkit-scrollbar {
     display: block !important;
+}
+
+/* Pull refresh loader progressive reveal - clockwise */
+.pull-refresh-loader {
+    transition: all 0.1s ease-out;
+}
+
+.pull-refresh-loader:not(.animate-spin) {
+    mask: conic-gradient(
+        from 0deg,
+        black 0deg,
+        black calc(360deg * var(--progress) / 100),
+        transparent calc(360deg * var(--progress) / 100)
+    );
+    -webkit-mask: conic-gradient(
+        from 0deg,
+        black 0deg,
+        black calc(360deg * var(--progress) / 100),
+        transparent calc(360deg * var(--progress) / 100)
+    );
+}
+
+.pull-refresh-loader.animate-spin {
+    mask: none;
+    -webkit-mask: none;
 }
 </style>
