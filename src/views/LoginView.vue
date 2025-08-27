@@ -101,7 +101,7 @@ const handleLogin = async () => {
 <template>
     <div
         class="flex flex-col items-center justify-center bg-background"
-        style="height: calc(100vh - env(safe-area-inset-top) + 8px)">
+        style="height: calc(100vh - var(--safe-area-top) + 8px)">
         <img
             :src="logo"
             alt="logo"
@@ -212,7 +212,7 @@ const handleLogin = async () => {
 
         <div
             class="fixed right-6 flex flex-col gap-4"
-            style="bottom: calc(0.5rem + env(safe-area-inset-bottom))">
+            style="bottom: calc(0.5rem + var(--safe-area-bottom))">
             <!-- <TouchAnimation>
                 <Button variant="outline" size="icon" @click="toggleDarkMode"
                     class="shadow-none border-primary !bg-transparent h-10 w-10">

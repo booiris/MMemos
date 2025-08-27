@@ -420,7 +420,7 @@ onBeforeUnmount(() => {
     <div class="flex flex-col h-screen bg-background">
         <div
             class="flex items-center justify-between pl-6 pr-5 -mb-1"
-            style="height: calc(env(safe-area-inset-top))">
+            style="height: calc(var(--safe-area-top))">
             <button @click="handleClose" class="text-lg font-medium pt-0.5">
                 {{ t('main.editPage.close') }}
             </button>
@@ -548,7 +548,7 @@ onBeforeUnmount(() => {
                 class="w-full h-full text-lg leading-relaxed text-primary placeholder-gray-400 px-6 disabled:opacity-50 disabled:cursor-not-allowed"
                 style="
                     padding-bottom: calc(
-                        env(safe-area-inset-bottom) + env(safe-area-inset-top) +
+                        var(--safe-area-bottom) + var(--safe-area-top) +
                             7rem
                     );
                 "
@@ -563,7 +563,7 @@ onBeforeUnmount(() => {
                 class="w-full h-full px-6 pt-4 overflow-y-auto"
                 style="
                     padding-bottom: calc(
-                        env(safe-area-inset-bottom) + env(safe-area-inset-top) +
+                        var(--safe-area-bottom) + var(--safe-area-top) +
                             7rem
                     );
                 ">
@@ -586,7 +586,7 @@ onBeforeUnmount(() => {
             class="fixed left-0 right-0 z-40"
             style="
                 height: calc(
-                    env(safe-area-inset-bottom) + env(safe-area-inset-top) +
+                    var(--safe-area-bottom) + var(--safe-area-top) +
                         2.5rem
                 );
                 bottom: 0;

@@ -545,7 +545,7 @@ useSwipeBack({ onSwipe: handleHome }, '#main-view')
 <template>
     <div
         class="flex flex-col w-full"
-        style="height: calc(100vh - env(safe-area-inset-top) + 8px)"
+        style="height: calc(100vh - var(--safe-area-top) + 8px)"
         id="main-view">
         <div
             v-if="viewImageLoading"
@@ -588,7 +588,7 @@ useSwipeBack({ onSwipe: handleHome }, '#main-view')
         <div
             class="flex-1 overflow-y-auto"
             id="memo-list"
-            style="margin-bottom: calc(env(safe-area-inset-bottom) + 0.5rem)"
+            style="margin-bottom: calc(var(--safe-area-bottom) + 0.5rem)"
             @scroll="handleScroll"
             @touchstart="handleTouchStart"
             @touchmove="handleTouchMove"
@@ -597,7 +597,7 @@ useSwipeBack({ onSwipe: handleHome }, '#main-view')
             <div
                 v-if="isPulling || isPullRefreshing"
                 class="fixed left-1/2 -translate-x-1/2 z-20"
-                style="top: calc(env(safe-area-inset-bottom) + 3.5rem)">
+                style="top: calc(var(--safe-area-bottom) + 3.5rem)">
                 <Loader
                     id="pull-loader"
                     class="w-6.5 h-6.5 text-primary pull-refresh-loader"
@@ -766,7 +766,7 @@ useSwipeBack({ onSwipe: handleHome }, '#main-view')
                         <div
                             style="
                                 margin-bottom: calc(
-                                    env(safe-area-inset-bottom) + 1.5rem
+                                    var(--safe-area-bottom) + 1.5rem
                                 );
                             "></div>
                     </div>
@@ -786,7 +786,7 @@ useSwipeBack({ onSwipe: handleHome }, '#main-view')
 
         <div
             class="fixed left-4 right-4 z-40"
-            style="bottom: calc(env(safe-area-inset-bottom) - 0.5rem)">
+            style="bottom: calc(var(--safe-area-bottom) - 0.5rem)">
             <div class="flex items-center gap-2">
                 <div class="flex-1">
                     <div class="w-full h-0.5 bg-background -mx-2"></div>

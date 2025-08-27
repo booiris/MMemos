@@ -80,6 +80,28 @@
   --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
   --sidebar-border: oklch(0.92 0.004 286.32);
   --sidebar-ring: oklch(0.705 0.015 286.067);
+  --downgrade-safe-area-inset-top: 50px;
+  --downgrade-safe-area-inset-bottom: 34px;
+  --downgrade-safe-area-inset-left: 0px;
+  --downgrade-safe-area-inset-right: 0px;
+}
+
+@supports (padding-top: env(safe-area-inset-top)) {
+  :root {
+    --safe-area-top: env(safe-area-inset-top);
+    --safe-area-bottom: env(safe-area-inset-bottom);
+    --safe-area-left: env(safe-area-inset-left);
+    --safe-area-right: env(safe-area-inset-right);
+  }
+}
+
+@supports not (padding-top: env(safe-area-inset-top)) {
+  :root {
+    --safe-area-top: var(--downgrade-safe-area-inset-top);
+    --safe-area-bottom: var(--downgrade-safe-area-inset-bottom);
+    --safe-area-left: var(--downgrade-safe-area-inset-left);
+    --safe-area-right: var(--downgrade-safe-area-inset-right);
+  }
 }
 
 .dark {
