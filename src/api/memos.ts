@@ -170,7 +170,7 @@ export async function togglePinMemo(
     return updateMemo(name, { pinned })
 }
 
-export async function searchMemos(query: string): Promise<Memo[]> {
+export async function searchMemos(query: string, tag: string): Promise<Memo[]> {
     try {
         let searchResults: Memo[] = []
         let token = ''
@@ -179,7 +179,9 @@ export async function searchMemos(query: string): Promise<Memo[]> {
                 30,
                 token,
                 MemosState.NORMAL,
-                `content.contains("${query}")`
+                `content.contains("${query}")  ${
+                    tag !== '' ? `&& tag in ["${tag}"]` : ''
+                }`
             )
 
             searchResults.push(

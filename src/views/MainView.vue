@@ -315,7 +315,7 @@ const performSearch = async () => {
     try {
         isLoading.value = true
         isSearching.value = true
-        searchResults.value = await searchMemos(currentQuery)
+        searchResults.value = await searchMemos(currentQuery, currentTag)
     } catch (error) {
         console.error('search memo failed: ' + getError(error))
         searchResults.value = []

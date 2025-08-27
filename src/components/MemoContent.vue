@@ -82,10 +82,12 @@ onMounted(() => {
         </div>
 
         <!-- Expand/Collapse button -->
-        <div v-if="showCompactMode !== undefined" class="w-full mt-0 mb-3">
+        <div
+            v-if="showCompactMode !== undefined"
+            class="w-full mt-0 mb-3 flex justify-end pr-2">
             <button
                 @click="toggleCompactMode"
-                class="w-auto flex flex-row justify-start items-center cursor-pointer text-base text-primary font-medium underline">
+                class="w-auto flex flex-row items-center cursor-pointer text-base text-primary font-medium underline">
                 {{
                     showCompactMode === 'ALL'
                         ? t('memo.expand')
