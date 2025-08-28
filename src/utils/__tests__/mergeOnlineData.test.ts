@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { ref, type Ref } from 'vue'
-import { mergeOnlineData, mergeOnline } from '../mergeOnlineData'
+import { mergeOnlineData, mergeOnline } from '../mergeOnlineData_DraftVersion'
 import type { Memo, MemosState } from '@/api/memos'
 import type { V1State } from '@/api/schema/api'
 
