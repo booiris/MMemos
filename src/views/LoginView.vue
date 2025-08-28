@@ -36,8 +36,16 @@ const router = useRouter()
 const authStore = useAuthStore()
 const { currentLocale, locales, setLocale } = useLocale()
 
-const serverUrl = ref(import.meta.env.VITE_DEFAULT_DEBUG_SERVER_URL || '')
-const accessToken = ref(import.meta.env.VITE_DEFAULT_DEBUG_ACCESS_TOKEN || '')
+const serverUrl = ref(
+    import.meta.env.DEV
+        ? import.meta.env.VITE_DEFAULT_DEBUG_SERVER_URL || ''
+        : ''
+)
+const accessToken = ref(
+    import.meta.env.DEV
+        ? import.meta.env.VITE_DEFAULT_DEBUG_ACCESS_TOKEN || ''
+        : ''
+)
 const loading = ref(false)
 const { t } = useI18n()
 
