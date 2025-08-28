@@ -167,7 +167,14 @@ const handleSend = () => {
         'send',
         textContent.value,
         currentVisibility.value as V1Visibility,
-        localResources.value,
+        localResources.value.map((resource) => ({
+            ...resource,
+            externalLink:
+                resource.externalLink &&
+                resource.externalLink.startsWith('blob:')
+                    ? undefined
+                    : resource.externalLink,
+        })),
         props.memo
     )
 }
@@ -291,7 +298,7 @@ const handleAddImage = async () => {
                 )
             })
 
-            const uploadedResource =
+            let uploadedResource =
                 await client.api.resourceServiceCreateResource(
                     {
                         filename: data.filename,
@@ -307,9 +314,7 @@ const handleAddImage = async () => {
 
             localResources.value = localResources.value.map((resource) => {
                 if (resource.name === data.id) {
-                    if (data.externalLink) {
-                        URL.revokeObjectURL(data.externalLink)
-                    }
+                    uploadedResource.externalLink = data.externalLink
                     return uploadedResource
                 }
                 return resource
@@ -548,8 +553,7 @@ onBeforeUnmount(() => {
                 class="w-full h-full text-lg leading-relaxed text-primary placeholder-gray-400 px-6 disabled:opacity-50 disabled:cursor-not-allowed"
                 style="
                     padding-bottom: calc(
-                        var(--safe-area-bottom) + var(--safe-area-top) +
-                            7rem
+                        var(--safe-area-bottom) + var(--safe-area-top) + 7rem
                     );
                 "
                 @input="debouncedTextChange(textContent)"
@@ -563,8 +567,7 @@ onBeforeUnmount(() => {
                 class="w-full h-full px-6 pt-4 overflow-y-auto"
                 style="
                     padding-bottom: calc(
-                        var(--safe-area-bottom) + var(--safe-area-top) +
-                            7rem
+                        var(--safe-area-bottom) + var(--safe-area-top) + 7rem
                     );
                 ">
                 <article
@@ -586,8 +589,7 @@ onBeforeUnmount(() => {
             class="fixed left-0 right-0 z-40"
             style="
                 height: calc(
-                    var(--safe-area-bottom) + var(--safe-area-top) +
-                        2.5rem
+                    var(--safe-area-bottom) + var(--safe-area-top) + 2.5rem
                 );
                 bottom: 0;
             ">
