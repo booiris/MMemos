@@ -8,7 +8,7 @@ A third-party Memos mobile client built with Tauri 2.0.
 
 ## Screenshots
 
-<table></table>
+<table>
 <tr>
 <td><img src="./assets/login.png" alt="login" width="200"/></td>
 <td><img src="./assets/main.png" alt="MMemos-iOS" width="200"/></td>
