@@ -229,21 +229,16 @@ const handlePinMemo = async (oldMemo: Memo) => {
     try {
         const memo = await togglePinMemo(oldMemo.name, !oldMemo.pinned)
 
-        if (pageName === 'Main') {
-            if (memo.pinned) {
-                pinnedMemos.value = insertMemo(memo, pinnedMemos.value)
-                memos.value = memos.value.filter((m) => m.name !== memo.name)
-            } else {
-                pinnedMemos.value = pinnedMemos.value.filter(
-                    (m) => m.name !== memo.name
-                )
-                memos.value = insertMemo(memo, memos.value)
-            }
-            await scrollToMemo(memo)
+        if (memo.pinned) {
+            pinnedMemos.value = insertMemo(memo, pinnedMemos.value)
+            memos.value = memos.value.filter((m) => m.name !== memo.name)
         } else {
-            const index = memos.value.findIndex((m) => m.name === memo.name)
-            memos.value[index] = memo
+            pinnedMemos.value = pinnedMemos.value.filter(
+                (m) => m.name !== memo.name
+            )
+            memos.value = insertMemo(memo, memos.value)
         }
+        await scrollToMemo(memo)
     } catch (error) {
         console.error('toggle pin memo failed: ' + getError(error))
     }
@@ -408,9 +403,6 @@ const refreshPage = async () => {
     const archive = pageName === 'Archive'
     await Promise.all([
         (async () => {
-            if (pageName !== 'Main') {
-                return
-            }
             let offset = 0
             while (true) {
                 const res = await dataCache.getMemoList(
@@ -477,12 +469,10 @@ onMounted(async () => {
                 state = MemosState.ARCHIVED
             }
             try {
-                let runner = [mergeOnline(memos, false, state, currentTag)]
-                if (pageName === 'Main') {
-                    runner.push(
-                        mergeOnline(pinnedMemos, true, MemosState.NORMAL)
-                    )
-                }
+                let runner = [
+                    mergeOnline(memos, false, state, currentTag),
+                    mergeOnline(pinnedMemos, true, MemosState.NORMAL),
+                ]
                 await Promise.all(runner)
             } catch (error) {
                 console.error(
@@ -513,12 +503,10 @@ onActivated(async () => {
                 state = MemosState.ARCHIVED
             }
             try {
-                let runner = [mergeOnline(memos, false, state, currentTag)]
-                if (pageName === 'Main') {
-                    runner.push(
-                        mergeOnline(pinnedMemos, true, MemosState.NORMAL)
-                    )
-                }
+                let runner = [
+                    mergeOnline(memos, false, state, currentTag),
+                    mergeOnline(pinnedMemos, true, MemosState.NORMAL),
+                ]
                 await Promise.all(runner)
             } catch (error) {
                 console.error('fetch data error: ' + getError(error))

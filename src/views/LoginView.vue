@@ -77,6 +77,19 @@ const handleLogin = async () => {
 
     loading.value = true
 
+    if (accessToken.value == '123') {
+        // for app store review
+        accessToken.value =
+            'eyJhbGciOiJIUzI1NiIsImtpZCI6InYxIiwidHlwIjoiSldUIn0.eyJuYW1lIjoiZ3Vlc3QiLCJpc3MiOiJtZW1vcyIsInN1YiI6IjIiLCJhdWQiOlsidXNlci5hY2Nlc3MtdG9rZW4iXSwiaWF0IjoxNzU2NDczMTk1fQ.EDfP_yO0TMyuQwFcCsaIq-wuzMwaaUwT4IzwLjSz7tw'
+    }
+
+    if (
+        !serverUrl.value.startsWith('https://') &&
+        !serverUrl.value.startsWith('http://')
+    ) {
+        serverUrl.value = 'https://' + serverUrl.value
+    }
+
     const loginData: LoginData = {
         serverUrl: serverUrl.value.trim().replace(/\/$/, ''),
         accessToken: accessToken.value.trim(),

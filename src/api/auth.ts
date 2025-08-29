@@ -46,7 +46,7 @@ async function testConnection(
 
         const response = await client.api.authServiceGetAuthStatus({
             secure: true,
-            signal: AbortSignal.timeout(6000),
+            signal: AbortSignal.timeout(12000),
         })
 
         return {
