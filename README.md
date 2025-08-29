@@ -8,13 +8,7 @@ A third-party Memos mobile client built with Tauri 2.0.
 
 ## Screenshots
 
-<table border="0" cellspacing="0" cellpadding="0" style="border: none;">
-<tr>
-<td style="border: none;"><img src="./assets/login.png" alt="login" width="200"/></td>
-<td style="border: none;"><img src="./assets/main.png" alt="main" width="200"/></td>
-<td style="border: none;"><img src="./assets/home.png" alt="home" width="200"/></td>
-</tr>
-</table>
+<img src="./assets/main.png" alt="main" width="200"/>
 
 ## Features
 
