@@ -78,7 +78,7 @@ const handleLogin = async () => {
     loading.value = true
 
     const loginData: LoginData = {
-        serverUrl: serverUrl.value.trim(),
+        serverUrl: serverUrl.value.trim().replace(/\/$/, ''),
         accessToken: accessToken.value.trim(),
     }
 

@@ -46,7 +46,11 @@ const truncateText = (text: string, maxLength: number = 20): string => {
 
 const tags = computed(() => {
     return Object.entries(tagValues.value)
-        .sort(([tagA], [tagB]) => tagA.localeCompare(tagB))
+        .sort(([tagA], [tagB]) => {
+            const sortKeyA = (/^[a-zA-Z]/.test(tagA) ? '0' : '1') + tagA
+            const sortKeyB = (/^[a-zA-Z]/.test(tagB) ? '0' : '1') + tagB
+            return sortKeyA.localeCompare(sortKeyB)
+        })
         .map(([tag, count]) => {
             const displayTitle = `${truncateText(tag)} (${count})`
             return {
@@ -151,10 +155,7 @@ onActivated(async () => {
 
             <SettingsList v-if="tags.length > 0" title="TAGS" :items="tags" />
 
-            <div
-                style="
-                    margin-bottom: calc(var(--safe-area-bottom) + 2rem);
-                " />
+            <div style="margin-bottom: calc(var(--safe-area-bottom) + 2rem)" />
         </div>
     </div>
 </template>
