@@ -27,7 +27,7 @@ A third-party Memos mobile client built with Tauri 2.0.
 - **Styling**: Tailwind CSS + Shadcn UI
 - **Package Manager**: pnpm
 
-## Plan
+## Roadmap
 
 - [ ] Support Android
 - [ ] Retrospect memo 
