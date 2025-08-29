@@ -369,10 +369,10 @@ const pullToRefreshCallback = async () => {
         if (pageName === 'Archive') {
             state = MemosState.ARCHIVED
         }
-        let runner = [mergeOnline(memos, false, state, currentTag)]
-        if (pageName === 'Main') {
-            runner.push(mergeOnline(pinnedMemos, true, MemosState.NORMAL))
-        }
+        let runner = [
+            mergeOnline(memos, false, state, currentTag),
+            mergeOnline(pinnedMemos, true, MemosState.NORMAL, currentTag),
+        ]
         await Promise.all(runner)
     } catch (error) {
         console.error('pull to refresh error: ' + getError(error))
@@ -471,7 +471,12 @@ onMounted(async () => {
             try {
                 let runner = [
                     mergeOnline(memos, false, state, currentTag),
-                    mergeOnline(pinnedMemos, true, MemosState.NORMAL),
+                    mergeOnline(
+                        pinnedMemos,
+                        true,
+                        MemosState.NORMAL,
+                        currentTag
+                    ),
                 ]
                 await Promise.all(runner)
             } catch (error) {
@@ -494,7 +499,7 @@ onActivated(async () => {
         firstMount = false
         return
     }
-    refreshPage()
+    await refreshPage()
     if (displayMemos.value.length === 0) {
         onlineRefreshing = true
         ;(async () => {
@@ -505,7 +510,12 @@ onActivated(async () => {
             try {
                 let runner = [
                     mergeOnline(memos, false, state, currentTag),
-                    mergeOnline(pinnedMemos, true, MemosState.NORMAL),
+                    mergeOnline(
+                        pinnedMemos,
+                        true,
+                        MemosState.NORMAL,
+                        currentTag
+                    ),
                 ]
                 await Promise.all(runner)
             } catch (error) {

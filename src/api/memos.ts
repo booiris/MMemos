@@ -200,7 +200,7 @@ export async function searchMemos(query: string, tag: string): Promise<Memo[]> {
     }
 }
 
-export async function getPinnedContent(): Promise<Memo[]> {
+export async function getPinnedContent(tag?: string): Promise<Memo[]> {
     try {
         let pinnedMemos: Memo[] = []
         let token = ''
@@ -209,7 +209,7 @@ export async function getPinnedContent(): Promise<Memo[]> {
                 30,
                 token,
                 MemosState.NORMAL,
-                `pinned`
+                `pinned ${tag ? `&& tag in ["${tag}"]` : ''}`
             )
 
             pinnedMemos.push(

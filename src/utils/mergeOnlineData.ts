@@ -26,7 +26,7 @@ export async function mergeOnline(
     limit = 50
 ) {
     if (pinned) {
-        const pinnedMemos = await getPinnedContent()
+        const pinnedMemos = await getPinnedContent(tag)
         mergeOnlineData(memos, pinnedMemos)
         return undefined
     }
