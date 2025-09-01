@@ -10,6 +10,12 @@ A third-party Memos mobile client built with Tauri 2.0.
 
 <img src="./assets/main.png" alt="main" width="200"/>
 
+## Installation
+
+[![Download MMemos on the App Store](./assets/app-store-badge.svg)](https://apps.apple.com/cn/app/mmemos/id6751287923)
+
+MMemos is available on App Store for free. You can also build this app with Xcode and run on your devices. iOS 14 or higher is required.
+
 ## Features
 
 - Sync with your own memos server
