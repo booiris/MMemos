@@ -49,7 +49,7 @@ MMemos is available on App Store for free. You can also build this app with Xcod
 Thanks to:
 
 - [memos](https://github.com/usememos/memos)
-- [MMemos-iOS](https://github.com/mudkipme/MoeMemos)
+- [MoeMemos-iOS](https://github.com/mudkipme/MoeMemos)
 
 ## License
 
