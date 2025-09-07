@@ -5,6 +5,10 @@ on:
         branches:
             - master
 
+concurrency:
+    group: ${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref }}
+    cancel-in-progress: true
+
 jobs:
     publish-tauri:
         permissions:
