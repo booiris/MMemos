@@ -532,7 +532,7 @@ useSwipeBack({ onSwipe: handleHome }, '#main-view')
 <template>
     <div
         class="flex flex-col w-full"
-        style="height: calc(100vh - var(--safe-area-top) + 8px)"
+        style="height: calc(100vh - var(--safe-area-top))"
         id="main-view">
         <div
             v-if="viewImageLoading"

@@ -56,17 +56,17 @@ body,
     min-height: 0;
     overflow-y: auto;
     position: relative;
-    margin-top: calc(var(--safe-area-top) - 8px);
+    top: calc(var(--safe-area-top));
 }
 
 .slide-right-enter-active,
 .slide-right-leave-active,
 .slide-left-enter-active,
 .slide-left-leave-active {
+    top: calc(var(--safe-area-top));
     position: absolute;
     width: 100%;
     height: 100%;
-    top: 0;
     left: 0;
     transition: all 0.29s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
