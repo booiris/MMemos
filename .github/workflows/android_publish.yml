@@ -2,8 +2,8 @@ name: 'android publish'
 
 on:
     push:
-        branches:
-            - android
+        tags:
+            - 'v*.*.*'
 
 jobs:
     publish-tauri:
@@ -72,6 +72,19 @@ jobs:
                     --out src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-signed.apk \
                     src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-unsigned.apk
 
-            # - name: Rename APK file
-            #   run: |
-            #       mv ./src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-signed.apk ./src-tauri/gen/android/app/build/outputs/apk/universal/release/myappliation-${{ steps.package-version.outputs.current-version}}.apk
+            - name: Rename APK file
+              run: |
+                  mv ./src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-signed.apk ./src-tauri/gen/android/app/build/outputs/apk/universal/release/MMemos-${{ github.ref_name }}-universal.apk
+
+            - name: Create GitHub Release
+              uses: softprops/action-gh-release@v1
+              with:
+                  files: |
+                      ./src-tauri/gen/android/app/build/outputs/apk/universal/release/MMemos-${{ github.ref_name }}-universal.apk
+                  tag_name: ${{ github.ref_name }}
+                  name: MMemos ${{ github.ref_name }}
+                  generate_release_notes: true
+                  draft: false
+                  prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') || contains(github.ref_name, 'rc') }}
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
