@@ -10,7 +10,7 @@ jobs:
         permissions:
             contents: read
         strategy:
-            fail-fast: false
+            fail-fast: true
             matrix:
                 include:
                     - platform: 'ubuntu-22.04'
