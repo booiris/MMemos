@@ -110,7 +110,7 @@ watchEffect(() => {
         <div
             v-if="editModalState.isVisible"
             class="fixed inset-0 z-50"
-            style="top: calc(env(safe-area-inset-top) - 8px)">
+            style="top: calc(env(safe-area-inset-top))">
             <EditView
                 :key="editModalState.key"
                 :initial-text="editModalState.initialText"
