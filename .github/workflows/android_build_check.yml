@@ -10,7 +10,7 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    publish-tauri:
+    android-build-check:
         permissions:
             contents: read
         strategy:
