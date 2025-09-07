@@ -35,7 +35,7 @@ MMemos is available on App Store for free. You can also build this app with Xcod
 
 ## Roadmap
 
-- [ ] Support Android
+- [x] Support Android
 - [ ] Retrospect memo 
 - [ ] Latex support
 - [ ] File(pdf, audio etc.) attachment support

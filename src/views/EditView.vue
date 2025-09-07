@@ -550,7 +550,7 @@ onBeforeUnmount(() => {
                 v-model="textContent"
                 :disabled="props.isLoading"
                 :placeholder="t('main.editPage.placeholder')"
-                class="w-full h-full text-lg leading-relaxed text-primary placeholder-gray-400 px-6 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="w-full h-full text-lg leading-relaxed text-primary outline-none placeholder-gray-400 px-6 disabled:opacity-50 disabled:cursor-not-allowed"
                 style="
                     padding-bottom: calc(
                         var(--safe-area-bottom) + var(--safe-area-top) + 7rem
@@ -589,7 +589,7 @@ onBeforeUnmount(() => {
             class="fixed left-0 right-0 z-40"
             style="
                 height: calc(
-                    var(--safe-area-bottom) + var(--safe-area-top) + 2.5rem
+                    var(--safe-area-bottom) + var(--safe-area-top) + 3rem
                 );
                 bottom: 0;
             ">

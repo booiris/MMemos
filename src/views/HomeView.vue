@@ -116,7 +116,7 @@ onActivated(async () => {
 <template>
     <div
         class="flex flex-col px-5 gap-3"
-        style="height: calc(100vh - var(--safe-area-top) + 8px)">
+        style="height: calc(100vh - var(--safe-area-top))">
         <div
             class="flex justify-between items-center sticky top-0 z-10 mb-0.5 bg-background">
             <div class="flex items-center gap-2">

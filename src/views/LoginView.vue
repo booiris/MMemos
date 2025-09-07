@@ -122,7 +122,7 @@ const handleLogin = async () => {
 <template>
     <div
         class="flex flex-col items-center justify-center bg-background"
-        style="height: calc(100vh - var(--safe-area-top) + 8px)">
+        style="height: calc(100vh - var(--safe-area-top))">
         <img
             :src="logo"
             alt="logo"

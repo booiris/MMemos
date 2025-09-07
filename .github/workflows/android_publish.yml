@@ -1,0 +1,90 @@
+name: 'android publish'
+
+on:
+    push:
+        tags:
+            - 'v*.*.*'
+
+jobs:
+    publish-tauri:
+        permissions:
+            contents: write
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - platform: 'ubuntu-22.04'
+                      args: ''
+
+        runs-on: ${{ matrix.platform }}
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: setup node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: lts/*
+
+            - name: install pnpm
+              uses: pnpm/action-setup@v4
+
+            - name: Setup Java
+              uses: actions/setup-java@v4
+              with:
+                  distribution: 'zulu'
+                  java-version: '17'
+
+            - name: Setup Android SDK
+              uses: android-actions/setup-android@v3
+
+            - name: Install NDK
+              run: sdkmanager "ndk;27.0.11902837"
+
+            - name: install Rust stable
+              uses: dtolnay/rust-toolchain@stable
+              with:
+                  targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+
+            - name: Install dependencies
+              run: pnpm install
+
+            - name: Cache Rust dependencies
+              uses: swatinem/rust-cache@v2
+              with:
+                  workspaces: './src-tauri'
+
+            - name: Build app bundle
+              run: pnpm tauri android build -v
+              env:
+                  NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/27.0.11902837
+
+            - name: Extract android signing key from env
+              run: |
+                  echo "${{ secrets.ANDROID_RELEASE_KEYSTORE }}" > src-tauri/gen/android/release.jks.base64
+                  base64 -d src-tauri/gen/android/release.jks.base64 > src-tauri/gen/android/release.decrypted.jks
+
+            - name: Sign APK
+              run: |
+                  ${{ env.ANDROID_HOME }}/build-tools/34.0.0/apksigner sign --ks src-tauri/gen/android/release.decrypted.jks \
+                    --ks-key-alias ${{ secrets.ANDROID_RELEASE_KEY }} \
+                    --ks-pass pass:${{ secrets.ANDROID_RELEASE_PASSWORD }} \
+                    --key-pass pass:${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }} \
+                    --out src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-signed.apk \
+                    src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-unsigned.apk
+
+            - name: Rename APK file
+              run: |
+                  mv ./src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-signed.apk ./src-tauri/gen/android/app/build/outputs/apk/universal/release/MMemos-${{ github.ref_name }}-universal.apk
+
+            - name: Create GitHub Release
+              uses: softprops/action-gh-release@v1
+              with:
+                  files: |
+                      ./src-tauri/gen/android/app/build/outputs/apk/universal/release/MMemos-${{ github.ref_name }}-universal.apk
+                  tag_name: ${{ github.ref_name }}
+                  name: MMemos ${{ github.ref_name }}
+                  generate_release_notes: true
+                  draft: false
+                  prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') || contains(github.ref_name, 'rc') }}
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
