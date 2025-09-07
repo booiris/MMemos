@@ -25,28 +25,51 @@ jobs:
               with:
                   node-version: lts/*
 
+            - name: install pnpm
+              uses: pnpm/action-setup@v4
+
+            - name: Setup Java
+              uses: actions/setup-java@v4
+              with:
+                  distribution: 'zulu'
+                  java-version: '17'
+
+            - name: Setup Android SDK
+              uses: android-actions/setup-android@v3
+
+            - name: Install NDK
+              run: sdkmanager "ndk;27.0.11902837"
+
             - name: install Rust stable
               uses: dtolnay/rust-toolchain@stable
+              with:
+                  targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
 
-            - name: install dependencies (ubuntu only)
-              if: matrix.platform == 'ubuntu-22.04'
-              run: |
-                  sudo apt-get update
-                  sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-
-            - name: install pnpm
-              run: npm install -g pnpm
-
-            - name: install frontend dependencies
+            - name: Install dependencies
               run: pnpm install
 
-            - uses: tauri-apps/tauri-action@v0
+            - name: Cache Rust dependencies
+              uses: swatinem/rust-cache@v2
+
+            - name: Build app bundle
+              run: pnpm tauri android build -v
               env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              with:
-                  #   tagName: app-v__VERSION__
-                  #   releaseName: 'App v__VERSION__'
-                  #   releaseBody: 'See the assets to download this version and install.'
-                  #   releaseDraft: true
-                  #   prerelease: false
-                  args: ${{ matrix.args }}
+                  NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/27.0.11902837
+
+            # - name: Extract android signing key from env
+            #   run: |
+            #       echo "${{ secrets.ANDROID_RELEASE_KEYSTORE }}" > src-tauri/gen/android/release.jks.base64
+            #       base64 -d src-tauri/gen/android/release.jks.base64 > src-tauri/gen/android/release.decrypted.jks
+
+            # - name: Sign APK
+            #   run: |
+            #       ${{ env.ANDROID_HOME }}/build-tools/34.0.0/apksigner sign --ks src-tauri/gen/android/release.decrypted.jks \
+            #         --ks-key-alias ${{ secrets.ANDROID_RELEASE_KEY }} \
+            #         --ks-pass pass:${{ secrets.ANDROID_RELEASE_PASSWORD }} \
+            #         --key-pass pass:${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }} \
+            #         --out src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-signed.apk \
+            #         src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-unsigned.apk
+
+            # - name: Rename APK file
+            #   run: |
+            #       mv ./src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-signed.apk ./src-tauri/gen/android/app/build/outputs/apk/universal/release/myappliation-${{ steps.package-version.outputs.current-version}}.apk
