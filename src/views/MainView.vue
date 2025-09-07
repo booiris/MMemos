@@ -584,7 +584,7 @@ useSwipeBack({ onSwipe: handleHome }, '#main-view')
             <div
                 v-if="isPulling || isPullRefreshing"
                 class="fixed left-1/2 -translate-x-1/2 z-20"
-                style="top: calc(var(--safe-area-bottom) + 3.5rem)">
+                style="top: calc(var(--safe-area-top) + 2.5rem)">
                 <Loader
                     id="pull-loader"
                     class="w-6.5 h-6.5 text-primary pull-refresh-loader"
