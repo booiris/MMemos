@@ -1,4 +1,4 @@
-name: 'android publish'
+name: 'android build check'
 
 on:
     pull_request:
@@ -14,7 +14,6 @@ jobs:
             matrix:
                 include:
                     - platform: 'ubuntu-22.04'
-                      args: ''
 
         runs-on: ${{ matrix.platform }}
         steps:
@@ -25,20 +24,35 @@ jobs:
               with:
                   node-version: lts/*
 
+            - name: install pnpm
+              uses: pnpm/action-setup@v4
+
+            - name: Setup Java
+              uses: actions/setup-java@v4
+              with:
+                  distribution: 'zulu'
+                  java-version: '17'
+
+            - name: Setup Android SDK
+              uses: android-actions/setup-android@v3
+
+            - name: Install NDK
+              run: sdkmanager "ndk;27.0.11902837"
+
             - name: install Rust stable
               uses: dtolnay/rust-toolchain@stable
+              with:
+                  targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
 
-            - name: install dependencies (ubuntu only)
-              if: matrix.platform == 'ubuntu-22.04'
-              run: |
-                  sudo apt-get update
-                  sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-
-            - name: install frontend dependencies
+            - name: Install dependencies
               run: pnpm install
 
-            - uses: tauri-apps/tauri-action@v0
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            - name: Cache Rust dependencies
+              uses: swatinem/rust-cache@v2
               with:
-                  args: ${{ matrix.args }}
+                  workspaces: './src-tauri'
+
+            - name: Build app bundle
+              run: pnpm tauri android build -v
+              env:
+                  NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/27.0.11902837
